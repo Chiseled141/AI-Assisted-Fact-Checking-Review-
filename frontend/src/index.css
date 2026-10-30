@@ -1,0 +1,218 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  /* Color channels ("r g b") consumed by tailwind.config.js. Light: warm cream, charcoal text, yellow buttons. */
+  :root {
+    color-scheme: light;
+    --surface: 255 253 247;
+    --ink: 35 31 32;
+    --ink-soft: 64 58 56;
+    --ink-muted: 101 96 90;
+    --ink-faint: 110 104 96;
+    --line: 232 226 210;
+    --line-strong: 205 197 178;
+    --brand-50: 243 239 250;
+    --brand-100: 230 222 244;
+    --brand-200: 205 189 232;
+    --brand-500: 123 94 167;
+    --brand-600: 106 78 150;
+    --brand-700: 88 63 128;
+    --brand-900: 50 35 75;
+    --zinc-50: 246 242 231;
+    --zinc-100: 240 235 222;
+    --zinc-200: 232 226 210;
+    --zinc-300: 214 206 188;
+    --zinc-600: 101 96 90;
+    --zinc-700: 64 58 56;
+    --emerald-50: 236 253 245;
+    --emerald-200: 167 243 208;
+    --emerald-700: 4 120 87;
+    --emerald-800: 6 95 70;
+    --emerald-900: 6 78 59;
+    --rose-50: 255 241 242;
+    --rose-200: 254 205 211;
+    --rose-400: 251 113 133;
+    --rose-600: 225 29 72;
+    --rose-700: 190 18 60;
+    --rose-800: 159 18 57;
+    --rose-900: 136 19 55;
+    --amber-50: 255 251 235;
+    --amber-200: 253 230 138;
+    --amber-300: 252 211 77;
+    --amber-700: 180 83 9;
+    --amber-800: 146 64 14;
+    --amber-900: 120 53 15;
+    --amber-950: 69 26 3;
+    --page: 250 247 238;
+    --primary: 252 186 40;
+    --primary-hover: 245 172 15;
+    --on-primary: 35 31 32;
+    --pop: 11 140 180;
+    --candy: 184 58 96;
+    --flame: 252 116 40;
+    --fire-edge: 35 31 32;
+    --primary-edge: 226 160 18;
+  }
+
+  /* Dark theme: coal canvas, charcoal cards, beige text, tints flipped to deep shades. */
+  .dark {
+    color-scheme: dark;
+    --surface: 35 31 32;
+    --ink: 249 244 218;
+    --ink-soft: 225 220 196;
+    --ink-muted: 177 180 185;
+    --ink-faint: 154 151 140;
+    --line: 54 50 51;
+    --line-strong: 80 76 74;
+    --brand-50: 45 36 60;
+    --brand-100: 56 45 75;
+    --brand-200: 84 68 112;
+    --brand-500: 165 139 208;
+    --brand-600: 184 162 222;
+    --brand-700: 203 186 234;
+    --brand-900: 232 224 245;
+    --zinc-50: 27 25 24;
+    --zinc-100: 38 37 34;
+    --zinc-200: 50 46 47;
+    --zinc-300: 72 68 66;
+    --zinc-600: 177 180 185;
+    --zinc-700: 225 220 196;
+    --emerald-50: 6 32 23;
+    --emerald-200: 20 83 45;
+    --emerald-700: 16 185 129;
+    --emerald-800: 110 231 183;
+    --emerald-900: 167 243 208;
+    --rose-50: 40 12 16;
+    --rose-200: 127 29 29;
+    --rose-400: 244 63 94;
+    --rose-600: 251 113 133;
+    --rose-700: 251 94 120;
+    --rose-800: 254 205 211;
+    --rose-900: 255 228 230;
+    --amber-50: 38 27 6;
+    --amber-200: 120 53 15;
+    --amber-300: 146 64 14;
+    --amber-700: 245 158 11;
+    --amber-800: 253 230 138;
+    --amber-900: 254 243 199;
+    --amber-950: 255 251 235;
+    --page: 15 13 14;
+    --primary: 252 186 40;
+    --primary-hover: 253 202 90;
+    --on-primary: 15 13 14;
+    --pop: 18 181 229;
+    --candy: 243 139 163;
+    --flame: 252 116 40;
+    --fire-edge: 0 0 0;
+    --primary-edge: 252 186 40;
+  }
+  body {
+    @apply bg-page font-sans text-ink antialiased;
+  }
+  :focus-visible {
+    @apply outline outline-2 outline-offset-2 outline-brand-500;
+  }
+}
+
+@layer components {
+  /*
+   * Buttons share a short ease-out transition. Icons animate on hover: arrows nudge forward,
+   * other icons tilt. Pressed buttons dip slightly. Reduced-motion users get color changes only.
+   */
+  .btn {
+    @apply inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-full px-4 py-2 text-sm font-medium transition-[transform,background-color,border-color,color,box-shadow] duration-150 ease-out disabled:cursor-not-allowed disabled:opacity-50 enabled:active:scale-[0.97] motion-reduce:transform-none;
+  }
+  .btn > svg {
+    transition: transform 200ms ease-out;
+  }
+  .btn-primary {
+    @apply btn bg-primary font-semibold text-on-primary shadow-[inset_0_0_0_1px_rgb(var(--primary-edge))] enabled:hover:-translate-y-0.5 enabled:hover:bg-primary-hover enabled:hover:shadow-[inset_0_0_0_1px_rgb(var(--primary-edge)),0_8px_18px_-8px_rgb(var(--primary)/0.65)];
+  }
+  .btn-primary:enabled:hover > svg:last-child {
+    transform: translateX(0.25rem);
+  }
+  /* Chunky Fireship-style action: squared, bold uppercase, hard offset shadow that presses on click. */
+  .btn-fire {
+    @apply btn rounded-md border-2 border-[rgb(var(--fire-edge))] bg-primary px-4 py-1.5 text-xs font-bold uppercase tracking-wide text-on-primary shadow-[3px_3px_0_0_rgb(var(--fire-edge))] hover:-translate-x-0.5 hover:-translate-y-0.5 hover:bg-primary-hover hover:shadow-[5px_5px_0_0_rgb(var(--fire-edge))] active:translate-x-[3px] active:translate-y-[3px] active:scale-100 active:shadow-none;
+  }
+  .btn-fire:hover > svg,
+  .btn-ghost:hover > svg {
+    transform: rotate(-12deg);
+  }
+  .btn-secondary {
+    @apply btn border border-line bg-white text-ink enabled:hover:-translate-y-0.5 enabled:hover:border-line-strong enabled:hover:bg-zinc-50;
+  }
+  .btn-secondary:enabled:hover > svg {
+    transform: scale(1.1);
+  }
+  .btn-ghost {
+    @apply btn text-ink-soft hover:bg-zinc-100 hover:text-ink;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .btn:hover > svg {
+      transform: none !important;
+    }
+  }
+  .panel {
+    @apply border border-line bg-white;
+  }
+  .field {
+    @apply w-full rounded-lg border border-line bg-white px-3 py-2 text-sm text-ink placeholder:text-ink-faint focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-100 aria-[invalid=true]:border-rose-400;
+  }
+  .label {
+    @apply mb-1.5 block text-sm font-medium text-ink;
+  }
+  /* Mono section label, rendered as "// label". */
+  .eyebrow {
+    @apply font-mono text-xs text-ink-muted before:mr-1.5 before:text-candy before:content-['//'];
+  }
+}
+
+/* Scroll reveal: elements rise and fade in once they enter the viewport (see useReveal). */
+.reveal {
+  opacity: 0;
+  transform: translateY(18px);
+  transition:
+    opacity 600ms ease-out,
+    transform 600ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+.reveal.is-visible {
+  opacity: 1;
+  transform: none;
+}
+
+/* Entrance for panels that appear on click. */
+@keyframes rise-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+.rise-in {
+  animation: rise-in 280ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .reveal {
+    opacity: 1;
+    transform: none;
+  }
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

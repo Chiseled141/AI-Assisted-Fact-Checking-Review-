@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="800" viewBox="0 0 1280 800" role="img" aria-label="Illustrative capture of Six-month ridership summary, Harbor Line">
+<rect width="1280" height="800" fill="#ffffff"/>
+<rect width="1280" height="56" fill="#ececec"/><circle cx="28" cy="28" r="7" fill="#ff5f57"/><circle cx="52" cy="28" r="7" fill="#febc2e"/><circle cx="76" cy="28" r="7" fill="#28c840"/>
+<rect x="110" y="13" width="1050" height="30" rx="15" fill="#ffffff"/><text x="132" y="34" font-family="Helvetica, Arial, sans-serif" font-size="15" fill="#555">https://example.org/mcta/reports/harbor-line-six-month-ridership</text>
+<rect y="56" width="1280" height="72" fill="#1f4e79"/><text x="80" y="101" font-family="Helvetica, Arial, sans-serif" font-size="24" font-weight="bold" fill="#ffffff">Marlow City Transit Authority (fictional)</text>
+<g transform="translate(948 150)"><rect width="252" height="32" rx="4" fill="#fff4f4" stroke="#d64545"/><text x="126" y="21" text-anchor="middle" font-family="Helvetica, Arial, sans-serif" font-size="14" font-weight="bold" fill="#c53030">ILLUSTRATIVE CAPTURE · DEMO DATA</text></g>
+<text x="80" y="220" font-family="Helvetica, Arial, sans-serif" font-size="40" font-weight="bold" fill="#1a1a1a">Six-month ridership summary, Harbor Line</text>
+<text x="80" y="274" font-family="Helvetica, Arial, sans-serif" font-size="18" fill="#666">Published 7 October 2024</text>
+<line x1="80" y1="314" x2="1200" y2="314" stroke="#e5e5e5" stroke-width="2"/>
+<rect x="80" y="350" width="1060" height="14" rx="7" fill="#e6e6e6"/>
+<rect x="80" y="380" width="980" height="14" rx="7" fill="#e6e6e6"/>
+<rect x="80" y="410" width="1100" height="14" rx="7" fill="#e6e6e6"/>
+<rect x="74" y="431" width="939.0" height="36" fill="#fde68a"/>
+<text x="80" y="456" font-family="Helvetica, Arial, sans-serif" font-size="24" fill="#1a1a1a">Average weekday boardings for September 2024 were 31,400. Weekend</text>
+<rect x="74" y="471" width="825.4" height="36" fill="#fde68a"/>
+<text x="80" y="496" font-family="Helvetica, Arial, sans-serif" font-size="24" fill="#1a1a1a">averages were lower, at roughly 18,000 boardings per day.</text>
+<rect x="80" y="556" width="1080" height="14" rx="7" fill="#e6e6e6"/>
+<rect x="80" y="586" width="1020" height="14" rx="7" fill="#e6e6e6"/>
+<rect x="80" y="616" width="760" height="14" rx="7" fill="#e6e6e6"/>
+</svg>
