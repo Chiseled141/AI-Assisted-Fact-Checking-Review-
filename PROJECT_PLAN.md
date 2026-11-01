@@ -1,286 +1,286 @@
 # ClaimTrace — Project Plan
 
-> Living draft, v0.1 · 2026-10-26
+> Version 0.7 · 2026-11-01
 >
-> This document describes intended behavior, not implemented features. Change it as the project evolves. New ideas are not commitments until explicitly moved into scope.
+> This plan describes what we intend to build. Nothing here is built yet, except the React demo in `frontend/`.
 
-## 1. Project direction
+## 1. What is ClaimTrace?
 
-**ClaimTrace is an AI-assisted fact-checking web app with traceable evidence and revision-preserving human corrections.**
+ClaimTrace helps a person check facts quickly, with the evidence in front of them.
 
-The purpose of this repository is to demonstrate backend engineering for Java internship/fresher roles. It is not a subscription business, a general-purpose chatbot, or a claim to outperform professional fact-checkers.
+1. You paste a short text.
+2. The AI splits it into single claims.
+3. For each claim, the AI finds evidence and gives a verdict: **Supported**, **Contradicted**, or **Insufficient evidence**.
+4. The results page shows the numbers, the most trusted source, and every source with its highlighted passages.
+5. You decide how deep to check: trust the summary, or read the sources yourself.
+6. You can click a source or a claim and ask the AI a follow-up question.
 
-The frontend makes backend behavior visible. A polished homepage is useful, but the main proof is inspectable data, enforced business rules, reproducible failures, and tests.
+The AI does the first pass. People make the final call. There are no human corrections, so each check stays as the AI produced it.
 
-### Short description
+This repository is a portfolio project for **Java backend intern** roles.
 
-AI-assisted fact-checking web app that extracts claims, retrieves evidence, and generates cited verdicts, with human review and versioned corrections.
+## 2. Headline feature
 
-### Relationship to coursework
+**The most trusted source, highlighted.** The results page points to the one source the AI rates as most trusted, with the reason.
 
-- **This repository:** Spring Boot CV implementation.
-- **Separate coursework implementation:** Python/FastAPI, aligned with the ATI report.
-- The CV implementation does not need every model or infrastructure component in the report.
+- The rating comes from saved source checks, not from a fresh guess.
+- It is shown as an AI judgment with its reasons, never as a permanent label on a publisher.
+- The backend checks that every quote used for the highlight appears in the saved source text.
 
-## 2. Problem and bounded use case
+Behind this feature are the backend skills: background jobs in PostgreSQL, checked AI output, safe repeated requests, and ownership checks.
 
-An AI answer alone is difficult to inspect and easy to overwrite. A user should be able to see which passages informed an assessment, correct the assessment, and inspect the original result afterward.
+## 3. How a check works
 
-Start with one user reviewing a short English passage containing a small number of checkable claims. A user may correct their own assessment; collaboration between organizations or editorial teams is not required.
+1. **Start:** the user submits text. The server returns a check ID right away.
+2. **Claims:** the AI splits the text into claims.
+3. **Evidence:** trusted sources are found and saved, with excerpts and dates.
+4. **Verdicts:** two AI judges each give a verdict and a confidence for each claim.
+5. **Results:** the page shows two numbers, a short overall review, and the most trusted source.
+6. **Read:** the user either trusts the summary or opens the sources and reads the highlights.
+7. **Source check (optional):** the user asks the AI about one source, such as whether it is trusted or current.
+8. **Follow-up (optional):** the user asks the AI a question about a claim or a source.
 
-The system records assessments and their evidence. It does not certify objective truth or make a source trustworthy simply because it was cited.
+## 4. Who can do what
 
-## 3. Core workflow
-
-1. Submit text, or use the frontend's URL input where supported.
-2. Create a check and return its ID without waiting for all AI calls.
-3. Extract a bounded number of atomic, checkable claims.
-4. Retrieve relevant passages through one evidence-provider integration.
-5. Save evidence snapshots and generate structured AI assessments.
-6. Display each claim, its verdict, explanation, and cited passages.
-7. Publish a reasoned human correction using evidence already saved for the claim.
-8. Preserve earlier revisions and allow comparison with the current assessment.
-
-### URL support boundary
-
-The frontend includes text and URL tabs. URL processing is simulated until a safe backend implementation is explicitly added. Do not silently imply that submitting a URL fetches and verifies its contents.
-
-The first live backend slice can support text only. Arbitrary URL ingestion is a separate decision because it introduces SSRF, redirects, extraction, response-size, and timeout concerns.
-
-## 4. Core scope
-
-| Capability | Intended behavior | Why it belongs |
+| Action | Guest (no login) | Logged in |
 |---|---|---|
-| Check submission | Validate input and persist a check | API contracts and persistence |
-| Background processing | Bounded execution with visible terminal states | Resource control and failure handling |
-| Claim assessments | Supported, Contradicted, or Insufficient evidence | Clear, domain-specific outcomes |
-| Evidence snapshots | Save source metadata, excerpt, and retrieval time | Inspectable reasoning |
-| Evidence freshness | Show an Outdated tag when information no longer applies to the claim's time period, with a reason | Distinguish historically correct evidence from currently applicable evidence |
-| Citation validation | References must belong to the assessed claim | Data integrity independent of AI |
-| Human corrections | Create revisions without overwriting earlier results | Meaningful business workflow |
-| Stale-edit protection | Reject corrections against an outdated version | Concurrency correctness |
-| History | Reopen checks and inspect revisions | Useful persistent behavior |
-| Deterministic demo | Explicit fixtures for normal and failure paths | Reproducible review without paid API access |
+| Run a check | Yes | Yes |
+| Open a check | Yes, only with its link | Yes |
+| See your history | No | Yes |
+| Source check or follow-up question | Open decision (see section 12) | Yes |
 
-Authentication is deferred until the core workflow works. Before exposing real user data or public mutation endpoints, add appropriate access control. A fixture-only public demo must not expose unrestricted shared editing.
+Guest checks do not appear in any history.
 
-## 5. Business rules owned by the backend
+## 5. Features
 
-### Assessments and evidence
+### In scope
+
+| Feature | What it means |
+|---|---|
+| Start a check | Send text and get a check ID back right away |
+| Claims and verdicts | Each claim gets one of the three verdicts, from two AI judges |
+| Two results numbers | "Share of claims supported" and "AI confidence", shown separately |
+| Evidence and highlights | Sources with excerpts, dates, and highlighted passages |
+| Most trusted source | The source the AI rates as most trusted, with its reason (headline feature) |
+| Source checks | The AI judges one source: trust, date, and reason |
+| Follow-up questions | Ask the AI about a claim or source; two judges answer |
+| Safe retries | Sending the same check twice creates only one check |
+| Background jobs | Checks and source checks run in a PostgreSQL job queue, with retries and recovery |
+| Ownership checks | Users cannot read other users' records |
+| Guest limits | Rate limits and a daily cap for guest checks |
+| Login for history | JWT login, required only to see history |
+| AWS deployment | The app runs on AWS |
+
+### Optional (only if time allows)
+
+- **Page screenshots:** a picture of each trusted source page, run as a job in the same queue.
+- **One live AI service:** a real AI or search call, with timeouts and checks on its output.
+
+### Not in scope
+
+- Human corrections or edits to verdicts
+- Subscriptions, billing, or pricing pages
+- Teams, organizations, or complex editorial roles
+- Monitoring or re-checking claims on a schedule
+- General chatbots or autonomous agents
+- Image or video checking
+- A large news crawler
+- Kafka, Kubernetes, or microservices
+- Claims about speed or accuracy that we have not measured
+
+## 6. Rules
+
+### Verdicts and numbers
 
 - Verdicts are `SUPPORTED`, `CONTRADICTED`, and `INSUFFICIENT_EVIDENCE`.
-- Provider errors are processing failures, not evidence-based verdicts.
-- Validate model output against a constrained schema before publishing it.
-- Citation IDs must exist and belong to the relevant claim.
-- A valid reference does not prove that its passage actually supports the verdict; that remains an assessment-quality question.
-- Save the passage used at assessment time, not only its URL.
-- Treat evidence freshness separately from the claim verdict. An **Outdated** tag means the passage may have been correct historically but no longer applies to the time period being checked; it does not mean the passage was false.
-- Do not infer outdatedness from age alone. Show the reason and relevant dates, such as a superseding policy or a claim about a newer reporting period. If applicability cannot be established, use **Unknown**, not an unsupported current/outdated judgment.
-- Track freshness as `CURRENT`, `OUTDATED`, or `UNKNOWN`, relative to the claim's time context. `CURRENT` means temporally applicable, not guaranteed accurate.
-- Preserve outdated evidence in snapshots and earlier revisions. Do not automatically use it as support for a present-day claim or treat it as contradictory solely because it is outdated.
-- Do not show unsupported truth percentages or treat model confidence as calibrated probability.
+- A provider error is not a verdict. It is shown as "Verification unavailable".
+- When the two judges disagree on a claim's verdict, both verdicts are shown and the claim is marked as disputed. The summary shows the first judge's verdict. There is no third vote.
+- **Share of claims supported** counts verdicts. It is not a truth score.
+- **AI confidence** is the judges' own confidence. It is labelled as not a real probability.
+- The two numbers are never merged into one.
 
-### Corrections and revisions
+### Evidence and highlights
 
-- Published revisions are append-only through application operations.
-- A correction requires a verdict, a nonempty reason, and an expected claim version.
-- Corrections may cite only evidence already attached to that claim in the initial scope.
-- Do not require evidence to exist for an insufficient-evidence outcome. The precise minimum-citation policy for other verdicts remains an explicit decision below.
-- Save the revision, its citations, and the current-revision pointer atomically.
-- Keep remote AI/search calls outside this database transaction.
-- A stale correction returns a documented conflict; it never silently overwrites a newer revision.
-- Application-level history is not tamper-proof against a database administrator.
+- Save the exact passage used, not just its link.
+- The AI must point to a quote. The backend checks that the quote appears in the saved source text, then computes the highlight position itself.
+- A quote that does not match the saved text is rejected.
+- A citation must belong to the claim it supports.
+- **Outdated** means a source was true at one time but no longer applies to the claim's period. It does not mean the source was false.
+- Do not mark a source Outdated only because it is old. Give a reason, or mark it **Unknown**.
 
-### Processing
+### Most trusted source and source checks
 
-- Limit input length, extracted claims, pending work, provider wait times, and retry attempts.
-- Keep successful claim results visible if another claim fails.
-- Separate legitimate insufficient-evidence outcomes from unavailable verification.
-- Do not blindly retry paid inference after an ambiguous timeout.
-- A single-instance in-memory executor is acceptable initially, but is not a durable queue. On restart, reconcile abandoned work to an interrupted/failed state rather than leaving it processing indefinitely.
+- A source check uses only saved data: publisher, domain, publication date, and the excerpt.
+- The AI's answer must follow a fixed format, and it must give the reasons it used.
+- Results are labelled as AI judgments. The page never presents a trust label as a fact.
+- Each source check is saved per source, so the same source is not checked and paid for twice.
 
-## 6. Architecture
+### Follow-up questions
 
-Use a **modular monolith**: one Spring Boot backend and one PostgreSQL database.
+- Two judges answer each follow-up question.
+- Each answer is saved with the check, the model names, and the time.
+- For free-text answers, if the two judges disagree, both answers are shown.
 
-```text
-React frontend
-      |
-Spring Boot REST API
-      |-- Check processing
-      |-- Claim extraction
-      |-- Evidence retrieval
-      |-- Assessment generation
-      |-- Review and revision management
-      |
-PostgreSQL
+### Background jobs
 
-External adapters: one LLM provider and one evidence-search provider
-```
+- Jobs live in a PostgreSQL table, not in memory, so they survive a restart.
+- A job moves through `QUEUED` → `RUNNING` → `DONE`, or to `FAILED`. Any other move is rejected.
+- Workers claim jobs with `SELECT ... FOR UPDATE SKIP LOCKED`, so two workers never take the same job.
+- A failed job retries with a growing wait, up to a fixed number of tries.
+- A job stuck in `RUNNING` for too long goes back to `QUEUED`. The retry limit still applies.
+- Source checks and follow-up questions are jobs in the same queue.
 
-### Proposed stack
+### Safe retries
 
-- Java, Spring Boot, Maven
-- Spring Web, Validation, Spring Data JPA
-- PostgreSQL and Flyway migrations
+- `POST /api/checks` can take an `Idempotency-Key` header.
+- The same key with the same body returns the original check.
+- The same key with a different body returns `422`.
+- Two identical requests sent at the same time create one check.
+
+### Access and cost
+
+- Every read or write checks ownership in the service code, not only in the controller.
+- Guest checks are reachable only by their ID.
+- Limits on text length, number of claims, and paid calls per check.
+- Each paid AI call has a timeout, and no paid call is retried without a limit.
+
+## 7. Tech stack
+
+**Backend (Java)**
+- Java 21 LTS, Maven
+- Spring Boot 3.x: Spring Web, Validation, Spring Data JPA, Actuator (health checks)
+- Spring Security with JWT (login for history)
+- Flyway (database changes)
+- PostgreSQL
+- Errors in the ProblemDetail format
+- springdoc OpenAPI (API docs)
+- JUnit 5 and Testcontainers (tests against real PostgreSQL)
+
+**Frontend (already built)**
 - React, TypeScript, Vite, Tailwind
-- JUnit and PostgreSQL Testcontainers
-- Docker Compose and GitHub Actions
+- Vitest and Testing Library
 
-Use provider interfaces and a deterministic fixture implementation. Choose a stable Java/Spring combination supported by the actual project; do not upgrade just for a newer version number.
+**Tools and cloud**
+- Docker and Docker Compose
+- GitHub Actions (runs the tests on every push)
+- AWS EC2, IAM roles, VPC security groups
+- AWS Budgets alarms
+- RDS and S3 are optional (see section 12)
 
-### Optional, not baseline requirements
+**Left out on purpose:** Redis, Kafka, Kubernetes, microservices, Python in this repo, embeddings, RAG, and NLI models.
 
-- Redis only after identifying a measurable repeated-work/cache use case.
-- Python inference only if local embeddings, NLI, or reranking justify another runtime.
-- Spring Security and authentication after the core, with private ownership checks before real public use. JWT is an option, not an architectural goal.
-- Deployment after a reproducible local workflow and tests exist.
+AI and search calls sit behind interfaces. Fixed fake versions are used for demos and tests.
 
-## 7. Proposed data model
+## 8. Data
 
-| Entity | Main responsibility |
+| Table | What it holds |
 |---|---|
-| `Check` | Submitted content, status, timestamps, processing error summary |
-| `Claim` | Extracted statement, time context when known, current revision, optimistic-lock version |
-| `EvidenceSnapshot` | Claim, source URL/title, saved excerpt, retrieval time, publication/update date when known |
-| `AssessmentRevision` | Claim, predecessor, verdict, explanation/reason, author type, model metadata |
-| `AssessmentCitation` | Association between a revision and an evidence snapshot, with freshness status and reason relative to that assessment's time context |
-| `User` — later | Ownership and authenticated authorship |
+| Check | The submitted text, its status, and timestamps |
+| Claim | One statement and its time context |
+| Evidence | A source's title, link, excerpt, retrieval time, and publication date if known |
+| Verdict | One AI verdict per claim and judge, with its confidence and reason |
+| Citation | Links a verdict to its evidence, with the highlight position |
+| Source check | One AI judgment about one source, with its reasons |
+| Question | A follow-up question and the answers from both judges |
+| Job | One background task and its state |
+| User | Later, for login |
 
-Capture model identifier and prompt version for AI revisions. Identify human revisions separately. Do not invent user accounts before authentication exists; fixture identities must be labeled as demo data.
+Store unknown dates as unknown. The time we read a source is not its publication date.
 
-Record freshness judgments with the revision rather than overwriting the source snapshot: the same passage may apply to a historical claim but be outdated for a present-day claim. Store unknown publication dates as unknown; retrieval time is not publication time.
+## 9. API
 
-Use database foreign keys and constraints alongside service validation. Exact schema and association choices remain implementation decisions.
+These routes are a draft, not a fixed contract.
 
-## 8. Proposed API surface
-
-These routes are a draft, not a frozen contract.
-
-| Method | Route | Behavior |
+| Method | Route | What it does |
 |---|---|---|
-| POST | `/api/checks` | Validate input, create check, return `202` and status location |
-| GET | `/api/checks` | Paginated history with bounded filters |
-| GET | `/api/checks/{id}` | Status and available results |
-| GET | `/api/claims/{id}/evidence` | Saved passages |
-| GET | `/api/claims/{id}/revisions` | Assessment history |
-| POST | `/api/claims/{id}/corrections` | Publish a correction against an expected version |
+| POST | `/api/checks` | Start a check. Guests allowed. Accepts `Idempotency-Key`. Returns `202`. |
+| GET | `/api/checks` | Your history (login required) |
+| GET | `/api/checks/{id}` | One check, its status, its numbers, and its most trusted source |
+| GET | `/api/claims/{id}/evidence` | The saved sources and highlights for a claim |
+| POST | `/api/sources/{id}/checks` | Ask the AI to check one source |
+| POST | `/api/claims/{id}/questions` | Ask a follow-up question about a claim |
+| POST | `/api/auth/register` | Create an account |
+| POST | `/api/auth/login` | Log in and get a JWT |
 
-Use consistent error responses for invalid input, missing records, stale versions, and unavailable capacity. Authentication endpoints and authorization rules come with the access-control milestone.
+All errors use the same format (ProblemDetail).
 
-## 9. Frontend direction
+## 10. Build order
 
-The user has chosen frontend-first work using mock services. A mock frontend exists in `frontend/` (React, TypeScript, Vite, Tailwind); see `frontend/README.md` for setup, demo limitations, and service contracts. Everything below runs on fixtures — no live AI, search, or URL fetching.
+Keep a working version at each step.
 
-**Visual direction**
+1. **Frontend demo.** Done.
+2. **Backend start.** Save a check, return its status, set up the database with Flyway, and add safe retries.
+3. **Claims, verdicts, and the two numbers.** Fake AI judges, with the highlight check on quotes.
+4. **Job queue and worker.** The PostgreSQL table, state rules, and recovery.
+5. **Most trusted source.** Source checks as jobs, then the highlight on the results page.
+6. **Follow-up questions.** Two judges answer, and answers are saved.
+7. **Connect the frontend.** Replace the demo data with real calls, bit by bit.
+8. **Login and history.** JWT login, your history, and ownership checks with tests.
+9. **AWS.** Deploy, document it, and write down how to stop it.
+10. **Optional.** Page screenshots, or one live AI service.
 
-- Framed, editorial layout: thin frame lines, `//` mono section labels, numbered rows, Geist and Geist Mono type.
-- Palette inspired by fireship.dev: warm cream light theme and coal/charcoal dark theme with beige text; yellow primary buttons, blue headline accent, pink labels, purple selection states. Verdict colors (green/red/amber) are reserved for verdicts.
-- Light and dark mode with a header toggle; follows the OS setting until the user chooses.
-- ClaimTrace branding and minimal New Check / History navigation. No chat bubbles or fake model streaming.
-- Compact home page: headline and "how it works" steps beside a framed check form (Text / URL tabs, optional plain-text file attachments, examples).
+## 11. Tests to write
 
-**Results and review**
+- A quote that does not match the saved source text is rejected.
+- A highlight position is computed from the saved text, not from the AI.
+- A source check uses only saved data.
+- Invalid AI output is rejected before it is saved.
+- Two identical requests with the same `Idempotency-Key` create one check.
+- The same key with a different body returns `422`.
+- Two workers never take the same job.
+- An invalid job state change is rejected.
+- A stuck job goes back to `QUEUED`.
+- A timeout shows "Verification unavailable" for one claim while other claims still show verdicts.
+- When the two judges disagree on a follow-up answer, both answers are shown.
+- Another user's check cannot be opened by changing its ID.
+- Old evidence gets an Outdated tag with a reason. Old but still-valid evidence is not tagged for its age.
 
-- The results header shows the share of claims with a Supported verdict as a large percentage ("25% of claims supported"), labeled "Share of claims, not a truth score", beside a labeled verdict bar. It is a count of verdicts, not a truth, credibility, or confidence score.
-- Claim cards on the left, each showing its verdict, explanation, time context, citations, and AI/human revision marker. The selected claim's evidence panel is on the right; it can be closed so the claims list uses the full width. On mobile, a toggle switches between claims and evidence.
-- Evidence snapshots show source title, publisher, URL, saved excerpt, publication date (and update date when stated), exact retrieval time, and a page capture. Unknown publication dates stay unknown. Demo captures are generated, watermarked illustrations, not real screenshots.
-- Freshness tags (Current / Outdated / Unknown) appear on cited evidence, relative to the claim's time context, with a reason for Outdated. They are visually distinct from verdict badges and are stored per revision.
-- The review form uses numbered steps (verdict, reason, cited evidence with per-citation freshness, optional screenshots) and a pinned action bar. Publishing creates a new revision; the conflict path explains the rejection and offers a reload.
-- Revision history shows each revision's verdict, reason, citations with freshness, screenshots, author, and — for AI revisions — model and prompt version, with comparison against the current revision.
-- The mock currently requires at least one citation for Supported or Contradicted corrections. This is provisional until the citation-policy decision in section 13 is made.
+## 12. Interview demo
 
-**Honesty and structure**
-
-- Explicit demo labels, a "preset scenario" notice on results, and a separate demo-scenario selector (completed, partial provider failure, failed, stale conflict).
-- Realistic loading, empty, validation, and error states.
-- Typed Promise-based service layer (`frontend/src/services/`) designed to be replaced with Spring Boot HTTP calls.
-- URL input remains available with a clear note that the page is not fetched.
-
-The original instructions at `/Users/chiseled/Documents/ATI/Front-end agent.md` are superseded on visual direction (blue gradients, light-only) by the choices above. Inspect the existing frontend code before changing it; this section describes intended direction and the mock's current behavior, not backend functionality.
-
-## 10. Evidence to show in an interview
-
-### Main demonstration
-
-1. Open a completed check and select a claim.
-2. Inspect the exact saved evidence passage.
-3. Publish a human correction with a reason.
-4. Compare it with the original AI assessment.
-5. Submit an outdated edit from a second tab and see a conflict.
-6. Open the enforcing service code and its PostgreSQL integration test.
-
-### Failure demonstration
-
-Use clearly labeled fixtures to show a provider timeout or malformed response. Preserve unaffected results and distinguish technical failure from insufficient evidence. Do not present fixture replay as live inference.
-
-### Tests to prioritize
-
-- Invalid or cross-claim citations are rejected.
-- Failed publication leaves no half-written revision or pointer update.
-- A correction preserves its predecessor and saved evidence.
-- Concurrent corrections using the same expected version produce one success and one conflict.
-- Timeouts and malformed AI output produce bounded, honest failure behavior.
-- Historically correct but superseded evidence displays an Outdated tag with a reason; old-but-still-applicable evidence is not tagged solely for its age.
-- Unknown source dates remain unknown, and later freshness judgments do not rewrite earlier assessment history.
-- Ownership checks deny access to another user's records once accounts exist.
-
-## 11. Build sequence
-
-1. **Frontend mock:** establish the submission/results/review interaction.
-2. **Backend vertical slice:** submit text, persist a check, retrieve status, apply migrations.
-3. **Domain integrity with fixtures:** evidence, revisions, atomic publication, stale-edit tests.
-4. **Live integrations:** connect one evidence provider and one LLM provider with validation and timeouts.
-5. **Connect frontend:** replace mock service calls incrementally.
-6. **Access control and delivery:** ownership, CI, Docker, documentation, deployment.
-
-Live integrations and domain integrity can be reordered if needed. Neither requires finishing the entire frontend first. Keep a runnable vertical slice throughout.
-
-## 12. Explicitly out of scope
-
-- Pricing pages, subscriptions, billing, usage sales dashboards
-- Organization/team administration and complex editorial roles
-- Continuous monitoring or scheduled claim reverification
-- General-purpose chat, multi-agent systems, autonomous actions
-- Image/video verification
-- Large custom crawler or a comprehensive news corpus
-- Kafka, Kubernetes, or microservices for portfolio appearances
-- Unmeasured performance/accuracy claims, fake users, or invented outcomes
+1. Open a finished check and show the two numbers.
+2. Point to the most trusted source and read its reason.
+3. Open that source and show the highlight matched to the saved text.
+4. Ask a follow-up question and show both judges' answers.
+5. Show the job in the queue and its state.
+6. Show the service code and its database test.
 
 ## 13. Open decisions
 
-Move a decision into the relevant section once agreed.
+Check these off as we decide them.
 
-- [ ] Input and claim-count limits
-- [ ] LLM and evidence-search providers, costs, and source coverage
-- [ ] Citation policy for supported/contradicted assessments
-- [ ] Whether live URL fetching is worth the security and extraction scope
-- [ ] Authentication mechanism and public-demo editing restrictions
-- [ ] Exact API DTOs and partial-result representation
-- [ ] Executor capacity and startup reconciliation policy
-- [ ] Small manually checked examples for assessing citation relevance
-- [ ] How source freshness is assessed and reviewed; begin with explicit dated examples rather than a general automatic stale-source detector
+- [x] Login: JWT. Guests can run checks without login. History needs login.
+- [x] Results show two numbers, share of claims supported and AI confidence, kept separate.
+- [x] Headline feature: the most trusted source, highlighted.
+- [x] No human corrections. No Quick or Manual setting is saved.
+- [x] Tie-breaker dropped. Two judges only; there is no third vote.
+- [ ] Can guests use source checks and follow-up questions? Proposed: yes, with rate limits.
+- [ ] Input and claim limits (text length, number of claims)
+- [ ] Which AI and search services, if any, and their costs
+- [ ] Hosting: PostgreSQL in Docker on one EC2 instance, or RDS for a short time. Proposed: Docker, with RDS only for a short demo.
+- [ ] Job settings: retry limit, wait between retries, and how long before a stuck job is retried. Proposed: 3 tries, growing wait, 5 minutes.
+- [ ] How long to keep an idempotency key. Proposed: 24 hours.
+- [ ] Repository layout: `backend/` next to `frontend/`. Proposed.
+- [ ] Domain list for screenshots, if we add them
 
-## 14. How to revise this plan
+## 14. How to change this plan
 
-For each proposed feature, ask:
+Before adding a feature, ask:
+1. What problem does it solve for a user?
+2. Which backend skill does it show?
+3. How will we test it?
+4. What can we remove to keep the project small?
 
-1. What user problem does it solve?
-2. Which backend decision does it demonstrate?
-3. How will it be tested and shown in the browser?
-4. What can be removed to keep scope manageable?
+## 15. Change log
 
-Keep new ideas below until accepted. Do not treat this file as an instruction to implement everything immediately.
-
-### Idea parking lot
-
-- None accepted yet.
-
-### Change log
-
-| Date | Change | Reason |
-|---|---|---|
-| 2026-10-26 | Created backend-focused living plan | Separate project scope from chat history; remove SaaS-style feature pressure |
-| 2026-10-26 | Added separate evidence freshness tags and dated reasoning | Historically true information may no longer apply to a current claim |
-| 2026-10-26 | Updated frontend direction to match the mock frontend: framed layout, fireship-inspired light/dark palette, freshness per revision, source dates, page captures, review steps, closable evidence panel | Original blue-gradient, light-only direction was replaced during frontend iteration |
-| 2026-10-27 | Results header shows "% of claims supported" as a big number | User wanted a headline figure; kept as a labeled share of verdicts so it does not become a truth or confidence score |
+| Date | Change |
+|---|---|
+| 2026-10-26 | Created the backend-focused plan |
+| 2026-10-26 | Added evidence freshness tags |
+| 2026-10-26 | Updated the frontend direction to match the demo |
+| 2026-10-27 | Results show "% of claims supported" as a labeled share of verdicts |
+| 2026-11-01 | Focused the CV version on safe corrections; set Java 21 and Spring Boot 3 |
+| 2026-11-01 | Guests can run checks without login; login is only for history; AWS deployment added |
+| 2026-11-01 | Added safe retries, a PostgreSQL job queue, ownership checks with tests; screenshots as an optional job |
+| 2026-11-01 | Rewrote the plan in plain language (v0.5) |
+| 2026-11-01 | Removed human corrections. Headline is the most trusted source, highlighted. Added source checks, follow-up questions, two numbers, and quote checks (v0.6) |
+| 2026-11-01 | Tie-breaker dropped. Two judges only; verdict disagreements are shown as disputed, not voted on (v0.7) |
