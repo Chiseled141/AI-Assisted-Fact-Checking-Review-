@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
-import { FileSearch, ListChecks, PanelRightOpen } from 'lucide-react';
+import { ArrowLeft, ArrowUpRight, PanelRightOpen } from 'lucide-react';
 import type { AssessmentRevision, CheckDetail, Claim } from '../../types/models';
 import { checkService } from '../../services';
 import { verdictLabel } from '../../lib/format';
@@ -16,7 +16,18 @@ interface Props {
   onReload: () => Promise<CheckDetail | null>;
 }
 
-type Pane = 'claims' | 'evidence';
+/** Quiet way back to the list a check was opened from. */
+function BackToHistory() {
+  return (
+    <Link
+      to="/history"
+      className="group mb-8 inline-flex items-center gap-1.5 rounded-md font-sans text-xs text-ink-muted transition-colors hover:text-ink"
+    >
+      <ArrowLeft className="h-3.5 w-3.5 transition-transform group-hover:-translate-x-0.5" aria-hidden="true" />
+      Back to history
+    </Link>
+  );
+}
 
 export function ResultsView({ check, onReload }: Props) {
   // The selected claim lives in the URL (?claim=2) so a view can be shared or bookmarked.
@@ -34,7 +45,6 @@ export function ResultsView({ check, onReload }: Props) {
   }
   const [evidenceByClaim, setEvidenceByClaim] = useState<Record<string, EvidenceState>>({});
   const [active, setActive] = useState<{ evidenceId: string | null; request: number }>({ evidenceId: null, request: 0 });
-  const [pane, setPane] = useState<Pane>('claims');
   const [evidenceOpen, setEvidenceOpen] = useState(true);
   const [dialog, setDialog] = useState<'review' | 'history' | null>(null);
   const [announcement, setAnnouncement] = useState('');
@@ -63,27 +73,20 @@ export function ResultsView({ check, onReload }: Props) {
     setSelectedId(claim.id);
     setActive((prev) => ({ evidenceId: null, request: prev.request }));
     setEvidenceOpen(true);
-    // On narrow screens the detail replaces the list, so jump to it.
-    if (typeof window.matchMedia === 'function' && !window.matchMedia('(min-width: 1024px)').matches) {
-      setPane('evidence');
-    }
   }
 
   function showCitation(claim: Claim, evidenceId: string) {
     setSelectedId(claim.id);
     setActive((prev) => ({ evidenceId, request: prev.request + 1 }));
     setEvidenceOpen(true);
-    setPane('evidence');
   }
 
   function openEvidence() {
     setEvidenceOpen(true);
-    setPane('evidence');
   }
 
   function closeEvidence() {
     setEvidenceOpen(false);
-    setPane('claims');
   }
 
   function openDialog(claim: Claim, which: 'review' | 'history') {
@@ -105,13 +108,18 @@ export function ResultsView({ check, onReload }: Props) {
 
   if (check.claims.length === 0) {
     return (
-      <div className="mx-auto max-w-6xl space-y-6 px-4 pb-16 pt-4 sm:px-6">
+      <div className="mx-auto w-full max-w-[820px] px-4 pb-24 pt-10 sm:px-6 sm:pt-14">
+        <BackToHistory />
         <CheckSummary check={check} />
-        <div className="panel p-8 text-center">
-          <h2 className="font-semibold tracking-tight text-xl text-ink">No claims found</h2>
-          <p className="mt-2 text-ink-soft">No checkable factual claims were extracted from this input.</p>
-          <Link to="/" className="btn-primary mt-5">
+        <div className="mt-10 border-y border-line py-16 text-center">
+          <h2 className="text-[20px] leading-[1.3] tracking-[-0.015em] text-ink">No claims found</h2>
+          <p className="mt-2 text-sm text-ink-muted">No checkable factual claims were extracted from this input.</p>
+          <Link
+            to="/"
+            className="mt-6 inline-flex items-center gap-1.5 rounded-full bg-ink py-2 pl-4 pr-3.5 text-sm font-medium text-page transition-opacity hover:opacity-90"
+          >
             Start a new check
+            <ArrowUpRight className="h-4 w-4" aria-hidden="true" />
           </Link>
         </div>
       </div>
@@ -119,80 +127,63 @@ export function ResultsView({ check, onReload }: Props) {
   }
 
   const evidenceItems = selectedEvidence?.kind === 'ready' ? selectedEvidence.items : null;
-  const paneButton = (value: Pane) =>
-    `relative flex flex-1 items-center justify-center gap-1.5 whitespace-nowrap py-3 text-sm transition-colors after:absolute after:inset-x-6 after:-bottom-px after:h-0.5 ${
-      pane === value ? 'font-medium text-ink after:bg-ink' : 'text-ink-muted hover:text-ink'
-    }`;
 
   return (
-    <div className="mx-auto max-w-6xl px-4 pb-20 pt-10 sm:px-8 sm:pt-14">
+    <div className="mx-auto w-full max-w-[820px] px-4 pb-24 pt-10 sm:px-6 sm:pt-14">
+      <BackToHistory />
       <CheckSummary check={check} />
       <p role="status" aria-live="polite" className="sr-only">
         {announcement}
       </p>
 
-      <div
-        className="sticky top-[62px] z-20 mt-8 flex border-b border-line bg-page lg:hidden"
-        role="group"
-        aria-label="Switch between claims and evidence"
-      >
-        <button type="button" className={paneButton('claims')} aria-pressed={pane === 'claims'} onClick={() => setPane('claims')}>
-          <ListChecks className="h-4 w-4 max-[380px]:hidden" aria-hidden="true" />
-          Claims ({check.claims.length})
-        </button>
-        <button
-          type="button"
-          className={paneButton('evidence')}
-          aria-pressed={pane === 'evidence'}
-          onClick={openEvidence}
-        >
-          <FileSearch className="h-4 w-4 max-[380px]:hidden" aria-hidden="true" />
-          Claim {selected?.position}
-        </button>
-      </div>
+      <section aria-labelledby="claims-heading" className="mt-10">
+        <div className="flex items-baseline justify-between gap-3 border-b border-line pb-2.5">
+          <h2
+            id="claims-heading"
+            className="font-sans text-[13px] font-semibold uppercase tracking-[0.1em] text-ink-muted"
+          >
+            Claims <span className="ml-1 font-normal tabular-nums text-ink-faint">{check.claims.length}</span>
+          </h2>
+          {!evidenceOpen && selected && (
+            <button
+              type="button"
+              className="inline-flex items-center gap-1.5 text-xs text-ink-muted transition-colors hover:text-ink"
+              onClick={openEvidence}
+            >
+              <PanelRightOpen className="h-3.5 w-3.5" aria-hidden="true" />
+              Show evidence · claim {selected.position}
+            </button>
+          )}
+        </div>
 
-      <div className={`mt-6 grid gap-10 lg:mt-12 ${evidenceOpen ? 'lg:grid-cols-[minmax(0,0.85fr)_minmax(0,1.15fr)] lg:gap-0' : ''}`}>
-        <section aria-labelledby="claims-heading" className={`min-w-0 ${pane === 'claims' ? '' : 'hidden lg:block'}`}>
-          <div className="mb-2 flex items-center justify-between gap-3">
-            <h2 id="claims-heading" className="text-sm font-medium text-ink">
-              Claims
-            </h2>
-            {!evidenceOpen && selected && (
-              <button type="button" className="btn-ghost hidden px-3 py-1.5 text-xs lg:inline-flex" onClick={openEvidence}>
-                <PanelRightOpen className="h-4 w-4" aria-hidden="true" />
-                Show evidence · claim {selected.position}
-              </button>
-            )}
-          </div>
-          <ul className="divide-y divide-line border-y border-line">
-            {check.claims.map((claim) => (
-              <li key={claim.id}>
-                <ClaimCard claim={claim} selected={claim.id === selected?.id} onSelect={() => selectClaim(claim)} />
-              </li>
-            ))}
-          </ul>
-        </section>
-
-        {evidenceOpen && (
-          <div className={`min-w-0 lg:ml-10 lg:border-l lg:border-line lg:pl-10 ${pane === 'evidence' ? '' : 'hidden lg:block'}`}>
-            <div className="lg:sticky lg:top-24 lg:max-h-[calc(100vh-7rem)] lg:overflow-y-auto lg:pr-3">
-              {selected && (
-                <EvidencePanel
-                  claim={selected}
-                  evidence={selectedEvidence ?? { kind: 'loading' }}
-                  activeEvidenceId={active.evidenceId}
-                  focusRequest={active.request}
-                  onRetry={() => void loadEvidence(selected.id)}
-                  onCite={(evidenceId) => showCitation(selected, evidenceId)}
-                  onReview={() => openDialog(selected, 'review')}
-                  onShowHistory={() => openDialog(selected, 'history')}
-                  onClose={closeEvidence}
-                />
+        <ul className="divide-y divide-line border-b border-line">
+          {check.claims.map((claim) => (
+            <li key={claim.id}>
+              <ClaimCard
+                claim={claim}
+                selected={claim.id === selected?.id}
+                expanded={claim.id === selected?.id && evidenceOpen}
+                onSelect={() => selectClaim(claim)}
+              />
+              {claim.id === selected?.id && evidenceOpen && (
+                <div className="border-t border-line pb-8 sm:pl-10">
+                  <EvidencePanel
+                    claim={claim}
+                    evidence={selectedEvidence ?? { kind: 'loading' }}
+                    activeEvidenceId={active.evidenceId}
+                    focusRequest={active.request}
+                    onRetry={() => void loadEvidence(claim.id)}
+                    onCite={(evidenceId) => showCitation(claim, evidenceId)}
+                    onReview={() => openDialog(claim, 'review')}
+                    onShowHistory={() => openDialog(claim, 'history')}
+                    onClose={closeEvidence}
+                  />
+                </div>
               )}
-            </div>
-          </div>
-        )}
-      </div>
+            </li>
+          ))}
+        </ul>
+      </section>
 
       {selected && (
         <>

@@ -48,7 +48,7 @@ export function RevisionDrawer({ open, claim, evidence, onClose }: Props) {
       <ul className="space-y-1">
         {ids.map((id) => (
           <li key={id}>
-            <span className="font-mono text-xs text-brand-700">[{citationNumber(claim, id)}]</span>{' '}
+            <span className="font-sans text-xs text-brand-700">[{citationNumber(claim, id)}]</span>{' '}
             {titleFor(id) ?? 'Evidence snapshot'}{' '}
             <FreshnessBadge status={freshness?.[id]?.status ?? 'unknown'} />
             {freshness?.[id]?.reason && <span className="mt-0.5 block text-xs text-ink-muted">{freshness[id].reason}</span>}
@@ -91,7 +91,7 @@ export function RevisionDrawer({ open, claim, evidence, onClose }: Props) {
         <div className="space-y-6 text-sm">
           {items.length > 1 && compared && (
             <section aria-labelledby={`${selectId}-heading`} className="border border-line bg-white p-4">
-              <h3 id={`${selectId}-heading`} className="font-medium text-ink">
+              <h3 id={`${selectId}-heading`} className="font-semibold text-ink">
                 Compare revisions
               </h3>
               <div className="mt-2 flex flex-wrap items-center gap-2">
@@ -110,7 +110,6 @@ export function RevisionDrawer({ open, claim, evidence, onClose }: Props) {
                     </option>
                   ))}
                 </select>
-                <span className="text-ink-soft">with current (revision {current.version})</span>
               </div>
 
               <table className="mt-4 w-full table-fixed border-collapse text-left text-xs sm:text-sm">
@@ -119,13 +118,13 @@ export function RevisionDrawer({ open, claim, evidence, onClose }: Props) {
                 </caption>
                 <thead>
                   <tr className="text-ink-muted">
-                    <th scope="col" className="w-24 pb-2 font-medium sm:w-28">
+                    <th scope="col" className="w-24 pb-2 font-semibold sm:w-28">
                       Field
                     </th>
-                    <th scope="col" className="pb-2 pr-2 font-medium">
+                    <th scope="col" className="pb-2 pr-2 font-semibold">
                       Revision {compared.version}
                     </th>
-                    <th scope="col" className="pb-2 font-medium">
+                    <th scope="col" className="pb-2 font-semibold">
                       Current · rev {current.version}
                     </th>
                   </tr>
@@ -164,7 +163,7 @@ export function RevisionDrawer({ open, claim, evidence, onClose }: Props) {
                     },
                   ].map((row) => (
                     <tr key={row.label} className="border-t border-line">
-                      <th scope="row" className="py-2 pr-2 font-medium text-ink">
+                      <th scope="row" className="py-2 pr-2 font-semibold text-ink">
                         {row.label}
                         {row.changed && (
                           <span className="mt-0.5 block text-[11px] font-normal text-brand-700">Changed</span>
@@ -184,9 +183,9 @@ export function RevisionDrawer({ open, claim, evidence, onClose }: Props) {
               {[...items].reverse().map((revision) => (
                 <li key={revision.id} className="border border-line bg-white p-4">
                   <div className="flex flex-wrap items-center gap-2">
-                    <h3 className="font-semibold text-ink">Revision {revision.version}</h3>
+                    <h3 className="font-strong text-ink">Revision {revision.version}</h3>
                     {revision.version === current.version && (
-                      <span className="rounded-full bg-brand-50 px-2 py-0.5 text-xs font-medium text-brand-700">
+                      <span className="rounded-full bg-brand-50 px-2 py-0.5 text-xs font-semibold text-brand-700">
                         Current
                       </span>
                     )}
@@ -227,7 +226,7 @@ export function RevisionDrawer({ open, claim, evidence, onClose }: Props) {
                       {revision.model && (
                         <div>
                           <dt className="inline">Model </dt>
-                          <dd className="inline font-mono">
+                          <dd className="inline font-sans">
                             {revision.model.name} · prompt {revision.model.promptVersion}
                           </dd>
                         </div>

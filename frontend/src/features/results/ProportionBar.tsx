@@ -26,25 +26,25 @@ export function ProportionBar({ segments, summary, size = 'md', legend = true }:
     <figure>
       <div
         aria-hidden="true"
-        className={`flex w-full gap-0.5 overflow-hidden rounded-full bg-zinc-100 ${size === 'md' ? 'h-2.5' : 'h-1.5'}`}
+        className={`flex w-full gap-0.5 overflow-hidden rounded-full bg-zinc-100 ${size === 'md' ? 'h-1.5' : 'h-1'}`}
       >
         {total > 0 &&
           shown.map((s) => (
             <span
               key={s.key}
-              className={`${s.color} h-full transition-[flex-grow] duration-500 ease-out`}
+              className={`${s.color} h-full rounded-full transition-[flex-grow] duration-500 ease-out`}
               style={{ flexGrow: s.value, flexBasis: 0 }}
             />
           ))}
       </div>
       <figcaption className="sr-only">{summary}</figcaption>
       {legend && (
-        <ul aria-hidden="true" className="mt-2.5 flex flex-wrap gap-x-5 gap-y-1 text-sm">
+        <ul aria-hidden="true" className="mt-2.5 flex flex-wrap gap-x-4 gap-y-1 font-sans text-xs text-ink-muted">
           {shown.map((s) => (
-            <li key={s.key} className="inline-flex items-center gap-2">
-              <span className={`h-2 w-2 rounded-full ${s.color}`} />
-              <span className="font-medium tabular-nums text-ink">{s.value}</span>
-              <span className="text-ink-muted">{s.label}</span>
+            <li key={s.key} className="inline-flex items-center gap-1.5">
+              <span className={`h-1.5 w-1.5 rounded-full ${s.color}`} />
+              <span className="font-semibold tabular-nums text-ink">{s.value}</span>
+              <span>{s.label}</span>
             </li>
           ))}
         </ul>

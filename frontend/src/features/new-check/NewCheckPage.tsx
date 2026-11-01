@@ -1,17 +1,14 @@
 import { type DragEvent, type FormEvent, type KeyboardEvent, useId, useLayoutEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
-  ArrowRight,
+  ArrowUp,
+  ArrowUpRight,
   ChevronDown,
-  FileSearch,
   FileText,
   Info,
   Link2,
-  ListChecks,
   Loader2,
   Paperclip,
-  PencilLine,
-  Quote,
   X,
 } from 'lucide-react';
 import { config } from '../../config';
@@ -21,10 +18,11 @@ import { readTextFiles } from '../../lib/files';
 import { formatBytes } from '../../lib/format';
 import { checkService, ValidationError } from '../../services';
 import type { DemoScenario, InputType, SubmittedFile } from '../../types/models';
-import { CornerMarks } from '../../components/Layout';
+import { WorldEvidenceMap } from '../../components/WorldEvidenceMap';
+import { useReveal } from '../../lib/useReveal';
 import { DemoScenarioPicker } from '../demo/DemoScenarioPicker';
 import { getPreferredScenario, setPreferredScenario } from '../demo/demoSettings';
-import { useReveal } from '../../lib/useReveal';
+import { JudgePicker } from './JudgePicker';
 
 const tabs: { value: InputType; label: string; Icon: typeof FileText }[] = [
   { value: 'text', label: 'Text', Icon: FileText },
@@ -34,143 +32,126 @@ const tabs: { value: InputType; label: string; Icon: typeof FileText }[] = [
 const steps = [
   {
     title: 'Extract claims',
-    Icon: ListChecks,
-    summary: 'Your text is split into short, checkable statements.',
     points: [
       'Each claim is one factual statement, like a date, figure, or quote.',
       'A claim keeps its time period when the text states one.',
       'Opinions and questions are left out.',
     ],
-    demo: 'The demo always shows the same four preset claims.',
+  },
+  {
+    title: 'Check published fact-checks',
+    points: [
+      'Looks each claim up in Google’s Fact Check Tools database.',
+      'A match shows the fact-checker, its rating, and a link to the original.',
+    ],
   },
   {
     title: 'Find evidence',
-    Icon: FileSearch,
-    summary: 'Relevant passages are found and saved as snapshots.',
     points: [
+      'Searches trusted news sites for each claim, using Tavily.',
       'Saves the source title, publisher, link, and the exact excerpt used.',
       'Records the publication date and the exact retrieval time.',
-      'Keeps a capture of the page as it looked when retrieved.',
     ],
-    demo: 'Demo sources and page captures are fictional.',
   },
   {
-    title: 'Assess with citations',
-    Icon: Quote,
-    summary: 'Each claim gets a verdict that cites the saved passages.',
+    title: 'Judge with two models',
+    points: [
+      'Two AI models read the same evidence, and each gives a verdict with a confidence score.',
+      'When they agree, that verdict is shown. In this demo, the judges and verdicts are simulated.',
+    ],
+  },
+  {
+    title: 'Break ties',
+    points: [
+      'Runs only when the two models disagree.',
+      'A third model from another lab decides by majority. If all three differ, the claim is marked Insufficient evidence.',
+    ],
+  },
+  {
+    title: 'Verdicts with citations',
     points: [
       'Verdicts are Supported, Contradicted, or Insufficient evidence — never a truth score.',
       'Sources that no longer apply to the claim’s period are tagged Outdated, with a reason.',
       'If a provider fails, the claim shows Verification unavailable instead of a verdict.',
     ],
-    demo: 'Demo verdicts come from fixtures; no AI model is called.',
   },
   {
     title: 'Review and correct',
-    Icon: PencilLine,
-    summary: 'A reviewer can publish a correction; the original assessment is kept.',
     points: [
       'Every correction is a new revision you can compare with earlier ones.',
       'A correction needs a reason and can only cite evidence already saved for the claim.',
       'If someone else edited the claim first, the stale correction is rejected instead of overwriting.',
     ],
-    demo: 'Demo corrections are saved in your browser only.',
   },
 ];
 
-/** Four steps that rise in when scrolled into view; clicking one shows its details. */
-function HowItWorks() {
-  const [ref, visible] = useReveal<HTMLOListElement>(0.25);
+/** The step-by-step explanation, read like a short article and opened one step at a time. */
+function HowItWorksSteps() {
+  const [listRef, visible] = useReveal<HTMLOListElement>(0.2);
   const [openIndex, setOpenIndex] = useState<number | null>(null);
-  const panelId = useId();
-  const open = openIndex === null ? null : steps[openIndex];
+  const baseId = useId();
 
   return (
-    <section id="how-it-works" aria-labelledby="how-heading" className="scroll-mt-16 border-b border-line">
-      <div className="relative mx-auto max-w-6xl px-4 py-12 sm:px-8">
-        <h2 id="how-heading" className={`eyebrow reveal ${visible ? 'is-visible' : ''}`}>
-          how it works
-        </h2>
-        <ol ref={ref} className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-          {steps.map(({ title, Icon }, index) => {
-            const selected = openIndex === index;
-            return (
-              <li
-                key={title}
-                style={{ transitionDelay: visible ? `${120 + index * 110}ms` : '0ms' }}
-                className={`reveal ${visible ? 'is-visible' : ''}`}
+    <ol ref={listRef} className="mx-auto mt-8 max-w-[640px] border-t border-line sm:mt-10">
+      {steps.map(({ title, points }, index) => {
+        const selected = openIndex === index;
+        const detailId = `${baseId}-${index}`;
+        return (
+          <li
+            key={title}
+            style={{ transitionDelay: visible ? `${index * 80}ms` : '0ms' }}
+            className={`reveal border-b border-line ${visible ? 'is-visible' : ''}`}
+          >
+            <button
+              type="button"
+              onClick={() => setOpenIndex(selected ? null : index)}
+              aria-expanded={selected}
+              aria-controls={detailId}
+              className="group flex w-full items-center gap-4 py-3.5 text-left sm:py-4"
+            >
+              <span
+                className={`w-6 shrink-0 font-logo text-[11px] font-medium tracking-[0.12em] transition-colors ${
+                  selected ? 'text-brand-600' : 'text-ink-faint'
+                }`}
               >
-                <button
-                  type="button"
-                  onClick={() => setOpenIndex(selected ? null : index)}
-                  aria-expanded={selected}
-                  aria-controls={panelId}
-                  className={`group block h-full w-full border p-5 text-left transition-colors ${
-                    selected ? 'border-brand-500 bg-brand-50/50' : 'border-line bg-white hover:border-line-strong'
-                  }`}
-                >
-                  <span className="flex items-center justify-between">
-                    <span className="font-mono text-xs text-candy">{String(index + 1).padStart(2, '0')}</span>
-                    <Icon
-                      className={`h-5 w-5 transition-colors duration-300 ${selected ? 'text-pop' : 'text-ink-faint group-hover:text-pop'}`}
-                      aria-hidden="true"
-                    />
-                  </span>
-                  <span className="mt-6 block text-base font-medium text-ink">{title}</span>
-                  <span className="mt-1 flex items-center gap-1 text-xs text-ink-muted">
-                    {selected ? 'Hide details' : 'Show details'}
-                    <ChevronDown
-                      className={`h-3.5 w-3.5 transition-transform duration-300 ${selected ? 'rotate-180' : ''}`}
-                      aria-hidden="true"
-                    />
-                  </span>
-                </button>
-              </li>
-            );
-          })}
-        </ol>
-
-        <div id={panelId} aria-live="polite">
-          {open && openIndex !== null && (
-            <div key={openIndex} className="rise-in mt-3 border border-line bg-white p-5 sm:p-6">
-              <div className="flex items-start justify-between gap-4">
-                <div>
-                  <p className="font-mono text-xs text-candy">step {String(openIndex + 1).padStart(2, '0')}</p>
-                  <h3 className="mt-1 text-lg font-semibold tracking-tight text-ink">{open.title}</h3>
-                  <p className="mt-1 text-ink-soft">{open.summary}</p>
-                </div>
-                <button
-                  type="button"
-                  onClick={() => setOpenIndex(null)}
-                  aria-label="Close step details"
-                  className="btn-ghost -mr-2 -mt-1 p-1.5"
-                >
-                  <X className="h-4 w-4" aria-hidden="true" />
-                </button>
+                {String(index + 1).padStart(2, '0')}
+              </span>
+              <span className="min-w-0 flex-1 text-[18px] font-medium leading-snug tracking-[-0.015em] text-ink sm:text-[21px]">
+                {title}
+              </span>
+              <ChevronDown
+                className={`h-4 w-4 shrink-0 transition-transform duration-200 ${
+                  selected ? 'rotate-180 text-brand-600' : 'text-ink-faint group-hover:text-ink-muted'
+                }`}
+                aria-hidden="true"
+              />
+            </button>
+            {selected && (
+              <div id={detailId} className="rise-in pb-5 pl-10 pr-1">
+                <ul className="list-disc space-y-2 pl-4 text-[15px] leading-[1.75] text-ink-soft marker:text-ink-faint">
+                  {points.map((point) => (
+                    <li key={point}>{point}</li>
+                  ))}
+                </ul>
               </div>
-              <ul className="mt-4 grid gap-2 sm:grid-cols-3">
-                {open.points.map((point) => (
-                  <li key={point} className="flex gap-2 border-l-2 border-line-strong pl-3 text-sm text-ink-soft">
-                    {point}
-                  </li>
-                ))}
-              </ul>
-              <p className="mt-4 flex items-center gap-1.5 text-xs text-ink-muted">
-                <Info className="h-3.5 w-3.5" aria-hidden="true" />
-                {open.demo}
-              </p>
-            </div>
-          )}
-        </div>
-        <CornerMarks />
-      </div>
-    </section>
+            )}
+          </li>
+        );
+      })}
+    </ol>
   );
 }
 
 export function NewCheckPage() {
   const navigate = useNavigate();
-  const ids = { panel: useId(), error: useId(), count: useId(), urlNote: useId(), fileHint: useId(), fileError: useId() };
+  const ids = {
+    panel: useId(),
+    error: useId(),
+    count: useId(),
+    urlNote: useId(),
+    fileHint: useId(),
+    fileError: useId(),
+  };
   const tabRefs = useRef<Record<InputType, HTMLButtonElement | null>>({ text: null, url: null });
   const textRef = useRef<HTMLTextAreaElement>(null);
   const urlRef = useRef<HTMLInputElement>(null);
@@ -183,6 +164,7 @@ export function NewCheckPage() {
   const [serverError, setServerError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [scenario, setScenario] = useState<DemoScenario>(getPreferredScenario);
+  const [judgeIds, setJudgeIds] = useState<string[]>([...config.judges.defaultIds]);
   const [files, setFiles] = useState<SubmittedFile[]>([]);
   const [fileErrors, setFileErrors] = useState<string[]>([]);
   const [fileStatus, setFileStatus] = useState('');
@@ -225,7 +207,9 @@ export function NewCheckPage() {
     setSubmitting(true);
     try {
       const check = await checkService.createCheck(
-        mode === 'text' ? { inputType: 'text', text, files, scenario } : { inputType: 'url', url, scenario },
+        mode === 'text'
+          ? { inputType: 'text', text, files, scenario, judgeIds }
+          : { inputType: 'url', url, scenario, judgeIds },
       );
       navigate(`/checks/${check.id}`);
     } catch (err) {
@@ -289,26 +273,29 @@ export function NewCheckPage() {
 
   return (
     <div>
-      <section className="border-b border-line">
-        <div className="relative mx-auto flex min-h-[calc(100svh-4rem)] max-w-6xl flex-col items-center justify-center px-4 py-12 sm:px-8">
-          <h1 className="text-center text-3xl font-semibold leading-[1.08] tracking-[-0.035em] text-ink sm:text-[44px]">
-            Trace claims.{' '}
-            <span className="block text-ink-faint">
-              Examine <span className="text-pop">evidence.</span>
-            </span>
-          </h1>
-          <p className="mt-4 text-center text-base text-ink-soft sm:text-lg">Check claims against sources.</p>
+      <section className="relative isolate overflow-hidden">
+        <WorldEvidenceMap />
+        <div className="relative mx-auto flex min-h-[calc(100svh-3.5rem)] max-w-5xl flex-col items-center justify-center px-4 py-12 sm:px-8">
+          <p className="flex flex-wrap items-center justify-center gap-1.5 text-center text-[13px] text-ink-muted sm:text-sm">
+            <Info className="h-4 w-4" aria-hidden="true" />
+            AI can be wrong. Review the evidence.
+          </p>
 
-          <div className="mt-8 w-full max-w-3xl">
-            <form onSubmit={onSubmit} noValidate aria-label="New check">
+          <h1 className="mt-6 max-w-3xl text-center text-[30px] font-normal leading-[1.08] tracking-[-0.04em] text-ink sm:text-[42px] lg:text-[48px]">
+            <span className="font-bold text-primary">Trace claims.</span>
+            <span className="block text-ink-muted">Examine evidence.</span>
+          </h1>
+
+          <div className="mt-8 w-full max-w-5xl sm:mt-10">
+            <form onSubmit={onSubmit} noValidate aria-label="New check" id="check-composer" className="scroll-mt-20">
               <div
                 onDragOver={onDragOver}
                 onDragLeave={(e) => {
                   if (!e.currentTarget.contains(e.relatedTarget as Node | null)) setDragging(false);
                 }}
                 onDrop={onDrop}
-                className={`rounded-2xl border bg-white p-3 transition-colors focus-within:border-ink-faint ${
-                  dragging ? 'border-dashed border-brand-500 bg-brand-50' : 'border-line-strong'
+                className={`home-composer rounded-[24px] p-3.5 transition-colors focus-within:border-brand-200 sm:p-4 ${
+                  dragging ? 'border-brand-200 ring-4 ring-brand-500/10' : ''
                 }`}
               >
                 <div id={ids.panel} role="tabpanel" aria-label={mode === 'text' ? 'Text input' : 'URL input'}>
@@ -328,27 +315,27 @@ export function NewCheckPage() {
                         onKeyDown={(e) => {
                           if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) void onSubmit();
                         }}
-                        rows={2}
-                        placeholder="Paste text to check…"
+                        rows={1}
+                        placeholder="Paste a claim or paragraph…"
                         aria-invalid={Boolean(error)}
                         aria-describedby={describedBy}
-                        className="block max-h-80 min-h-[3.5rem] w-full resize-none overflow-y-auto bg-transparent px-2 py-1.5 text-base leading-relaxed text-ink placeholder:text-ink-faint focus:outline-none sm:text-lg"
+                        className="block max-h-80 min-h-[3.5rem] w-full resize-none overflow-y-auto bg-transparent px-1.5 py-1 text-base leading-relaxed text-ink placeholder:text-ink-faint focus:outline-none sm:min-h-[4.5rem] sm:text-lg"
                       />
                       {files.length > 0 && (
-                        <ul className="flex flex-wrap gap-2 px-2 pt-2" aria-label="Attached files">
+                        <ul className="flex flex-wrap gap-2 px-1.5 pt-2" aria-label="Attached files">
                           {files.map((file) => (
                             <li
                               key={file.name}
-                              className="flex max-w-full items-center gap-2 rounded-lg border border-line bg-zinc-50 py-1 pl-2.5 pr-1 text-sm"
+                              className="flex max-w-full items-center gap-2 rounded-full border border-line bg-zinc-50 py-1 pl-2.5 pr-1 text-sm"
                             >
                               <FileText className="h-4 w-4 shrink-0 text-brand-600" aria-hidden="true" />
                               <span className="min-w-0 truncate text-ink">{file.name}</span>
-                              <span className="shrink-0 font-mono text-xs text-ink-muted">{formatBytes(file.size)}</span>
+                              <span className="shrink-0 font-sans text-xs text-ink-muted">{formatBytes(file.size)}</span>
                               <button
                                 type="button"
                                 onClick={() => removeFile(file.name)}
                                 aria-label={`Remove ${file.name}`}
-                                className="rounded-lg p-1 text-ink-muted hover:bg-zinc-200 hover:text-ink"
+                                className="rounded-full p-1 text-ink-muted hover:bg-zinc-200 hover:text-ink"
                               >
                                 <X className="h-3.5 w-3.5" aria-hidden="true" />
                               </button>
@@ -357,7 +344,7 @@ export function NewCheckPage() {
                         </ul>
                       )}
                       {fileErrors.length > 0 && (
-                        <ul id={ids.fileError} role="alert" className="space-y-0.5 px-2 pt-2 text-sm text-rose-700">
+                        <ul id={ids.fileError} role="alert" className="space-y-0.5 px-1.5 pt-2 text-sm text-rose-700">
                           {fileErrors.map((message) => (
                             <li key={message}>{message}</li>
                           ))}
@@ -372,7 +359,7 @@ export function NewCheckPage() {
                       </p>
                     </>
                   ) : (
-                    <div className="px-2 py-1.5">
+                    <div className="px-1.5 py-1">
                       <label htmlFor="check-url" className="sr-only">
                         Article URL
                       </label>
@@ -398,14 +385,14 @@ export function NewCheckPage() {
                     </div>
                   )}
                   {error && (
-                    <p id={ids.error} role="alert" className="px-2 pt-2 text-sm text-rose-700">
+                    <p id={ids.error} role="alert" className="px-1.5 pt-2 text-sm text-rose-700">
                       {error}
                     </p>
                   )}
                 </div>
 
-                <div className="mt-3 flex flex-wrap items-center gap-2">
-                  <div role="tablist" aria-label="Input type" className="flex gap-2">
+                <div className="relative mt-2 flex items-center gap-1.5">
+                  <div role="tablist" aria-label="Input type" className="flex gap-1">
                     {tabs.map(({ value, label, Icon }) => {
                       const selected = mode === value;
                       return (
@@ -423,8 +410,8 @@ export function NewCheckPage() {
                           onKeyDown={onTabKeyDown}
                           className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-sm transition-colors ${
                             selected
-                              ? 'border-brand-200 bg-brand-50 font-medium text-brand-700'
-                              : 'border-line text-ink-muted hover:border-line-strong hover:text-ink'
+                              ? 'border-brand-200 bg-brand-50 font-semibold text-brand-700'
+                              : 'border-transparent text-ink-muted hover:bg-white/70 hover:text-ink dark:hover:bg-white/10'
                           }`}
                         >
                           <Icon className="h-4 w-4" aria-hidden="true" />
@@ -456,76 +443,101 @@ export function NewCheckPage() {
                         aria-label="Add files"
                         aria-describedby={ids.fileHint}
                         title="Add .txt or .md files (or drop them here)"
-                        className="btn-ghost p-2"
+                        className="inline-flex h-9 w-9 items-center justify-center rounded-full text-ink-muted transition-colors hover:bg-white/70 hover:text-ink disabled:cursor-not-allowed disabled:opacity-40 dark:hover:bg-white/10"
                       >
                         <Paperclip className="h-4 w-4" aria-hidden="true" />
                       </button>
                     </>
                   )}
-                  <div className="ml-auto flex items-center gap-3">
+                  <div className="ml-auto flex items-center gap-2.5">
+                    <JudgePicker value={judgeIds} onChange={setJudgeIds} />
+                    <DemoScenarioPicker value={scenario} onChange={changeScenario} />
                     {mode === 'text' && text.length > 0 && (
                       <span
                         id={ids.count}
-                        className={`hidden font-mono text-xs tabular-nums sm:inline ${overLimit ? 'text-rose-700' : 'text-ink-faint'}`}
+                        className={`hidden font-sans text-xs tabular-nums sm:inline ${overLimit ? 'text-rose-700' : 'text-ink-faint'}`}
                       >
                         {text.length.toLocaleString('en-US')} / {config.text.maxLength.toLocaleString('en-US')}
                         <span className="sr-only"> characters</span>
                       </span>
                     )}
-                    <button type="submit" className="btn-primary" disabled={submitting}>
-                      {submitting ? 'Starting…' : 'Check claims'}
+                    <button
+                      type="submit"
+                      aria-label="Check claims"
+                      className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary text-on-primary transition-colors hover:bg-primary-hover disabled:cursor-not-allowed disabled:opacity-50"
+                      disabled={submitting}
+                    >
                       {submitting ? (
-                        <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
+                        <Loader2 className="h-5 w-5 animate-spin" aria-hidden="true" />
                       ) : (
-                        <ArrowRight className="h-4 w-4" aria-hidden="true" />
+                        <ArrowUp className="h-5 w-5" aria-hidden="true" />
                       )}
                     </button>
                   </div>
                 </div>
               </div>
             </form>
-            <p className="mt-3 flex items-center justify-center gap-1.5 text-sm text-ink-muted">
-              <Info className="h-4 w-4" aria-hidden="true" />
-              AI assessments can be wrong. Review the evidence.
-            </p>
+
+            <section aria-labelledby="examples-heading" className="mt-5 flex flex-col items-center sm:mt-6">
+              <h2 id="examples-heading" className="sr-only">
+                Examples
+              </h2>
+              <ul className="flex flex-wrap justify-center gap-2.5">
+                {exampleInputs.map((example) => (
+                  <li key={example.id}>
+                    <button type="button" className="home-pill" onClick={() => applyExample(example.id)}>
+                      {example.inputType === 'text' ? (
+                        <FileText className="h-4 w-4 text-brand-600" aria-hidden="true" />
+                      ) : (
+                        <Link2 className="h-4 w-4 text-brand-600" aria-hidden="true" />
+                      )}
+                      {example.label}
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            </section>
+
+            <div className="mt-5 flex flex-col items-center gap-1 sm:mt-6">
+              <a
+                href="#how-it-works"
+                className="inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs text-ink-faint transition-colors hover:text-ink"
+              >
+                <ChevronDown className="h-3.5 w-3.5 motion-safe:animate-bounce" aria-hidden="true" />
+                How it works
+              </a>
+            </div>
           </div>
-
-          <section aria-labelledby="examples-heading" className="mt-8 flex flex-col items-center">
-            <h2 id="examples-heading" className="sr-only">
-              Examples
-            </h2>
-            <ul className="flex flex-wrap justify-center gap-3">
-              {exampleInputs.map((example) => (
-                <li key={example.id}>
-                  <button type="button" className="btn-secondary px-5 py-2.5" onClick={() => applyExample(example.id)}>
-                    {example.inputType === 'text' ? (
-                      <FileText className="h-4 w-4" aria-hidden="true" />
-                    ) : (
-                      <Link2 className="h-4 w-4" aria-hidden="true" />
-                    )}
-                    {example.label}
-                  </button>
-                </li>
-              ))}
-            </ul>
-          </section>
-
-          <a
-            href="#how-it-works"
-            className="absolute bottom-6 left-1/2 hidden -translate-x-1/2 items-center gap-1 font-mono text-xs text-ink-faint transition-colors hover:text-ink sm:inline-flex"
-          >
-            how it works
-            <ChevronDown className="h-3.5 w-3.5 motion-safe:animate-bounce" aria-hidden="true" />
-          </a>
-          <CornerMarks />
         </div>
       </section>
 
-      <HowItWorks />
-
-      <div className="mx-auto max-w-6xl px-4 py-8 sm:px-8">
-        <DemoScenarioPicker value={scenario} onChange={changeScenario} />
-      </div>
+      <section id="how-it-works" aria-labelledby="how-heading" className="scroll-mt-16">
+        <div className="mx-auto w-full max-w-5xl px-4 pb-12 pt-8 sm:px-8 sm:pb-16 sm:pt-10">
+          <div className="mx-auto max-w-2xl text-center">
+            <p className="text-[13px] font-medium text-brand-600">Guide</p>
+            <h2
+              id="how-heading"
+              className="mt-2.5 text-[28px] font-medium leading-[1.15] tracking-[-0.025em] text-ink sm:mt-3 sm:text-[38px]"
+            >
+              How it works
+            </h2>
+            <p className="mx-auto mt-2.5 max-w-[30rem] text-[15px] leading-[1.65] text-ink-soft">
+              How a check runs — and where each verdict comes from.
+            </p>
+            <a
+              href="#check-composer"
+              onClick={() => {
+                requestAnimationFrame(() => (mode === 'text' ? textRef : urlRef).current?.focus({ preventScroll: true }));
+              }}
+              className="mt-5 inline-flex items-center gap-1.5 rounded-full bg-ink py-2.5 pl-4 pr-3.5 text-sm font-medium text-page transition-opacity hover:opacity-90"
+            >
+              Start a check
+              <ArrowUpRight className="h-4 w-4" aria-hidden="true" />
+            </a>
+          </div>
+          <HowItWorksSteps />
+        </div>
+      </section>
     </div>
   );
 }

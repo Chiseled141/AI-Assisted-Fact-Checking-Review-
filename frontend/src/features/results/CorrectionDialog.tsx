@@ -82,8 +82,8 @@ function Step({ n, title, aside, children }: { n: number; title: ReactNode; asid
   return (
     <div>
       <div className="mb-2 flex items-baseline justify-between gap-3">
-        <span className="flex items-baseline gap-2 text-sm font-medium text-ink">
-          <span className="font-mono text-xs text-candy">{String(n).padStart(2, '0')}</span>
+        <span className="flex items-baseline gap-2 text-sm font-semibold text-ink">
+          <span className="font-sans text-xs text-ink-faint">{String(n).padStart(2, '0')}</span>
           {title}
         </span>
         {aside}
@@ -230,7 +230,7 @@ function CorrectionForm({
       <div role="status" className="text-sm">
         <div className="flex flex-col items-center px-2 py-4 text-center">
           <CircleCheck className="h-10 w-10 text-emerald-700" aria-hidden="true" />
-          <p className="mt-3 text-base font-medium text-ink">Correction published as revision {phase.revision.version}.</p>
+          <p className="mt-3 text-base font-semibold text-ink">Correction published as revision {phase.revision.version}.</p>
           <p className="mt-3 flex flex-wrap items-center justify-center gap-2">
             {phase.previousVerdict && phase.previousVerdict !== phase.revision.verdict ? (
               <>
@@ -295,13 +295,10 @@ function CorrectionForm({
             }`}
           >
             {phase.reloaded ? (
-              <p>
-                Latest version loaded (revision {phase.currentVersion}). Check the current assessment above, then publish
-                again if your correction still applies. Your draft was kept.
-              </p>
+              <p>Latest version loaded (revision {phase.currentVersion}). Your draft was kept.</p>
             ) : (
               <>
-                <p className="flex items-center gap-2 font-medium">
+                <p className="flex items-center gap-2 font-semibold">
                   <TriangleAlert className="h-4 w-4" aria-hidden="true" />
                   This claim changed while you were reviewing it
                 </p>
@@ -322,8 +319,7 @@ function CorrectionForm({
               </>
             )}
             <p className="mt-3 text-xs opacity-80">
-              Demo simulation: a concurrent edit is injected on your first publish. Real protection must come from the
-              backend rejecting a stale version (409 Conflict).
+              Demo simulation: a concurrent edit is injected on first publish.
             </p>
           </div>
         )}
@@ -353,7 +349,7 @@ function CorrectionForm({
                     />
                     <span className="flex items-center gap-2">
                       <Icon className={`h-4 w-4 ${iconClass}`} aria-hidden="true" />
-                      <span id={`${ids.verdict}-${value}`} className="font-medium text-ink">
+                      <span id={`${ids.verdict}-${value}`} className="font-semibold text-ink">
                         {verdictLabel[value]}
                       </span>
                     </span>
@@ -372,7 +368,7 @@ function CorrectionForm({
           n={2}
           title={<label htmlFor={ids.reason}>Correction reason</label>}
           aside={
-            <span className="font-mono text-xs text-ink-faint">
+            <span className="font-sans text-xs text-ink-faint">
               {reason.trim().length} / {config.correction.maxReasonLength}
             </span>
           }
@@ -406,7 +402,7 @@ function CorrectionForm({
             title="Cited evidence"
             aside={
               evidence && (
-                <span className="font-mono text-xs text-ink-faint">
+                <span className="font-sans text-xs text-ink-faint">
                   {selectedEvidence.length} of {evidence.length} selected
                 </span>
               )
@@ -433,15 +429,15 @@ function CorrectionForm({
                         />
                         <span className="min-w-0 flex-1">
                           <span className="flex flex-wrap items-center gap-2">
-                            <span className="font-mono text-xs text-brand-700">[{citationNumber(claim, item.id)}]</span>
-                            <span className="font-medium text-ink">{item.sourceTitle}</span>
+                            <span className="font-sans text-xs text-brand-700">[{citationNumber(claim, item.id)}]</span>
+                            <span className="font-semibold text-ink">{item.sourceTitle}</span>
                             <RelationBadge relation={item.relation} />
                             {suggested === item.relation && !checked && (
-                              <span className="text-xs text-candy">matches your verdict</span>
+                              <span className="text-xs text-brand-700">matches your verdict</span>
                             )}
                           </span>
                           <span className="mt-1 line-clamp-2 block text-xs text-ink-muted">{item.excerpt}</span>
-                          <span className="mt-1 block font-mono text-[11px] text-ink-faint">
+                          <span className="mt-1 block font-sans text-[11px] text-ink-faint">
                             published {item.publishedAt ? formatCalendarDate(item.publishedAt) : 'unknown'}
                           </span>
                         </span>
@@ -502,7 +498,7 @@ function CorrectionForm({
           n={4}
           title="Screenshots"
           aside={
-            <span className="font-mono text-xs text-ink-faint">
+            <span className="font-sans text-xs text-ink-faint">
               optional · {attachments.length}/{maxShots}
             </span>
           }
@@ -549,13 +545,13 @@ function CorrectionForm({
               onClick={() => shotInputRef.current?.click()}
               disabled={attachments.length >= maxShots}
               aria-describedby={ids.shotHint}
-              className="font-medium text-brand-700 underline decoration-brand-200 underline-offset-2 hover:decoration-brand-600 disabled:cursor-not-allowed disabled:text-ink-faint disabled:no-underline"
+              className="font-semibold text-brand-700 underline decoration-brand-200 underline-offset-2 hover:decoration-brand-600 disabled:cursor-not-allowed disabled:text-ink-faint disabled:no-underline"
             >
               add screenshots
             </button>
           </div>
           <p id={ids.shotHint} className="mt-1.5 text-xs text-ink-muted">
-            PNG, JPG, WebP, or GIF · large images are resized · stays in your browser
+            PNG, JPG, WebP, or GIF · stays in your browser
           </p>
           {shotErrors.length > 0 && (
             <ul role="alert" className="mt-2 space-y-0.5 text-rose-700">
@@ -585,7 +581,7 @@ function CorrectionForm({
               <VerdictBadge verdict={verdict} />
             </>
           ) : (
-            <span>Verdict unchanged · updates reason and evidence</span>
+            <span>Verdict unchanged</span>
           )}
         </p>
         <div className="flex gap-2">

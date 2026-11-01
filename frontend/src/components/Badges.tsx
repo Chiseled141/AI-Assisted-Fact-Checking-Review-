@@ -9,8 +9,6 @@ import {
   CloudOff,
   FlaskConical,
   Info,
-  Loader2,
-  TriangleAlert,
   UserCheck,
 } from 'lucide-react';
 import type { CheckStatus, EvidenceRelation, Freshness, RevisionKind, Verdict } from '../types/models';
@@ -23,7 +21,7 @@ const verdictStyle: Record<Verdict, { className: string; Icon: typeof CircleChec
   insufficient_evidence: { className: 'border-amber-200 bg-amber-50 text-amber-900', Icon: CircleHelp },
 };
 
-const pill = 'inline-flex items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-xs font-medium';
+const pill = 'inline-flex items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-xs font-semibold';
 
 export function VerdictBadge({ verdict }: { verdict: Verdict }) {
   const { className, Icon } = verdictStyle[verdict];
@@ -71,7 +69,7 @@ export function FreshnessBadge({ status }: { status: Freshness }) {
   const { label, className, Icon } = freshnessStyle[status];
   return (
     <span
-      className={`inline-flex items-center gap-1 rounded border px-1.5 py-0.5 text-[11px] font-medium ${className}`}
+      className={`inline-flex items-center gap-1 rounded border px-1.5 py-0.5 text-[11px] font-semibold ${className}`}
       title="Whether this source applies to the claim's time period. Separate from the verdict."
     >
       <Icon className={`h-3 w-3 ${status === 'outdated' ? 'text-candy' : ''}`} aria-hidden="true" />
@@ -84,34 +82,24 @@ export function RevisionKindBadge({ kind, version }: { kind: RevisionKind; versi
   const human = kind === 'human_correction';
   const Icon = human ? UserCheck : Bot;
   return (
-    <span className={`inline-flex items-center gap-1 text-xs ${human ? 'text-brand-700' : 'text-ink-muted'}`}>
+    <span className={`inline-flex items-center gap-1 text-xs font-medium ${human ? 'text-brand-700' : 'text-ink-muted'}`}>
       <Icon className="h-3.5 w-3.5" aria-hidden="true" />
-      {human ? 'Human correction' : 'AI assessment'}
-      {version !== undefined && <span className="text-ink-muted">· rev {version}</span>}
+      <span>{`${human ? 'Human correction' : 'AI assessment'}${version !== undefined ? ` · rev ${version}` : ''}`}</span>
     </span>
   );
 }
 
 export function StatusBadge({ status }: { status: CheckStatus }) {
-  if (status === 'completed') {
-    return (
-      <span className={`${pill} border-emerald-200 bg-emerald-50 text-emerald-800`}>
-        <CircleCheck className="h-3.5 w-3.5" aria-hidden="true" />
-        Completed
-      </span>
-    );
-  }
-  if (status === 'failed') {
-    return (
-      <span className={`${pill} border-rose-200 bg-rose-50 text-rose-800`}>
-        <TriangleAlert className="h-3.5 w-3.5" aria-hidden="true" />
-        Failed
-      </span>
-    );
-  }
+  const failed = status === 'failed';
+  const done = status === 'completed';
   return (
-    <span className={`${pill} border-brand-200 bg-brand-50 text-brand-700`}>
-      {!isTerminal(status) && <Loader2 className="h-3.5 w-3.5 animate-spin" aria-hidden="true" />}
+    <span className="inline-flex items-center gap-1.5 font-sans text-xs text-ink-muted">
+      <span
+        className={`h-1.5 w-1.5 rounded-full ${failed ? 'bg-rose-600' : done ? 'bg-brand-600' : 'bg-brand-500'} ${
+          isTerminal(status) ? '' : 'motion-safe:animate-pulse'
+        }`}
+        aria-hidden="true"
+      />
       {statusLabel[status]}
     </span>
   );
@@ -132,14 +120,14 @@ export function DemoModeLabel({ className = '' }: { className?: string }) {
 
 const verdictTone: Record<Verdict, { dot: string; text: string }> = {
   supported: { dot: 'bg-emerald-700', text: 'text-emerald-700' },
-  contradicted: { dot: 'bg-rose-700', text: 'text-rose-700' },
+  contradicted: { dot: 'bg-rose-600', text: 'text-rose-600' },
   insufficient_evidence: { dot: 'bg-amber-700', text: 'text-amber-700' },
 };
 
-export function VerdictMark({ verdict }: { verdict: Verdict }) {
+export function VerdictMark({ verdict, className = '' }: { verdict: Verdict; className?: string }) {
   const tone = verdictTone[verdict];
   return (
-    <span className={`inline-flex items-center gap-1.5 text-xs font-medium ${tone.text}`}>
+    <span className={`inline-flex items-center gap-1.5 text-xs font-semibold ${tone.text} ${className}`}>
       <span className={`h-1.5 w-1.5 rounded-full ${tone.dot}`} aria-hidden="true" />
       {verdictLabel[verdict]}
     </span>
@@ -148,7 +136,7 @@ export function VerdictMark({ verdict }: { verdict: Verdict }) {
 
 export function UnavailableMark() {
   return (
-    <span className="inline-flex items-center gap-1.5 text-xs font-medium text-ink-muted">
+    <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-ink-muted">
       <span className="h-1.5 w-1.5 rounded-full border border-ink-faint" aria-hidden="true" />
       Verification unavailable
     </span>
@@ -157,23 +145,23 @@ export function UnavailableMark() {
 
 const relationTone: Record<EvidenceRelation, string> = {
   supporting: 'text-emerald-700',
-  contradicting: 'text-rose-700',
+  contradicting: 'text-rose-600',
   contextual: 'text-ink-muted',
 };
 
 export function RelationText({ relation }: { relation: EvidenceRelation }) {
-  return <span className={`font-medium ${relationTone[relation]}`}>{relationLabel[relation]}</span>;
+  return <span className={`font-semibold ${relationTone[relation]}`}>{relationLabel[relation]}</span>;
 }
 
 export function FreshnessText({ status }: { status: Freshness }) {
-  if (status === 'outdated') return <span className="font-medium text-candy">Outdated</span>;
+  if (status === 'outdated') return <span className="font-semibold text-candy">Outdated</span>;
   if (status === 'unknown') return <span className="text-ink-muted">Freshness unknown</span>;
   return <span className="text-ink-muted">Current</span>;
 }
 
 const verdictIconStyle: Record<Verdict, { Icon: typeof CircleCheck; className: string }> = {
   supported: { Icon: CircleCheck, className: 'text-emerald-700' },
-  contradicted: { Icon: CircleX, className: 'text-rose-700' },
+  contradicted: { Icon: CircleX, className: 'text-rose-600' },
   insufficient_evidence: { Icon: CircleHelp, className: 'text-amber-700' },
 };
 

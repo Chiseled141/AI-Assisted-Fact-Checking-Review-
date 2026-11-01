@@ -69,6 +69,38 @@ describe('mockCheckService', () => {
     expect(human.model).toBeUndefined();
   });
 
+  it('rejects a judge pair that is not two different known judges', async () => {
+    const url = 'https://example.org/news/story';
+    await expect(service.createCheck({ inputType: 'url', url, judgeIds: ['gpt-luna'] })).rejects.toBeInstanceOf(
+      ValidationError,
+    );
+    await expect(
+      service.createCheck({ inputType: 'url', url, judgeIds: ['gpt-luna', 'gpt-luna'] }),
+    ).rejects.toBeInstanceOf(ValidationError);
+  });
+
+  it('stores the judges a new check was started with', async () => {
+    const check = await service.createCheck({
+      inputType: 'url',
+      url: 'https://example.org/news/story',
+      judgeIds: ['gpt-luna', 'glm-5-3-flash'],
+    });
+    expect(check.judgeIds).toEqual(['gpt-luna', 'glm-5-3-flash']);
+  });
+
+  it('keeps each judge verdict on AI revisions and marks the shown one as primary', async () => {
+    await service.getCheck('chk_demo_transit');
+    const [ai] = await service.getClaimRevisions('chk_demo_transit_c3');
+    expect(ai.judges).toHaveLength(2);
+    expect(ai.judges?.filter((judge) => judge.primary)).toHaveLength(1);
+    expect(ai.judges?.[0]).toMatchObject({ primary: true, verdict: ai.verdict });
+  });
+
+  it('attaches a matched fact-check to the claim', async () => {
+    const check = await service.getCheck('chk_demo_transit');
+    expect(check.claims.find((claim) => claim.factCheck)?.factCheck?.rating).toBe('Misleading');
+  });
+
   it('requires a reason for outdated evidence and rejects freshness for uncited evidence', async () => {
     await service.getCheck('chk_demo_transit');
     const base = { verdict: 'supported' as const, reason: 'Testing freshness rules.', expectedVersion: 1 };
@@ -89,7 +121,7 @@ describe('mockCheckService', () => {
   });
 
   it('recovers from malformed stored data', async () => {
-    window.localStorage.setItem('claimtrace.demo.v3', '{not json');
+    window.localStorage.setItem('claimtrace.demo.v7', '{not json');
     const page = await service.listChecks();
     expect(page.total).toBeGreaterThan(0);
   });

@@ -1,22 +1,24 @@
 import { useEffect, useId, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
-import { ChevronLeft, ChevronRight, FileText, FlaskConical, Inbox, Link2, Loader2, Search } from 'lucide-react';
+import { ArrowUpRight, ChevronLeft, ChevronRight, Loader2, Search } from 'lucide-react';
 import type { Check, ListChecksParams, Page } from '../../types/models';
 import { checkService } from '../../services';
-import { formatDateTime, inputTypeLabel, pluralize } from '../../lib/format';
+import { formatDate, formatTime, inputTypeLabel, pluralize } from '../../lib/format';
 import { StatusBadge } from '../../components/Badges';
-import { resetDemoData } from '../demo/demoSettings';
 
 type StatusFilter = NonNullable<ListChecksParams['status']>;
 
 const statusOptions: { value: StatusFilter; label: string }[] = [
-  { value: 'all', label: 'All statuses' },
+  { value: 'all', label: 'All' },
   { value: 'processing', label: 'Processing' },
   { value: 'completed', label: 'Completed' },
   { value: 'failed', label: 'Failed' },
 ];
 
 type LoadState = { kind: 'loading' } | { kind: 'error' } | { kind: 'ready'; page: Page<Check> };
+
+const actionPill =
+  'inline-flex items-center gap-1.5 rounded-full bg-ink py-2 pl-4 pr-3.5 text-sm font-medium text-page transition-opacity hover:opacity-90';
 
 export function HistoryPage() {
   const [params, setParams] = useSearchParams();
@@ -64,98 +66,122 @@ export function HistoryPage() {
     setParams(new URLSearchParams(), { replace: true });
   }
 
-  function resetDemo() {
-    resetDemoData();
-    clearFilters();
-    setAttempt((n) => n + 1);
-  }
-
   const filtered = query !== '' || status !== 'all';
   const result = state.kind === 'ready' ? state.page : null;
 
   return (
-    <div className="mx-auto max-w-4xl px-4 pb-16 pt-6 sm:px-6 sm:pt-10">
-      <div className="flex flex-wrap items-end justify-between gap-3">
+    <div className="mx-auto w-full max-w-[1120px] px-4 pb-24 pt-10 sm:px-6 sm:pt-16">
+      <header className="flex flex-wrap items-start justify-between gap-6">
         <div>
-          <p className="eyebrow">checks</p>
-          <h1 className="mt-2 text-3xl font-semibold tracking-tight text-ink">History</h1>
-          <p className="mt-1 text-sm text-ink-soft">Demo checks saved in this browser.</p>
+          <h1 className="text-[32px] font-normal leading-[1.05] tracking-[-0.04em] text-ink sm:text-[40px]">History</h1>
+          <p className="mt-2.5 max-w-[31rem] text-[15px] leading-[1.65] text-ink-soft">
+            Every check is saved in this browser, with its evidence and revisions.
+          </p>
         </div>
-        <Link to="/" className="btn-primary">
+        <Link to="/" className={`${actionPill} mt-1`}>
           New check
+          <ArrowUpRight className="h-4 w-4" aria-hidden="true" />
         </Link>
-      </div>
+      </header>
 
-      <div className="panel mt-6 flex flex-col gap-3 p-3 sm:flex-row sm:items-center sm:p-4">
-        <div className="relative flex-1">
-          <label htmlFor={ids.search} className="sr-only">
-            Search checks
-          </label>
-          <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-muted" aria-hidden="true" />
-          <input
-            id={ids.search}
-            type="search"
-            value={draftQuery}
-            onChange={(e) => setDraftQuery(e.target.value)}
-            placeholder="Search by title, text, URL, or file name"
-            className="field pl-9"
-          />
-        </div>
-        <div className="flex items-center gap-2">
-          <label htmlFor={ids.status} className="text-sm text-ink-soft">
-            Status
-          </label>
-          <select
-            id={ids.status}
-            value={status}
-            onChange={(e) => updateParams({ status: e.target.value, page: '1' })}
-            className="field w-auto"
+      <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex flex-wrap items-center gap-3">
+          <div className="relative w-full sm:w-72">
+            <label htmlFor={ids.search} className="sr-only">
+              Search checks
+            </label>
+            <Search
+              className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-faint"
+              aria-hidden="true"
+            />
+            <input
+              id={ids.search}
+              type="search"
+              value={draftQuery}
+              onChange={(e) => setDraftQuery(e.target.value)}
+              placeholder="Search checks"
+              className="h-10 w-full rounded-full border border-line bg-white pl-11 pr-4 font-sans text-sm text-ink placeholder:text-ink-faint transition-colors hover:border-line-strong focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/15"
+            />
+          </div>
+          <div
+            role="group"
+            aria-label="Filter by status"
+            className="flex h-10 items-center gap-1 rounded-full border border-line bg-white p-1"
           >
-            {statusOptions.map((option) => (
-              <option key={option.value} value={option.value}>
-                {option.label}
-              </option>
-            ))}
-          </select>
+            {statusOptions.map((option) => {
+              const selected = status === option.value;
+              return (
+                <button
+                  key={option.value}
+                  type="button"
+                  aria-pressed={selected}
+                  onClick={() => updateParams({ status: option.value, page: '1' })}
+                  className={`h-8 rounded-full px-3.5 font-sans text-sm transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-500/40 ${
+                    selected ? 'bg-ink text-page' : 'text-ink-muted hover:bg-zinc-100 hover:text-ink'
+                  }`}
+                >
+                  {option.label}
+                </button>
+              );
+            })}
+          </div>
         </div>
+        {result && (
+          <p className="font-sans text-xs tabular-nums text-ink-faint">
+            {pluralize(result.total, 'check')}
+          </p>
+        )}
       </div>
 
       <p role="status" aria-live="polite" className="sr-only">
         {result ? `${pluralize(result.total, 'check')} found` : ''}
       </p>
 
-      <div className="mt-4">
+      <div className="mt-6">
         {state.kind === 'loading' && (
-          <p className="flex items-center justify-center gap-2 py-16 text-ink-soft">
+          <p
+            className="flex items-center justify-center gap-2 border-t border-line py-20 text-sm text-ink-muted"
+            role="status"
+          >
             <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" /> Loading history…
           </p>
         )}
 
         {state.kind === 'error' && (
-          <div role="alert" className="panel p-6 text-center text-sm text-rose-800">
-            History could not be loaded.
-            <button type="button" className="btn-secondary ml-3" onClick={() => setAttempt((n) => n + 1)}>
+          <div role="alert" className="border-t border-line py-16 text-center text-sm text-ink-soft">
+            <p>History could not be loaded.</p>
+            <button
+              type="button"
+              className="mt-4 text-ink underline decoration-line-strong underline-offset-4 hover:decoration-ink"
+              onClick={() => setAttempt((n) => n + 1)}
+            >
               Try again
             </button>
           </div>
         )}
 
         {result && result.total === 0 && (
-          <div className="panel flex flex-col items-center p-10 text-center">
-            <Inbox className="h-10 w-10 text-ink-muted" aria-hidden="true" />
-            <h2 className="mt-3 font-semibold tracking-tight text-xl text-ink">{filtered ? 'No matching checks' : 'No checks yet'}</h2>
-            <p className="mt-1 max-w-sm text-sm text-ink-soft">
+          <div className="border-t border-line py-20 text-center">
+            <h2 className="text-[18px] font-medium tracking-[-0.015em] text-ink">
+              {filtered ? 'No matching checks' : 'No checks yet'}
+            </h2>
+            <p className="mx-auto mt-2 max-w-sm text-sm leading-[1.7] text-ink-soft">
               {filtered
                 ? 'Try a different search term or status.'
                 : 'Checks you run in demo mode are saved in this browser and appear here.'}
             </p>
             {filtered ? (
-              <button type="button" className="btn-secondary mt-5" onClick={clearFilters}>
+              <button
+                type="button"
+                className="mt-6 text-sm text-ink underline decoration-line-strong underline-offset-4 hover:decoration-ink"
+                onClick={clearFilters}
+              >
                 Clear filters
               </button>
             ) : (
-              <Link to="/" className="btn-primary mt-5">
+              <Link to="/" className={`${actionPill} mt-6`}>
                 Start a check
+                <ArrowUpRight className="h-4 w-4" aria-hidden="true" />
               </Link>
             )}
           </div>
@@ -163,74 +189,74 @@ export function HistoryPage() {
 
         {result && result.total > 0 && (
           <>
-            <ul className="divide-y divide-line border border-line" aria-label="Checks">
+            <ul className="border-t border-line" aria-label="Checks">
               {result.items.map((check) => (
-                <li key={check.id}>
+                <li key={check.id} className="border-b border-line">
                   <Link
                     to={`/checks/${check.id}`}
-                    className="group flex flex-col gap-2 bg-white p-4 transition hover:bg-zinc-50 sm:flex-row sm:items-center sm:gap-4"
+                    className="group grid gap-x-6 gap-y-2 py-4 sm:grid-cols-[112px_minmax(0,1fr)] sm:items-start"
                   >
-                    <span className="flex h-9 w-9 shrink-0 items-center justify-center bg-brand-50 text-brand-600 max-sm:hidden">
-                      {check.inputType === 'url' ? (
-                        <Link2 className="h-4 w-4" aria-hidden="true" />
-                      ) : (
-                        <FileText className="h-4 w-4" aria-hidden="true" />
-                      )}
-                    </span>
-                    <span className="min-w-0 flex-1">
-                      <span className="block truncate font-medium text-ink group-hover:text-brand-700">{check.title}</span>
-                      <span className="mt-0.5 flex flex-wrap gap-x-3 font-mono text-xs text-ink-muted">
-                        <span>
-                          {inputTypeLabel[check.inputType]}
-                          {check.files?.length ? ` + ${pluralize(check.files.length, 'file')}` : ''}
-                        </span>
-                        <time dateTime={check.createdAt}>{formatDateTime(check.createdAt)}</time>
-                        {check.claimCount !== undefined && <span>{pluralize(check.claimCount, 'claim')}</span>}
+                    <time
+                      dateTime={check.createdAt}
+                      className="font-sans text-xs leading-[1.6] text-ink-faint"
+                    >
+                      {formatDate(check.createdAt)}
+                      <span className="block tabular-nums text-ink-muted">{formatTime(check.createdAt)}</span>
+                    </time>
+                    <span className="min-w-0">
+                      <span className="line-clamp-2 block text-[15px] font-medium leading-[1.5] tracking-[-0.01em] text-ink transition-colors group-hover:text-brand-700">
+                        {check.title}
                       </span>
-                    </span>
-                    <span className="self-start sm:self-auto">
-                      <StatusBadge status={check.status} />
+                      <span className="mt-1.5 flex flex-wrap items-center gap-x-2 gap-y-1 font-sans text-xs text-ink-muted">
+                        <span>{inputTypeLabel[check.inputType]}</span>
+                        {check.files?.length ? (
+                          <>
+                            <span aria-hidden="true" className="text-ink-faint">·</span>
+                            <span>{pluralize(check.files.length, 'file')}</span>
+                          </>
+                        ) : null}
+                        {check.claimCount !== undefined && (
+                          <>
+                            <span aria-hidden="true" className="text-ink-faint">·</span>
+                            <span>{pluralize(check.claimCount, 'claim')}</span>
+                          </>
+                        )}
+                        <span aria-hidden="true" className="text-ink-faint">·</span>
+                        <StatusBadge status={check.status} />
+                      </span>
                     </span>
                   </Link>
                 </li>
               ))}
             </ul>
 
-            <nav aria-label="Pagination" className="mt-5 flex items-center justify-between gap-3 text-sm">
-              <button
-                type="button"
-                className="btn-secondary"
-                disabled={result.page <= 1}
-                onClick={() => updateParams({ page: String(result.page - 1) })}
-              >
-                <ChevronLeft className="h-4 w-4" aria-hidden="true" />
-                Previous
-              </button>
-              <span className="text-ink-soft">
-                Page {result.page} of {result.totalPages} · {pluralize(result.total, 'check')}
-              </span>
-              <button
-                type="button"
-                className="btn-secondary"
-                disabled={result.page >= result.totalPages}
-                onClick={() => updateParams({ page: String(result.page + 1) })}
-              >
-                Next
-                <ChevronRight className="h-4 w-4" aria-hidden="true" />
-              </button>
-            </nav>
+            {result.totalPages > 1 && (
+              <nav aria-label="Pagination" className="mt-6 flex items-center justify-between gap-3">
+                <button
+                  type="button"
+                  className="inline-flex items-center gap-1.5 text-sm text-ink-muted transition-colors hover:text-ink disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:text-ink-muted"
+                  disabled={result.page <= 1}
+                  onClick={() => updateParams({ page: String(result.page - 1) })}
+                >
+                  <ChevronLeft className="h-4 w-4" aria-hidden="true" />
+                  Previous
+                </button>
+                <span className="font-sans text-xs tabular-nums text-ink-faint">
+                  Page {result.page} of {result.totalPages}
+                </span>
+                <button
+                  type="button"
+                  className="inline-flex items-center gap-1.5 text-sm text-ink-muted transition-colors hover:text-ink disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:text-ink-muted"
+                  disabled={result.page >= result.totalPages}
+                  onClick={() => updateParams({ page: String(result.page + 1) })}
+                >
+                  Next
+                  <ChevronRight className="h-4 w-4" aria-hidden="true" />
+                </button>
+              </nav>
+            )}
           </>
         )}
-      </div>
-
-      <div className="mt-10 flex flex-wrap items-center justify-between gap-3 border border-dashed border-line-strong bg-white px-4 py-3 text-xs text-ink-soft">
-        <span className="flex items-center gap-2">
-          <FlaskConical className="h-4 w-4" aria-hidden="true" />
-          Demo controls · Data is stored in this browser only.
-        </span>
-        <button type="button" className="btn-ghost px-3 py-1 text-xs" onClick={resetDemo}>
-          Reset demo data
-        </button>
       </div>
     </div>
   );

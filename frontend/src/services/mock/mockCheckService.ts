@@ -4,6 +4,7 @@
 
 import { config } from '../../config';
 import { deriveTitle } from '../../lib/format';
+import { judgeName, validateJudgeIds } from '../../lib/judges';
 import {
   isSafeImageDataUrl,
   validateFile,
@@ -18,6 +19,7 @@ import {
   STALE_CONFLICT_AUTHOR,
   fixtureClaims,
 } from '../../mocks/fixtures';
+import type { FixtureRevision } from '../../mocks/fixtures';
 import type {
   AssessmentRevision,
   Check,
@@ -27,6 +29,7 @@ import type {
   CorrectionRequest,
   CreateCheckInput,
   EvidenceSnapshot,
+  JudgeVerdict,
   ListChecksParams,
   Page,
 } from '../../types/models';
@@ -134,6 +137,7 @@ function materializeClaims(db: DemoDb, check: StoredCheck): void {
       status: unavailable ? 'unavailable' : 'assessed',
       evidenceIds: [...evidenceIdByKey.values()],
       ...(unavailable ? { unavailableReason: PARTIAL_FAILURE_REASON } : {}),
+      ...(fixture.factCheck && !unavailable ? { factCheck: fixture.factCheck } : {}),
     };
 
     // Fresh checks only get the AI assessment; seeded history also shows a saved human correction.
@@ -155,6 +159,7 @@ function materializeClaims(db: DemoDb, check: StoredCheck): void {
               Object.entries(revision.freshness ?? {}).map(([key, judgment]) => [evidenceIdByKey.get(key)!, judgment]),
             ),
             ...(revision.kind === 'ai_assessment' ? { model: FIXTURE_MODEL } : {}),
+            ...(revision.judges ? { judges: judgesFor(check, revision.judges) } : {}),
             author: revision.author,
             createdAt:
               revision.kind === 'ai_assessment'
@@ -165,6 +170,20 @@ function materializeClaims(db: DemoDb, check: StoredCheck): void {
   });
 
   check.claimCount = fixtureClaims.length;
+}
+
+/**
+ * Fixture verdicts are simulated. The judge names come from the judges the check was started
+ * with, in order; the first judge is the one whose verdict the revision shows.
+ */
+function judgesFor(check: StoredCheck, judges: NonNullable<FixtureRevision['judges']>): JudgeVerdict[] {
+  const ids = check.judgeIds ?? config.judges.defaultIds;
+  return judges.map((judge, index) => ({
+    judge: judgeName(ids[index]),
+    verdict: judge.verdict,
+    confidence: judge.confidence,
+    primary: index === 0,
+  }));
 }
 
 function toCheck(stored: StoredCheck): Check {
@@ -223,6 +242,10 @@ export const mockCheckService: CheckService = {
       fileError ?? (input.inputType === 'text' ? validateTextSubmission(value, files) : validateUrl(value));
     if (error) throw new ValidationError(error);
 
+    const judgeIds = [...(input.judgeIds ?? config.judges.defaultIds)];
+    const judgeError = validateJudgeIds(judgeIds);
+    if (judgeError) throw new ValidationError(judgeError);
+
     const db = loadDb();
     const now = new Date().toISOString();
     const title =
@@ -239,6 +262,7 @@ export const mockCheckService: CheckService = {
       createdAt: now,
       updatedAt: now,
       scenario: input.scenario ?? 'completed',
+      judgeIds,
       seeded: false,
     };
     db.checks[check.id] = check;

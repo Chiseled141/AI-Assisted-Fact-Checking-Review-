@@ -74,18 +74,40 @@ describe('Adding files', () => {
   });
 });
 
-describe('How it works', () => {
-  it('shows details for a step when clicked and hides them again', async () => {
+describe('Demo scenario', () => {
+  it('picks the simulated scenario from the composer menu', async () => {
     const user = userEvent.setup();
     renderApp('/');
-    const step = screen.getByRole('button', { name: /find evidence/i });
+
+    await user.click(screen.getByRole('button', { name: /demo scenario: completed check/i }));
+    expect(screen.getByRole('radio', { name: /completed check/i })).toBeChecked();
+
+    await user.click(screen.getByRole('radio', { name: /stale correction conflict/i }));
+    expect(screen.queryByRole('radio')).not.toBeInTheDocument();
+    expect(
+      screen.getByRole('button', { name: /demo scenario: stale correction conflict/i }),
+    ).toHaveFocus();
+  });
+});
+
+describe('How it works', () => {
+  it('lives below the page as an anchor target and expands each step', async () => {
+    const user = userEvent.setup();
+    renderApp('/');
+    const link = screen.getByRole('link', { name: 'How it works' });
+    expect(link).toHaveAttribute('href', '#how-it-works');
+    const guide = screen.getByRole('region', { name: 'How it works' });
+    expect(guide).toHaveAttribute('id', 'how-it-works');
+
+    const step = within(guide).getByRole('button', { name: /find evidence/i });
     expect(step).toHaveAttribute('aria-expanded', 'false');
 
     await user.click(step);
     expect(step).toHaveAttribute('aria-expanded', 'true');
-    expect(screen.getByText(/exact retrieval time/i)).toBeInTheDocument();
+    expect(within(guide).getByText(/exact retrieval time/i)).toBeInTheDocument();
 
-    await user.click(screen.getByRole('button', { name: 'Close step details' }));
-    expect(screen.queryByText(/exact retrieval time/i)).not.toBeInTheDocument();
+    await user.click(step);
+    expect(step).toHaveAttribute('aria-expanded', 'false');
+    expect(within(guide).queryByText(/exact retrieval time/i)).not.toBeInTheDocument();
   });
 });

@@ -2,7 +2,6 @@ import { useId, useState } from 'react';
 import { ExternalLink, FileText } from 'lucide-react';
 import type { CheckDetail } from '../../types/models';
 import { formatBytes, formatDateTime, pluralize, safeHref } from '../../lib/format';
-import { scenarioLabel } from '../demo/demoSettings';
 import { ProportionBar } from './ProportionBar';
 
 export function countClaims(check: CheckDetail) {
@@ -14,7 +13,7 @@ export function countClaims(check: CheckDetail) {
   return counts;
 }
 
-/** Results header: title, one meta line, and the verdict split as a labeled bar. */
+/** Results header: title, one meta line, and the verdict split as a quiet editorial band. */
 export function CheckSummary({ check }: { check: CheckDetail }) {
   const counts = countClaims(check);
   const href = check.inputUrl ? safeHref(check.inputUrl) : null;
@@ -27,22 +26,10 @@ export function CheckSummary({ check }: { check: CheckDetail }) {
   const inputId = useId();
 
   const segments = [
-    { key: 'supported', label: 'Supported', value: counts.supported, color: 'bg-emerald-700' },
-    { key: 'contradicted', label: 'Contradicted', value: counts.contradicted, color: 'bg-rose-700' },
-    { key: 'insufficient', label: 'Insufficient', value: counts.insufficient_evidence, color: 'bg-amber-700' },
+    { key: 'supported', label: 'Supported', value: counts.supported, color: 'bg-brand-500' },
+    { key: 'contradicted', label: 'Contradicted', value: counts.contradicted, color: 'bg-rose-400' },
+    { key: 'insufficient', label: 'Insufficient', value: counts.insufficient_evidence, color: 'bg-amber-400' },
     { key: 'unavailable', label: 'Unavailable', value: counts.unavailable, color: 'bg-ink-faint' },
-  ];
-  const sources = check.claims.reduce((sum, claim) => sum + claim.evidenceIds.length, 0);
-  const outdated = check.claims.reduce((sum, claim) => {
-    const current = claim.current;
-    if (!current) return sum;
-    return sum + current.citedEvidenceIds.filter((id) => current.citationFreshness?.[id]?.status === 'outdated').length;
-  }, 0);
-  const corrected = check.claims.filter((claim) => claim.current?.kind === 'human_correction').length;
-  const stats = [
-    { label: 'Sources', value: sources, hint: 'Evidence snapshots saved across all claims' },
-    { label: 'Outdated', value: outdated, hint: 'Cited sources that no longer apply to their claim’s period' },
-    { label: 'Corrected', value: corrected, hint: 'Claims whose current verdict is a human correction' },
   ];
   const summary = `${counts.supported} of ${total} claims supported, ${counts.contradicted} contradicted, ${counts.insufficient_evidence} with insufficient evidence${
     counts.unavailable ? `, ${counts.unavailable} unavailable` : ''
@@ -50,20 +37,31 @@ export function CheckSummary({ check }: { check: CheckDetail }) {
 
   return (
     <header aria-labelledby="check-title">
-      <h1 id="check-title" className="max-w-4xl text-balance break-words text-2xl font-semibold tracking-tight text-ink">
+      <p className="flex flex-wrap items-center gap-x-2 gap-y-1 font-sans text-xs text-ink-muted">
+        <span className="inline-flex items-center gap-1.5">
+          <span className="h-1.5 w-1.5 rounded-full bg-brand-600" aria-hidden="true" />
+          Completed
+        </span>
+        <span aria-hidden="true" className="text-ink-faint">·</span>
+        <time dateTime={check.createdAt}>{formatDateTime(check.createdAt)}</time>
+      </p>
+
+      <h1
+        id="check-title"
+        className="mt-3 max-w-[44rem] text-balance break-words text-[28px] leading-[1.14] tracking-[-0.03em] text-ink sm:text-[36px]"
+      >
         {check.title}
       </h1>
-      <p className="mt-2 flex flex-wrap items-center gap-x-2 text-sm text-ink-muted">
+
+      <p className="mt-3 flex flex-wrap items-center gap-x-2 font-sans text-[13px] text-ink-muted">
         <span>{pluralize(total, 'claim')}</span>
-        <span aria-hidden="true">·</span>
-        <time dateTime={check.createdAt}>{formatDateTime(check.createdAt)}</time>
-        <span aria-hidden="true">·</span>
+        <span aria-hidden="true" className="text-ink-faint">·</span>
         <button
           type="button"
           onClick={() => setShowInput((v) => !v)}
           aria-expanded={showInput}
           aria-controls={inputId}
-          className="underline decoration-line-strong underline-offset-4 hover:text-ink"
+          className="underline decoration-line-strong underline-offset-4 transition-colors hover:text-ink hover:decoration-ink"
         >
           {showInput ? 'Hide' : 'View'} submitted {inputNoun}
         </button>
@@ -75,41 +73,27 @@ export function CheckSummary({ check }: { check: CheckDetail }) {
         </div>
       )}
 
-      <div className="mt-8 grid gap-8 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-end lg:gap-16">
-        {/* Headline figure and the bar it comes from, read as one block. */}
-        <div className="max-w-xl">
-          {total > 0 && (
+      {total > 0 && (
+        <div className="mt-8 border-y border-line py-6">
+          {/* Headline figure and the bar it comes from, read as one block. */}
+          <div className="min-w-0">
             <div className="flex items-end gap-4">
               {/* Same green as the Supported segment, so the number reads as that slice of the bar. */}
-              <p className="flex items-baseline font-semibold leading-none tracking-tight text-emerald-700">
-                <span className="text-6xl tabular-nums">{supportedPercent}</span>
-                <span className="ml-1 text-3xl opacity-70">%</span>
+              <p className="flex items-baseline leading-none tracking-[-0.05em] text-brand-600">
+                <span className="text-[44px] tabular-nums sm:text-[54px]">{supportedPercent}</span>
+                <span className="ml-1 text-[20px] opacity-70 sm:text-[24px]">%</span>
               </p>
               <div className="pb-1">
-                <p className="text-sm text-ink-soft">of claims supported</p>
-                <p className="text-xs text-ink-faint">Share of claims, not a truth score</p>
+                <p className="text-sm font-medium text-ink">of claims supported</p>
+                <p className="mt-0.5 text-xs text-ink-faint">Share of claims, not a truth score</p>
               </div>
             </div>
-          )}
-          <div className="mt-5">
-            <ProportionBar segments={segments} summary={summary} />
+            <div className="mt-5">
+              <ProportionBar segments={segments} summary={summary} />
+            </div>
           </div>
         </div>
-
-        {/* Context: how much evidence there was, and whether anyone has reviewed it. */}
-        <dl className="grid grid-cols-3 gap-6 border-t border-line pt-6 lg:border-l lg:border-t-0 lg:pl-10 lg:pt-0">
-          {stats.map(({ label, value, hint }) => (
-            <div key={label} title={hint}>
-              <dt className="text-xs text-ink-muted">{label}</dt>
-              <dd className="mt-1 text-3xl font-semibold tabular-nums tracking-tight text-ink">{value}</dd>
-            </div>
-          ))}
-        </dl>
-      </div>
-
-      <p className="mt-4 text-xs text-ink-faint">
-        Demo · {scenarioLabel(check.scenario)} · fictional data, your input wasn’t analyzed.
-      </p>
+      )}
     </header>
   );
 }
@@ -125,17 +109,17 @@ function SubmittedInput({
   files: NonNullable<CheckDetail['files']>;
 }) {
   return (
-    <div className="mt-3 max-w-3xl border-l-2 border-line pl-4 text-sm text-ink-soft">
+    <div className="mt-4 max-w-3xl border-l-2 border-line pl-4 text-sm text-ink-soft">
       {check.inputType === 'text' ? (
         <div className="space-y-3">
-          {check.inputText && <p className="whitespace-pre-wrap break-words">{check.inputText}</p>}
+          {check.inputText && <p className="whitespace-pre-wrap break-words leading-[1.7]">{check.inputText}</p>}
           {files.map((file) => (
             <section key={file.name} aria-label={`File ${file.name}`}>
-              <h3 className="flex items-center gap-2 text-xs text-ink-muted">
+              <h3 className="flex items-center gap-2 font-sans text-xs text-ink-muted">
                 <FileText className="h-3.5 w-3.5" aria-hidden="true" />
                 {file.name} · {formatBytes(file.size)}
               </h3>
-              <p className="mt-1 max-h-60 overflow-y-auto whitespace-pre-wrap break-words">{file.text}</p>
+              <p className="mt-1 max-h-60 overflow-y-auto whitespace-pre-wrap break-words leading-[1.7]">{file.text}</p>
             </section>
           ))}
         </div>

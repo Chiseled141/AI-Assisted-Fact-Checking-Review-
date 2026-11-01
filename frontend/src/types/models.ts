@@ -57,6 +57,8 @@ export interface Check {
   claimCount?: number;
   /** Human-readable failure reason when `status === 'failed'`. */
   errorMessage?: string;
+  /** Ids of the two judges this check was started with (see `config.judges`). */
+  judgeIds?: string[];
   /** Demo-only metadata; a real backend would not return this. */
   scenario: DemoScenario;
 }
@@ -87,6 +89,27 @@ export interface EvidenceSnapshot {
   relation: EvidenceRelation;
 }
 
+/**
+ * One LLM judge's verdict on a claim. An AI revision lists both judges; the judge
+ * marked `primary` is the configured one whose verdict the revision shows.
+ */
+export interface JudgeVerdict {
+  /** Display name of the model, e.g. "DeepSeek". */
+  judge: string;
+  verdict: Verdict;
+  /** 0–1. */
+  confidence: number;
+  primary: boolean;
+}
+
+/** A published fact-check that the known-fake lookup matched to a claim (fast path). */
+export interface FactCheckMatch {
+  publisher: string;
+  /** The publisher's own rating wording, shown as written. */
+  rating: string;
+  url: string;
+}
+
 /** An image attached by a reviewer, stored as a base64 data URL in demo mode. */
 export interface Attachment {
   id: string;
@@ -114,6 +137,8 @@ export interface AssessmentRevision {
   attachments?: Attachment[];
   /** AI revisions record which model and prompt produced them. */
   model?: { name: string; promptVersion: string };
+  /** AI revisions: each LLM judge's own verdict, so disagreement is visible. */
+  judges?: JudgeVerdict[];
   author: string;
   createdAt: string;
 }
@@ -133,6 +158,8 @@ export interface Claim {
   current: AssessmentRevision | null;
   /** Provider error shown when `status === 'unavailable'`. */
   unavailableReason?: string;
+  /** Set when the known-fake lookup found a published fact-check for this claim. */
+  factCheck?: FactCheckMatch;
 }
 
 export interface CheckDetail extends Check {
@@ -159,6 +186,8 @@ export interface CreateCheckInput {
   /** Text checks only; may stand in for typed text. */
   files?: SubmittedFile[];
   scenario?: DemoScenario;
+  /** Two judge ids from `config.judges`; defaults to `config.judges.defaultIds`. */
+  judgeIds?: string[];
 }
 
 export interface ListChecksParams {

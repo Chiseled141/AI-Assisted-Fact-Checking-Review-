@@ -3,7 +3,14 @@
 // Marlow City and its sources do not exist; URLs use the reserved example.org domain.
 // No quotation here is attributed to a real publisher.
 
-import type { EvidenceRelation, FreshnessJudgment, InputType, Verdict } from '../types/models';
+import type {
+  EvidenceRelation,
+  FactCheckMatch,
+  FreshnessJudgment,
+  InputType,
+  JudgeVerdict,
+  Verdict,
+} from '../types/models';
 
 export interface FixtureEvidence {
   key: string;
@@ -24,6 +31,9 @@ export interface FixtureRevision {
   cites: string[];
   /** Freshness of cited snapshots for this revision, keyed by evidence key. */
   freshness?: Record<string, FreshnessJudgment>;
+  /** AI revisions: each judge's own verdict. */
+  /** AI revisions: each judge's verdict, in the order the check's judges are listed. Names come from the check. */
+  judges?: Pick<JudgeVerdict, 'verdict' | 'confidence'>[];
   author: string;
   /** Minutes after the check was created. */
   offsetMinutes: number;
@@ -36,6 +46,8 @@ export interface FixtureClaim {
   timeContext: string;
   evidence: FixtureEvidence[];
   revisions: FixtureRevision[];
+  /** Published fact-check the known-fake lookup would match, when one exists. */
+  factCheck?: FactCheckMatch;
   /** In the partial-failure scenario this claim's provider call fails. */
   failsInPartialScenario?: boolean;
 }
@@ -79,6 +91,10 @@ export const fixtureClaims: FixtureClaim[] = [
           'Two independent sources place the start of passenger service in March 2024, and neither conflicts on the date.',
         cites: ['mcta-release', 'ledger-opening'],
         freshness: { 'mcta-release': { status: 'current' }, 'ledger-opening': { status: 'current' } },
+        judges: [
+          { verdict: 'supported', confidence: 0.93 },
+          { verdict: 'supported', confidence: 0.9 },
+        ],
         author: 'ClaimTrace assessment model (simulated)',
         offsetMinutes: 1,
       },
@@ -88,6 +104,11 @@ export const fixtureClaims: FixtureClaim[] = [
     key: 'ridership',
     text: 'Harbor Line ridership reached 50,000 daily trips within its first six months.',
     timeContext: 'March–September 2024 (first six months)',
+    factCheck: {
+      publisher: 'Marlow Fact Desk (fictional)',
+      rating: 'Misleading',
+      url: 'https://example.org/marlow-fact-desk/harbor-line-ridership',
+    },
     evidence: [
       {
         key: 'ridership-report',
@@ -124,6 +145,10 @@ export const fixtureClaims: FixtureClaim[] = [
             reason: 'The 2023 article does not say whether the 50,000 target was later revised.',
           },
         },
+        judges: [
+          { verdict: 'contradicted', confidence: 0.88 },
+          { verdict: 'insufficient_evidence', confidence: 0.61 },
+        ],
         author: 'ClaimTrace assessment model (simulated)',
         offsetMinutes: 1,
       },
@@ -162,6 +187,10 @@ export const fixtureClaims: FixtureClaim[] = [
         rationale: 'The transit authority states the line was delivered within the approved programme budget.',
         cites: ['mcta-budget'],
         freshness: { 'mcta-budget': { status: 'current' } },
+        judges: [
+          { verdict: 'supported', confidence: 0.72 },
+          { verdict: 'supported', confidence: 0.68 },
+        ],
         author: 'ClaimTrace assessment model (simulated)',
         offsetMinutes: 1,
       },
@@ -215,6 +244,10 @@ export const fixtureClaims: FixtureClaim[] = [
               'October 2024 minutes say no traffic figures were available yet and a study was due in spring 2025, so that status may no longer apply today.',
           },
         },
+        judges: [
+          { verdict: 'insufficient_evidence', confidence: 0.81 },
+          { verdict: 'insufficient_evidence', confidence: 0.77 },
+        ],
         author: 'ClaimTrace assessment model (simulated)',
         offsetMinutes: 1,
       },

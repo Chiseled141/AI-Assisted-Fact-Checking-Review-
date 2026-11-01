@@ -11,9 +11,14 @@ export default {
   theme: {
     extend: {
       fontFamily: {
-        sans: ['"Geist"', 'ui-sans-serif', 'system-ui', '-apple-system', 'Segoe UI', 'sans-serif'],
-        display: ['"Geist"', 'ui-sans-serif', 'system-ui', 'sans-serif'],
-        mono: ['"Geist Mono"', 'ui-monospace', 'SFMono-Regular', 'Menlo', 'monospace'],
+        sans: ['"Schibsted Grotesk"', 'ui-sans-serif', 'system-ui', '-apple-system', 'Segoe UI', 'sans-serif'],
+        display: ['"Schibsted Grotesk"', 'ui-sans-serif', 'system-ui', 'sans-serif'],
+        logo: ['"Space Grotesk"', 'ui-sans-serif', 'system-ui', 'sans-serif'],
+      },
+      // Ground-style weight ladder: book text, strong labels, extrabold headlines.
+      fontWeight: {
+        book: '480',
+        strong: '680',
       },
       colors: {
         white: v('surface'),
@@ -30,11 +35,11 @@ export default {
         zinc: shades('zinc', [50, 100, 200, 300, 600, 700]),
         emerald: shades('emerald', [50, 200, 700, 800, 900]),
         rose: shades('rose', [50, 200, 400, 600, 700, 800, 900]),
-        amber: shades('amber', [50, 200, 300, 700, 800, 900, 950]),
+        amber: shades('amber', [50, 200, 300, 400, 700, 800, 900, 950]),
       },
       boxShadow: {
         selected: 'inset 3px 0 0 rgb(var(--brand-500))',
-        dialog: '0 24px 48px -16px rgba(0,0,0,0.25)',
+        dialog: '0 24px 80px -24px rgba(0,0,0,0.45)',
       },
     },
   },

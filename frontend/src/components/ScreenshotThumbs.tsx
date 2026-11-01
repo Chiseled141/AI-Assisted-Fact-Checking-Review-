@@ -31,7 +31,7 @@ export function ScreenshotThumbs({ items, onRemove }: Props) {
             >
               <img src={item.dataUrl} alt="" className="h-full w-full object-cover" />
             </button>
-            <span className="mt-1 block w-28 truncate font-mono text-[11px] text-ink-muted" title={item.name}>
+            <span className="mt-1 block w-28 truncate font-sans text-[11px] text-ink-muted" title={item.name}>
               {item.name} · {formatBytes(item.size)}
             </span>
             {onRemove && (
@@ -50,7 +50,7 @@ export function ScreenshotThumbs({ items, onRemove }: Props) {
       {open && (
         <figure className="mt-3 border border-line bg-zinc-50 p-2">
           <img src={open.dataUrl} alt={`Screenshot: ${open.name}`} className="mx-auto max-h-[60vh] w-auto" />
-          <figcaption className="mt-1 text-center font-mono text-[11px] text-ink-muted">{open.name}</figcaption>
+          <figcaption className="mt-1 text-center font-sans text-[11px] text-ink-muted">{open.name}</figcaption>
         </figure>
       )}
     </div>

@@ -31,7 +31,7 @@ export function FailedView({ check }: { check: Check }) {
     <div className="mx-auto max-w-xl px-4 pb-16 pt-10 sm:pt-16">
       <div className="panel p-6 sm:p-8">
         <div className="flex flex-wrap items-center justify-between gap-3">
-          <h1 className="flex items-center gap-2 font-semibold tracking-tight text-2xl text-ink">
+          <h1 className="flex items-center gap-2 font-extrabold tracking-[-0.025em] text-2xl text-ink">
             <TriangleAlert className="h-6 w-6 text-rose-600" aria-hidden="true" />
             Check failed
           </h1>
@@ -41,12 +41,9 @@ export function FailedView({ check }: { check: Check }) {
         <div role="alert" className="mt-6 border border-rose-200 bg-rose-50 p-4 text-sm text-rose-900">
           {check.errorMessage ?? 'The check could not be completed.'}
         </div>
-        <p className="mt-4 text-sm text-ink-soft">
-          No verdicts were produced, so there is nothing to review. This is the “Failed check” demo scenario.
-        </p>
+        <p className="mt-4 text-sm text-ink-soft">No verdicts were produced.</p>
         <p className="mt-2 text-xs text-ink-muted">
-          Started <time dateTime={check.createdAt}>{formatDateTime(check.createdAt)}</time> · ID{' '}
-          <span className="font-mono">{check.id}</span>
+          Started <time dateTime={check.createdAt}>{formatDateTime(check.createdAt)}</time>
         </p>
         {retryError && (
           <p role="alert" className="mt-4 text-sm text-rose-700">
@@ -62,7 +59,6 @@ export function FailedView({ check }: { check: Check }) {
             Back to history
           </Link>
         </div>
-        <p className="mt-3 text-xs text-ink-muted">“Run again” starts a new check with the same input using the Completed scenario.</p>
       </div>
     </div>
   );

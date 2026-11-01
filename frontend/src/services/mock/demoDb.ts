@@ -4,7 +4,7 @@
 import { config } from '../../config';
 import { readJson, removeItem, writeJson } from '../../lib/storage';
 import { deriveTitle } from '../../lib/format';
-import type { AssessmentRevision, Check, ClaimStatus, EvidenceSnapshot } from '../../types/models';
+import type { AssessmentRevision, Check, ClaimStatus, EvidenceSnapshot, FactCheckMatch } from '../../types/models';
 import { seedChecks } from '../../mocks/fixtures';
 
 export interface StoredCheck extends Check {
@@ -23,6 +23,7 @@ export interface StoredClaim {
   status: ClaimStatus;
   evidenceIds: string[];
   unavailableReason?: string;
+  factCheck?: FactCheckMatch;
 }
 
 export interface DemoDb {

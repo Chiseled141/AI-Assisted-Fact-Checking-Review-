@@ -7,7 +7,7 @@ import { HistoryPage } from './features/history/HistoryPage';
 function NotFoundPage() {
   return (
     <div className="mx-auto max-w-xl px-4 py-24 text-center">
-      <h1 className="font-semibold tracking-tight text-3xl text-ink">Page not found</h1>
+      <h1 className="font-extrabold tracking-[-0.025em] text-3xl text-ink">Page not found</h1>
       <p className="mt-3 text-ink-soft">The page you were looking for does not exist.</p>
       <Link to="/" className="btn-primary mt-6">
         Start a new check

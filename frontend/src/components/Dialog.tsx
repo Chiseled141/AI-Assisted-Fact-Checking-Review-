@@ -67,8 +67,8 @@ export function Dialog({ open, title, description, onClose, children, variant = 
 
   const panelClass =
     variant === 'drawer'
-      ? 'fixed inset-x-0 bottom-0 max-h-[88vh] sm:inset-y-0 sm:left-auto sm:right-0 sm:max-h-none sm:w-[min(560px,100vw)]'
-      : `relative m-auto max-h-full w-full ${wide ? 'max-w-2xl' : 'max-w-xl'}`;
+      ? 'fixed inset-x-0 bottom-0 max-h-[88vh] rounded-t-2xl sm:inset-y-0 sm:left-auto sm:right-0 sm:max-h-none sm:w-[min(560px,100vw)] sm:rounded-none'
+      : `relative m-auto max-h-full w-full rounded-xl ${wide ? 'max-w-2xl' : 'max-w-xl'}`;
 
   return createPortal(
     <div className="fixed inset-0 z-50 flex p-4 sm:p-6" role="presentation">
@@ -84,7 +84,7 @@ export function Dialog({ open, title, description, onClose, children, variant = 
       >
         <div className="flex items-start justify-between gap-4 border-b border-line px-5 py-4 sm:px-6">
           <div>
-            <h2 id={titleId} className="font-semibold tracking-tight text-lg text-ink">
+            <h2 id={titleId} className="font-bold tracking-[-0.015em] text-lg text-ink">
               {title}
             </h2>
             {description && (

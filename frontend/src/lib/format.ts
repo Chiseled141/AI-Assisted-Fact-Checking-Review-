@@ -1,6 +1,8 @@
 import type { CheckStatus, EvidenceRelation, InputType, Verdict } from '../types/models';
 
 const dateTime = new Intl.DateTimeFormat('en-US', { dateStyle: 'medium', timeStyle: 'short' });
+const dateOnly = new Intl.DateTimeFormat('en-US', { dateStyle: 'medium' });
+const timeOnly = new Intl.DateTimeFormat('en-US', { timeStyle: 'short' });
 
 const exactDateTime = new Intl.DateTimeFormat('en-US', {
   dateStyle: 'medium',
@@ -34,6 +36,18 @@ export function safeImageSrc(url: string): string | null {
 export function formatDateTime(iso: string): string {
   const date = new Date(iso);
   return Number.isNaN(date.getTime()) ? 'Unknown time' : dateTime.format(date);
+}
+
+/** Date only, for index rows that show the time separately. */
+export function formatDate(iso: string): string {
+  const date = new Date(iso);
+  return Number.isNaN(date.getTime()) ? 'Unknown date' : dateOnly.format(date);
+}
+
+/** Clock time only, for index rows that already show the date. */
+export function formatTime(iso: string): string {
+  const date = new Date(iso);
+  return Number.isNaN(date.getTime()) ? '' : timeOnly.format(date);
 }
 
 export const verdictLabel: Record<Verdict, string> = {

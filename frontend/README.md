@@ -23,9 +23,12 @@ npm run dev        # http://localhost:5173
 
 ## Light and dark mode
 
-The moon/sun button in the header switches between light and dark themes (palette inspired by fireship.dev: coal and beige in dark, warm cream in light, yellow buttons and blue highlights in both). Dark is the default; your choice is saved in `localStorage` (`claimtrace.theme`). Colors are CSS variables
-in `src/index.css` (`:root` for light, `.dark` for dark) that `tailwind.config.js` maps to the usual class names, so
-components don't need separate `dark:` classes. A small script in `index.html` applies the theme before first paint.
+The moon/sun button in the header switches between light and dark themes, in a minimalist developer-tool style:
+near-black graphite surfaces and thin borders with one green accent in dark mode; white and neutral gray with a
+deeper green accent in light mode. Light is the default; your choice is saved in `localStorage` (`claimtrace.theme`).
+Colors are CSS variables in `src/index.css` (`:root` for light, `.dark` for dark) that `tailwind.config.js` maps to
+the usual class names, so components don't need separate `dark:` classes. A small script in `index.html` applies the
+theme before first paint.
 
 ## Demo-mode limitations
 
@@ -52,7 +55,7 @@ components don't need separate `dark:` classes. A small script in `index.html` a
   also record the model and prompt version (`AssessmentRevision.model`).
 - **URLs are not fetched.** URL input is validated (http/https only) but nothing is downloaded. Safe server-side
   URL fetching is separate backend work.
-- **Data lives in this browser only** (`localStorage`, key `claimtrace.demo.v3`). Malformed or outdated data is
+- **Data lives in this browser only** (`localStorage`, key `claimtrace.demo.v7`). Malformed or outdated data is
   discarded and the seed is rebuilt. History → "Reset demo data" restores the seed.
 - **Conflict handling is simulated.** The "Stale correction conflict" scenario injects a concurrent edit on your
   first publish. The real guarantee must come from the backend (see below).

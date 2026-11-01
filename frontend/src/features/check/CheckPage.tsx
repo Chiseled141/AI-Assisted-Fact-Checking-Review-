@@ -67,12 +67,12 @@ export function CheckPage() {
     return (
       <div className="mx-auto max-w-lg px-4 py-24 text-center">
         <SearchX className="mx-auto h-10 w-10 text-ink-muted" aria-hidden="true" />
-        <h1 className="mt-4 font-semibold tracking-tight text-2xl text-ink">
+        <h1 className="mt-4 font-extrabold tracking-[-0.025em] text-2xl text-ink">
           {state.kind === 'not-found' ? 'Check not found' : 'Something went wrong'}
         </h1>
         <p className="mt-2 text-ink-soft">
           {state.kind === 'not-found'
-            ? 'This check is not saved in this browser. Demo data lives in local storage only.'
+            ? 'This check isn’t saved in this browser.'
             : state.message}
         </p>
         <div className="mt-6 flex justify-center gap-3">
