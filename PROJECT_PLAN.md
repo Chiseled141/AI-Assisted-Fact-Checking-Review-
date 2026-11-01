@@ -1,12 +1,12 @@
 # AI Fact-Checking & Misinformation Detector (ClaimTrace) — Project Plan
 
-> Living draft, v1.0 · 2026-11-01 · branch `ATI` (cloud server version)
+> Living draft, v1.3 · 2026-11-01 · branch `ATI` (cloud server version)
 >
 > Based on the ATI final project report (`docs/FINAL PROJECT REPORT-ATI.docx`, status as of 2026-10-05).
 >
 > - **[LLM change]** marks a change to the report: OpenAI is replaced by OpenRouter (DeepSeek or Claude Haiku).
 - **[Search change]** marks a change to the report: Google Custom Search is replaced by Tavily for web search. The report still names Google Custom Search, so the team must decide how the final report handles this.
-- **[Tie-breaker change]** marks the removal of the NLI layer and the addition of a third model that breaks ties between the two judges. The report describes an NLI layer and a single LLM judge, so the final report needs a note.
+- **[NLI change]** marks the removal of the NLI layer. The report describes an NLI layer, so the final report needs a note.
 > - **[Bonus]** marks features the report does not mention. They extend the report and never replace anything in it.
 >
 > Progress statements come from the report and are not proof that code exists in this repository.
@@ -19,7 +19,7 @@
 
 This report presents the mid-term progress of the project "AI Fact-Checking & Misinformation Detector": a system that supports the detection and verification of misinformation in news articles and social media posts. Misinformation, amplified by generative AI, now spreads faster than manual, expert-driven fact-checking can handle. Existing automated tools remain closed boxes: they rarely return per-claim verdicts grounded in traceable, cited evidence, and LLM-only systems hallucinate when evidence is missing.
 
-The proposed system follows a "decompose – retrieve – verify" pipeline. It splits an article into small checkable statements (atomic claims), looks them up against pre-verified fact-checks (Google Fact Check Tools API), and retrieves evidence with a hybrid approach (BM25 + vector search over a trusted news corpus, plus real-time web search). It then uses two LLM judges, with a third model as tie-breaker, to reach a verdict with cited sources. The team analyzed the main design trade-offs (fine-tuned classifiers vs LLMs, local indexes vs live search, large vs small LLMs) and selected a configuration that balances accuracy, cost and explainability.
+The proposed system follows a "decompose – retrieve – verify" pipeline. It splits an article into small checkable statements (atomic claims), looks them up against pre-verified fact-checks (Google Fact Check Tools API), and retrieves evidence with a hybrid approach (BM25 + vector search over a trusted news corpus, plus real-time web search). It then uses two LLM judges to reach a verdict with cited sources. The team analyzed the main design trade-offs (fine-tuned classifiers vs LLMs, local indexes vs live search, large vs small LLMs) and selected a configuration that balances accuracy, cost and explainability.
 
 As of the reporting date (October 5, 2026, week 5), the team has completed the literature survey, the system architecture design, initial data collection (the FEVER, LIAR and AVeriTeC benchmarks), and a baseline prototype (a zero-shot LLM fact-checker with a Streamlit interface). The next weeks focus on the evidence-retrieval module, NLI + LLM Judge verification, end-to-end integration, and quantitative evaluation.
 
@@ -57,7 +57,7 @@ The app lets users verify a news link or a text passage within tens of seconds. 
 1. splits the article into checkable statements;
 2. looks them up against fact-checks already published by fact-checking organizations;
 3. retrieves evidence from a trusted English news corpus and real-time web search;
-4. applies two LLM judges, with a tie-breaker when they disagree, to reach a verdict for each statement;
+4. applies two LLM judges to reach a verdict for each statement; when they disagree, both verdicts are shown and the claim is marked as disputed;
 5. combines these into an overall result with a confidence score, a plain-language explanation and full source links.
 
 The system is a first-pass screening tool for users and journalists. It does not replace the judgment of professional fact-checkers.
@@ -104,13 +104,14 @@ Factcheck-Bench reports that end-to-end systems relying only on an LLM reach a b
 
 The team selected a six-block pipeline (integration details in section 5):
 
-1. **Preprocessing:** content extraction from URLs with trafilatura/newspaper3k, and OCR with PaddleOCR (extension). Cleaning, segmentation and normalization with spaCy (en_core_web_sm).
+1. **Preprocessing:** content extraction from URLs with trafilatura/newspaper3k, and OCR with PaddleOCR (extension). Cleaning, segmentation and normalization with spaCy (en_core_web_sm). The server fetches each source URL from the search results and extracts its article text, so the judges receive text rather than links. Fetches use a timeout, a size limit and a redirect limit. Only URLs from search results are fetched, and private or internal addresses are blocked. A page that cannot be read is marked "not readable" and is not used as support. Only the kept sources of a check (at most 10) are fetched.
 2. **Claim extraction and check-worthiness:** **[LLM change]** a small, low-cost model accessed through **OpenRouter** (DeepSeek or Claude Haiku) with a few-shot prompt that outputs a JSON list of atomic claims with check-worthiness scores. Fallback: fine-tune a RoBERTa/DeBERTa check-worthiness classifier.
 3. **Known-fake lookup:** calls to the Google Fact Check Tools API (`claims.search`, the global ClaimReview corpus, free of charge) with a Redis cache. Embedding similarity between the claim and existing fact-checks gives an instant verdict when a match exists. The matched fact-check's publisher, rating and URL are shown as the source. This stage uses no LLM, so its result does not depend on the two judges.
-4. **Hybrid evidence retrieval:** BM25 combined with dense retrieval using sentence embeddings (e5-large) over a trusted English news corpus (Reuters, AP, BBC, WHO, government portals), crawled on a schedule and indexed in Qdrant. Real-time web search covers fresh topics. **[Search change]** It uses **Tavily** (free tier of 1,000 credits a month, restricted to trusted domains) instead of Google Custom Search, which is closed to new customers and ends on January 1, 2027. HyDE and cross-encoder reranking improve evidence quality.
-5. **Evidence assessment** by LLM judges, with a tie-breaker:
-   - (a) **[LLM change, adjusted]** two LLM judges through **OpenRouter**, DeepSeek and Claude Haiku, run on every claim. Each receives the same top-k evidence and outputs the required schema: label, evidence IDs used, explanation and confidence. Both are kept so their verdicts can be compared.
-   - (b) **[Tie-breaker change]** when the two judges disagree, a third LLM from a different lab than both judges decides the verdict by majority vote. It is called only on disagreement, and its model is set in configuration, not in the user's picker. If all three verdicts differ, the claim is marked "Not enough evidence". All three verdicts are stored in `verdicts` for review.
+4. **Hybrid evidence retrieval:** BM25 combined with dense retrieval using sentence embeddings (e5-large) over a trusted English news corpus (Reuters, AP, BBC, WHO, government portals), crawled on a schedule and indexed in Qdrant. Real-time web search covers fresh topics. **[Search change]** It uses **Tavily** (free tier of 1,000 credits a month, restricted to trusted domains) instead of Google Custom Search, which is closed to new customers and ends on January 1, 2027. HyDE and cross-encoder reranking improve evidence quality. Each Tavily search returns at most 10 links. Each check keeps at most 10 sources in total, and a kept source is shared by every claim that uses it.
+5. **Evidence assessment** by LLM judges:
+   - (a) **[LLM change, adjusted]** two LLM judges through **OpenRouter**, DeepSeek and Claude Haiku, run on every claim. Each receives the same top-k extracted passages, each with its source title, publisher, link and date. The judges cite passages by evidence ID, and the server maps those IDs to links. They output the required schema: label, evidence IDs used, explanation and confidence. Both are kept so their verdicts can be compared.
+   - (b) **Disagreement:** when the two judges disagree, both verdicts are shown and the claim is marked as disputed. The summary shows the first judge's verdict. There is no third vote. Both verdicts are stored in `verdicts`.
+   - (c) **[Source judging]** each kept source is judged by the same two judges for trust, publication date and relevance to the claim. Each judgment gives its reasons. Results are saved per source, so a source is judged once per check, not once per claim.
 6. **Aggregation and explanation:** merge per-claim verdicts (weighted by confidence), derive the article-level conclusion, and generate a clear explanation with citations and highlighted passages.
 
 #### OpenRouter integration [LLM change]
@@ -123,8 +124,8 @@ The team selected a six-block pipeline (integration details in section 5):
 
 #### Judge pair and web search [Adjustment]
 
-- **Search stays in our pipeline.** Judges do not search the web themselves. The retrieval step (trusted corpus plus Tavily) produces the evidence, and both judges receive the same top passages. Built-in web search is turned off for judge calls. Otherwise the judges see different evidence, and the comparison measures the search rather than the judging.
-- **Two judges plus a tie-breaker.** The two judges give the verdict. When they disagree, a third model from a different lab decides by majority. It is called only on disagreement, so it adds cost and latency only in those cases. Test on the 250-claim set whether it helps, and drop it if it doesn't.
+- **Search stays in our pipeline.** Judges do not search the web themselves and never open links. The retrieval step (trusted corpus plus Tavily) produces the evidence, the server fetches each page (step 1), and both judges receive the same extracted text. Built-in web search is turned off for judge calls. Otherwise the judges see different evidence, and the comparison measures the search rather than the judging.
+- **Two judges.** The two judges give the verdict. When they disagree, both verdicts are shown and the claim is marked as disputed. There is no third vote.
 - **No extra models for now.** GPT Luna and GLM are not in the report's OpenRouter choice, and their model IDs are not confirmed. Before either is used:
   1. Confirm the exact OpenRouter model IDs, and confirm with the team that these models are allowed.
   2. Run all four candidates on a small set (about 30 claims) with the same evidence, and pick the pair from the results.
@@ -137,7 +138,7 @@ The team selected a six-block pipeline (integration details in section 5):
 | Fine-tuned classifier (RoBERTa/DeBERTa) vs LLM zero-shot | Classifier: fast, cheap, stable, reproducible | Needs task-specific labeled data; generalizes poorly | Combine: LLM for claim splitting and judging; fine-tune a RoBERTa/DeBERTa check-worthiness classifier if enough data is collected |
 | **[LLM change]** Stronger LLM vs smaller LLM (both via OpenRouter) | Stronger: more accurate, better at subtle context | Smaller: cheap and fast; stronger: more expensive, slower | Smaller model for auxiliary steps (claim splitting), stronger model only for the final judge; measured on the eval set |
 | Real-time RAG (web search) vs pre-indexed local corpus | Live: fresh news. Local: controlled source quality, fast, cheap | Live: noisy, slow, per-query cost. Local: no fresh news | Hybrid: prefer the curated local corpus, add web search when evidence is missing |
-| Tie-breaker vs no tie-breaker | Tie-breaker resolves disagreements; costs one extra call only when the judges disagree | A third model can also be wrong; adds latency on disagreements | Third LLM from a different lab, called only on disagreement; test on the eval set |
+| Third vote vs disputed claims | A third vote could settle disagreements but adds cost and latency | A third model can also be wrong, and majority voting hides the disagreement | Show disagreements as disputed; no third vote |
 | Structured pipeline vs end-to-end LLM | Pipeline: traceable step by step, easier to test, less hallucination | End-to-end: less code, simpler | Pipeline (per SOTA 2024–2025 and the 0.63 F1 of end-to-end systems on Factcheck-Bench), accepting more system complexity |
 | **[LLM change]** Single LLM provider (OpenAI) vs multi-provider gateway (OpenRouter) | Single: simpler integration, one bill, stable JSON schema. Gateway: many models, free tiers, fallback options | Single: vendor lock-in, rate limits concentrated on one provider. Gateway: output formats vary, more integration code | **Gateway: OpenRouter with DeepSeek or Claude Haiku**, with schema validation and a fallback model |
 
@@ -168,7 +169,7 @@ Two-model and Fact Check API comparison [Adjustment]:
 - Agreement between the two judges (percent agreement and Cohen's kappa). Where they disagree, which one matches the human label.
 - Google Fact Check Tools API: the share of claims with a matched published fact-check (fast-path hit rate), and how often the matched rating, mapped to our four labels, matches the human label.
 
-The team also plans ablation studies, removing one component at a time, to measure how much HyDE, web search, the tie-breaker and the LLM judges each contribute to the final result.
+The team also plans ablation studies, removing one component at a time, to measure how much HyDE, web search and the LLM judges each contribute to the final result.
 
 ## 5. System design
 
@@ -182,7 +183,7 @@ User & interface      Web interface
 API layer             FastAPI REST API
        |
 NLP processing        Preprocessing -> Claim extraction -> Known-fake lookup
-                      -> Hybrid retrieval -> LLM judges + tie-breaker -> Aggregation
+                      -> Hybrid retrieval -> LLM judges -> Aggregation
        |
 Data layer            PostgreSQL (check history, user feedback)
                       Qdrant (vector index of the trusted news corpus)
@@ -203,7 +204,7 @@ A full check goes through eight steps:
 3. The claim-extraction module calls the LLM (via OpenRouter) and receives a list of atomic claims with check-worthiness scores. They are stored in the `claims` table.
 4. For each claim, the system queries the Redis cache and the Google Fact Check API. A high-similarity match reuses the existing result (fast path).
 5. Evidence is retrieved from Qdrant (BM25 + vectors) and Google Custom Search. Source metadata is stored in the `evidence` table.
-6. The top-k evidence is passed to the two LLM judges. If they disagree, a third model breaks the tie.
+6. The top-k evidence is passed to the two LLM judges. If they disagree, the claim is marked as disputed.
 7. Per-claim verdicts are combined into the overall result and stored in the `verdicts` table, and the check status is updated.
 8. The interface shows the result: the overall label, confidence, and per-claim explanations with citations. User feedback is stored to improve the system.
 
@@ -245,7 +246,7 @@ A user feedback loop feeds data back to improve prompts and models over time.
 | Interface | React (`frontend/`, TypeScript, Vite, Tailwind) | Demo mode on fixture data today (section 10). |
 | Text NLP | spaCy (en_core_web_sm) | Tokenization and lemmatization for BM25. NLTK is not used. |
 | Retrieval | BM25 (rank_bm25) + Qdrant + e5-large embeddings | Hybrid retrieval over the trusted corpus, with cross-encoder reranking. e5-large is English-only and smaller than BGE-M3. |
-| **[Tie-breaker change]** Assessment models | LLM judges through OpenRouter: two judges, plus a third model as tie-breaker | Tie-breaker only on disagreement; NLI dropped |
+| **[NLI change]** Assessment models | LLM judges through OpenRouter: two judges, with disagreements shown as disputed | NLI dropped; no third vote |
 | **[LLM change, adjusted]** LLM access | **OpenRouter: DeepSeek and Claude Haiku**, both run as judges for the evaluation (claim splitting uses one of them, set in configuration) | Pay-per-token through one OpenAI-compatible API; model IDs in configuration; fallback model for outages |
 | Database and cache | PostgreSQL, Redis | Docker Compose on EC2 |
 | Cloud hosting | Amazon EC2 (Ubuntu), t3.large (2 vCPU, 8 GB) to start, + Nginx reverse proxy | Backend and UI deployed with Docker Compose. Stop the instance when idle, and check memory during a test run before going smaller. |
@@ -283,7 +284,7 @@ The project runs for 16 weeks (September 1 – December 20, 2026), with two-week
 | W5 | Sep 28–Oct 4 | Baseline prototype (zero-shot LLM); midterm report writing | Working prototype, midterm report | Done |
 | W6–7 | Oct 5–18 | Hybrid retrieval module: crawl + index the news corpus, BM25 + vector search, reranking | Complete retrieval service | In progress |
 | W8–9 | Oct 19–Nov 1 | Known-fake lookup + Redis cache; Google Fact Check API integration; claim-splitting prompt tuning | Fast-verification module | Planned |
-| W10–11 | Nov 2–15 | LLM judges + tie-breaker; build the manually labeled evaluation set | Verdict module + 250-sample eval set | Planned |
+| W10–11 | Nov 2–15 | LLM judges; build the manually labeled evaluation set | Verdict module + 250-sample eval set | Planned |
 | W12–13 | Nov 16–29 | End-to-end integration; ablation and tuning; preliminary multimodality (OCR + reverse image search) | Complete end-to-end system | Planned |
 | W14 | Nov 30–Dec 6 | Full evaluation on the eval set; draft final report | Evaluation results, report draft | Planned |
 | W15 | Dec 7–13 | Deploy the demo on AWS EC2; finalize slides and the introduction video | Deployed demo + defense slides | Planned |
@@ -437,4 +438,6 @@ Carried over from the old `PROJECT_CONTEXT.md` handoff.
 | 2026-11-01 | Google Custom Search replaced by Tavily for web search [Search change]; Google closed the API to new customers and it ends on 2027-01-01 | The evidence step must work for a new team account; this differs from the report |
 | 2026-11-01 | NLI model set to DeBERTa-v3-base as a small add-on that runs on every check (the report names DeBERTa-v3 or RoBERTa-large) | Smallest option in the report's DeBERTa-v3 family, cheap to run on EC2 |
 | 2026-11-01 | NLI add-on dropped; a third LLM from a different lab breaks ties when the two judges disagree [Tie-breaker change] | A weak per-passage model should not shape verdicts; the report describes an NLI layer, so the final report needs a note |
+| 2026-11-01 | Source limits: at most 10 links per search and 10 kept sources per check; the two judges also judge each kept source for trust, date and relevance (v1.2) | Keep cost and fetch volume bounded, and make source judgments visible |
+| 2026-11-01 | Tie-breaker dropped. Two judges only; disagreements are shown as disputed, with no third vote (v1.3) | Keep the design simpler, and show disagreement instead of hiding it |
 | 2026-11-01 | Cloud server version finalized as v1.0: Streamlit removed, spaCy only, Qdrant with e5-large, t3.large to start on EC2 | Match the server stack to the choices made for the cloud version |
