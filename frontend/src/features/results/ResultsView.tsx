@@ -1,32 +1,20 @@
-import { useCallback, useEffect, useState } from 'react';
+import { type CSSProperties, useCallback, useEffect, useRef, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
-import { ArrowLeft, ArrowUpRight, PanelRightOpen } from 'lucide-react';
+import { ArrowLeft, ArrowRight, ArrowUpRight } from 'lucide-react';
 import type { AssessmentRevision, CheckDetail, Claim } from '../../types/models';
 import { checkService } from '../../services';
 import { verdictLabel } from '../../lib/format';
-import { CheckSummary } from './CheckSummary';
 import { ClaimCard } from './ClaimCard';
+import { InputSource } from './InputSource';
 import { EvidencePanel, type EvidenceState } from './EvidencePanel';
 import { CorrectionDialog } from './CorrectionDialog';
 import { RevisionDrawer } from './RevisionDrawer';
+import { t } from '../../lib/i18n';
 
 interface Props {
   check: CheckDetail;
   /** Re-fetches the check; resolves with the fresh detail or null on failure. */
   onReload: () => Promise<CheckDetail | null>;
-}
-
-/** Quiet way back to the list a check was opened from. */
-function BackToHistory() {
-  return (
-    <Link
-      to="/history"
-      className="group mb-8 inline-flex items-center gap-1.5 rounded-md font-sans text-xs text-ink-muted transition-colors hover:text-ink"
-    >
-      <ArrowLeft className="h-3.5 w-3.5 transition-transform group-hover:-translate-x-0.5" aria-hidden="true" />
-      Back to history
-    </Link>
-  );
 }
 
 export function ResultsView({ check, onReload }: Props) {
@@ -44,10 +32,10 @@ export function ResultsView({ check, onReload }: Props) {
     setParams(next, { replace: true });
   }
   const [evidenceByClaim, setEvidenceByClaim] = useState<Record<string, EvidenceState>>({});
-  const [active, setActive] = useState<{ evidenceId: string | null; request: number }>({ evidenceId: null, request: 0 });
-  const [evidenceOpen, setEvidenceOpen] = useState(true);
   const [dialog, setDialog] = useState<'review' | 'history' | null>(null);
   const [announcement, setAnnouncement] = useState('');
+
+  const claimsRef = useRef<HTMLElement>(null);
 
   const selected = check.claims.find((claim) => claim.id === selectedId) ?? check.claims[0] ?? null;
   const selectedEvidence = selected ? evidenceByClaim[selected.id] : undefined;
@@ -60,7 +48,7 @@ export function ResultsView({ check, onReload }: Props) {
     } catch {
       setEvidenceByClaim((prev) => ({
         ...prev,
-        [claimId]: { kind: 'error', message: 'Evidence could not be loaded.' },
+        [claimId]: { kind: 'error', message: t('Evidence could not be loaded.') },
       }));
     }
   }, []);
@@ -71,22 +59,10 @@ export function ResultsView({ check, onReload }: Props) {
 
   function selectClaim(claim: Claim) {
     setSelectedId(claim.id);
-    setActive((prev) => ({ evidenceId: null, request: prev.request }));
-    setEvidenceOpen(true);
-  }
-
-  function showCitation(claim: Claim, evidenceId: string) {
-    setSelectedId(claim.id);
-    setActive((prev) => ({ evidenceId, request: prev.request + 1 }));
-    setEvidenceOpen(true);
-  }
-
-  function openEvidence() {
-    setEvidenceOpen(true);
-  }
-
-  function closeEvidence() {
-    setEvidenceOpen(false);
+    // After scrolling down to the sources, bring the newly selected claim back into view.
+    if (claimsRef.current && claimsRef.current.getBoundingClientRect().top < 0) {
+      claimsRef.current.scrollIntoView?.({ block: 'start' });
+    }
   }
 
   function openDialog(claim: Claim, which: 'review' | 'history') {
@@ -97,7 +73,11 @@ export function ResultsView({ check, onReload }: Props) {
   async function handlePublished(revision: AssessmentRevision) {
     await onReload();
     setAnnouncement(
-      `Correction published as revision ${revision.version}. Claim ${selected?.position} is now ${verdictLabel[revision.verdict]}.`,
+      t('Correction published as revision {version}. Claim {position} is now {verdict}.', {
+        version: revision.version,
+        position: selected?.position ?? '',
+        verdict: verdictLabel[revision.verdict],
+      }),
     );
   }
 
@@ -108,17 +88,15 @@ export function ResultsView({ check, onReload }: Props) {
 
   if (check.claims.length === 0) {
     return (
-      <div className="mx-auto w-full max-w-[820px] px-4 pb-24 pt-10 sm:px-6 sm:pt-14">
-        <BackToHistory />
-        <CheckSummary check={check} />
-        <div className="mt-10 border-y border-line py-16 text-center">
-          <h2 className="text-[20px] leading-[1.3] tracking-[-0.015em] text-ink">No claims found</h2>
-          <p className="mt-2 text-sm text-ink-muted">No checkable factual claims were extracted from this input.</p>
+      <div className="mx-auto w-full max-w-[1040px] px-4 pb-24 pt-8 sm:px-6 sm:pt-10">
+        <div className="rounded-2xl border border-line bg-white px-6 py-16 text-center">
+          <h1 className="text-[20px] leading-[1.3] tracking-[-0.015em] text-ink">{t('No claims found')}</h1>
+          <p className="mt-2 text-sm text-ink-muted">{t('No checkable factual claims were extracted from this input.')}</p>
           <Link
             to="/"
             className="mt-6 inline-flex items-center gap-1.5 rounded-full bg-ink py-2 pl-4 pr-3.5 text-sm font-medium text-page transition-opacity hover:opacity-90"
           >
-            Start a new check
+            {t('Start a new check')}
             <ArrowUpRight className="h-4 w-4" aria-hidden="true" />
           </Link>
         </div>
@@ -128,61 +106,72 @@ export function ResultsView({ check, onReload }: Props) {
 
   const evidenceItems = selectedEvidence?.kind === 'ready' ? selectedEvidence.items : null;
 
+  const selectedIndex = selected ? check.claims.indexOf(selected) : -1;
+  const previousClaim = check.claims[selectedIndex - 1];
+  const nextClaim = check.claims[selectedIndex + 1];
+
   return (
-    <div className="mx-auto w-full max-w-[820px] px-4 pb-24 pt-10 sm:px-6 sm:pt-14">
-      <BackToHistory />
-      <CheckSummary check={check} />
+    <div className="mx-auto w-full max-w-[1240px] px-4 pb-24 pt-8 sm:px-8 sm:pt-12">
       <p role="status" aria-live="polite" className="sr-only">
         {announcement}
       </p>
 
-      <section aria-labelledby="claims-heading" className="mt-10">
-        <div className="flex items-baseline justify-between gap-3 border-b border-line pb-2.5">
-          <h2
-            id="claims-heading"
-            className="font-sans text-[13px] font-semibold uppercase tracking-[0.1em] text-ink-muted"
-          >
-            Claims <span className="ml-1 font-normal tabular-nums text-ink-faint">{check.claims.length}</span>
-          </h2>
-          {!evidenceOpen && selected && (
-            <button
-              type="button"
-              className="inline-flex items-center gap-1.5 text-xs text-ink-muted transition-colors hover:text-ink"
-              onClick={openEvidence}
-            >
-              <PanelRightOpen className="h-3.5 w-3.5" aria-hidden="true" />
-              Show evidence · claim {selected.position}
-            </button>
-          )}
-        </div>
+      <InputSource check={check} />
 
-        <ul className="divide-y divide-line border-b border-line">
-          {check.claims.map((claim) => (
-            <li key={claim.id}>
-              <ClaimCard
-                claim={claim}
-                selected={claim.id === selected?.id}
-                expanded={claim.id === selected?.id && evidenceOpen}
-                onSelect={() => selectClaim(claim)}
-              />
-              {claim.id === selected?.id && evidenceOpen && (
-                <div className="border-t border-line pb-8 sm:pl-10">
-                  <EvidencePanel
-                    claim={claim}
-                    evidence={selectedEvidence ?? { kind: 'loading' }}
-                    activeEvidenceId={active.evidenceId}
-                    focusRequest={active.request}
-                    onRetry={() => void loadEvidence(claim.id)}
-                    onCite={(evidenceId) => showCitation(claim, evidenceId)}
-                    onReview={() => openDialog(claim, 'review')}
-                    onShowHistory={() => openDialog(claim, 'history')}
-                    onClose={closeEvidence}
-                  />
-                </div>
-              )}
+      <section ref={claimsRef} aria-labelledby="claims-heading" className="scroll-mt-20">
+        <h2 id="claims-heading" className="sr-only">
+          {t('Claims')}
+        </h2>
+        <ul className="flex flex-col sm:flex-row sm:flex-wrap sm:gap-x-7 sm:border-b sm:border-line">
+          {check.claims.map((claim, index) => (
+            <li
+              key={claim.id}
+              className="press-rise border-b border-line sm:border-b-0"
+              style={{ '--press-delay': `${index * 70}ms` } as CSSProperties}
+            >
+              <ClaimCard claim={claim} selected={claim.id === selected?.id} onSelect={() => selectClaim(claim)} />
             </li>
           ))}
         </ul>
+
+        {selected && (
+          <div key={selected.id} className="press-rise mt-10">
+            <EvidencePanel
+              claim={selected}
+              claimCount={check.claims.length}
+              evidence={selectedEvidence ?? { kind: 'loading' }}
+              onRetry={() => void loadEvidence(selected.id)}
+              onReview={() => openDialog(selected, 'review')}
+            />
+          </div>
+        )}
+
+        {(previousClaim || nextClaim) && (
+          <nav aria-label={t('Move between claims')} className="mt-10 flex flex-wrap items-center justify-between gap-3 border-t border-line pt-6">
+            {previousClaim ? (
+              <button
+                type="button"
+                onClick={() => selectClaim(previousClaim)}
+                className="press-lift inline-flex h-10 items-center gap-1.5 rounded-full border border-line bg-white px-4 text-sm font-medium text-ink-soft hover:border-line-strong hover:text-ink"
+              >
+                <ArrowLeft className="h-4 w-4" aria-hidden="true" />
+                {t('Previous claim')}
+              </button>
+            ) : (
+              <span />
+            )}
+            {nextClaim && (
+              <button
+                type="button"
+                onClick={() => selectClaim(nextClaim)}
+                className="press-lift inline-flex h-10 items-center gap-1.5 rounded-full bg-ink px-4 text-sm font-medium text-page hover:opacity-90"
+              >
+                {t('Next claim')}
+                <ArrowRight className="h-4 w-4" aria-hidden="true" />
+              </button>
+            )}
+          </nav>
+        )}
       </section>
 
       {selected && (

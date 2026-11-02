@@ -1,26 +1,40 @@
 import type { CheckStatus, EvidenceRelation, InputType, Verdict } from '../types/models';
+import { getLanguage, locale, t, translated } from './i18n';
 
-const dateTime = new Intl.DateTimeFormat('en-US', { dateStyle: 'medium', timeStyle: 'short' });
-const dateOnly = new Intl.DateTimeFormat('en-US', { dateStyle: 'medium' });
-const timeOnly = new Intl.DateTimeFormat('en-US', { timeStyle: 'short' });
+const dateTime = () => new Intl.DateTimeFormat(locale(), { dateStyle: 'medium', timeStyle: 'short' });
+const dateOnly = () => new Intl.DateTimeFormat(locale(), { dateStyle: 'medium' });
+const timeOnly = () => new Intl.DateTimeFormat(locale(), { timeStyle: 'short' });
 
-const exactDateTime = new Intl.DateTimeFormat('en-US', {
-  dateStyle: 'medium',
-  timeStyle: 'long',
-});
-const calendarDate = new Intl.DateTimeFormat('en-US', { dateStyle: 'long' });
+const exactDateTime = () =>
+  new Intl.DateTimeFormat(locale(), {
+    dateStyle: 'medium',
+    timeStyle: 'long',
+  });
+const exactTime = () => new Intl.DateTimeFormat(locale(), { timeStyle: 'long' });
+// Vietnamese articles write dates as 6/11/2021, and the long form reads awkwardly mixed with them.
+const calendarDate = () =>
+  getLanguage() === 'vi'
+    ? new Intl.DateTimeFormat(locale(), { day: 'numeric', month: 'numeric', year: 'numeric' })
+    : new Intl.DateTimeFormat(locale(), { dateStyle: 'long' });
 
 /** Date, time to the second, and time zone — for retrieval and capture timestamps. */
 export function formatExactDateTime(iso: string): string {
   const date = new Date(iso);
-  return Number.isNaN(date.getTime()) ? 'Unknown time' : exactDateTime.format(date);
+  return Number.isNaN(date.getTime()) ? t('Unknown time') : exactDateTime().format(date);
+}
+
+/** The same exact moment, split so the date and the time can sit on separate lines. */
+export function formatExactParts(iso: string): { date: string; time: string } {
+  const date = new Date(iso);
+  if (Number.isNaN(date.getTime())) return { date: t('Unknown time'), time: '' };
+  return { date: calendarDate().format(date), time: exactTime().format(date) };
 }
 
 /** Formats a YYYY-MM-DD calendar date without shifting it across time zones. */
 export function formatCalendarDate(ymd: string): string {
   const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(ymd);
-  if (!match) return 'Unknown date';
-  return calendarDate.format(new Date(Number(match[1]), Number(match[2]) - 1, Number(match[3])));
+  if (!match) return t('Unknown date');
+  return calendarDate().format(new Date(Number(match[1]), Number(match[2]) - 1, Number(match[3])));
 }
 
 /** Allows same-origin paths and https URLs as image sources. */
@@ -35,43 +49,44 @@ export function safeImageSrc(url: string): string | null {
 
 export function formatDateTime(iso: string): string {
   const date = new Date(iso);
-  return Number.isNaN(date.getTime()) ? 'Unknown time' : dateTime.format(date);
+  return Number.isNaN(date.getTime()) ? t('Unknown time') : dateTime().format(date);
 }
 
 /** Date only, for index rows that show the time separately. */
 export function formatDate(iso: string): string {
   const date = new Date(iso);
-  return Number.isNaN(date.getTime()) ? 'Unknown date' : dateOnly.format(date);
+  return Number.isNaN(date.getTime()) ? t('Unknown date') : dateOnly().format(date);
 }
 
 /** Clock time only, for index rows that already show the date. */
 export function formatTime(iso: string): string {
   const date = new Date(iso);
-  return Number.isNaN(date.getTime()) ? '' : timeOnly.format(date);
+  return Number.isNaN(date.getTime()) ? '' : timeOnly().format(date);
 }
 
-export const verdictLabel: Record<Verdict, string> = {
+export const verdictLabel = translated<Verdict>({
   supported: 'Supported',
   contradicted: 'Contradicted',
   insufficient_evidence: 'Insufficient evidence',
-};
+  outdated: 'Outdated',
+});
 
-export const relationLabel: Record<EvidenceRelation, string> = {
+export const relationLabel = translated<EvidenceRelation>({
   supporting: 'Supporting',
   contradicting: 'Contradicting',
   contextual: 'Context',
-};
+});
 
-export const statusLabel: Record<CheckStatus, string> = {
+export const statusLabel = translated<CheckStatus>({
   queued: 'Queued',
   extracting: 'Extracting claims',
   retrieving: 'Retrieving evidence',
   assessing: 'Assessing claims',
   completed: 'Completed',
   failed: 'Failed',
-};
+});
 
-export const inputTypeLabel: Record<InputType, string> = { text: 'Text', url: 'URL' };
+export const inputTypeLabel = translated<InputType>({ text: 'Text', url: 'URL' });
 
 /** Only allow http(s) links to be rendered as anchors. */
 export function safeHref(url: string): string | null {
@@ -102,6 +117,8 @@ export function truncate(value: string, max: number): string {
 }
 
 export function pluralize(count: number, singular: string, plural = `${singular}s`): string {
+  // Vietnamese nouns don't change with the count.
+  if (getLanguage() === 'vi') return `${count} ${t(singular)}`;
   return `${count} ${count === 1 ? singular : plural}`;
 }
 

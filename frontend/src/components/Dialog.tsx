@@ -1,6 +1,7 @@
 import { type ReactNode, useEffect, useId, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { X } from 'lucide-react';
+import { t } from '../lib/i18n';
 
 interface DialogProps {
   open: boolean;
@@ -68,11 +69,11 @@ export function Dialog({ open, title, description, onClose, children, variant = 
   const panelClass =
     variant === 'drawer'
       ? 'fixed inset-x-0 bottom-0 max-h-[88vh] rounded-t-2xl sm:inset-y-0 sm:left-auto sm:right-0 sm:max-h-none sm:w-[min(560px,100vw)] sm:rounded-none'
-      : `relative m-auto max-h-full w-full rounded-xl ${wide ? 'max-w-2xl' : 'max-w-xl'}`;
+      : `relative m-auto max-h-full w-full rounded-2xl ${wide ? 'max-w-2xl' : 'max-w-xl'}`;
 
   return createPortal(
     <div className="fixed inset-0 z-50 flex p-4 sm:p-6" role="presentation">
-      <div className="fixed inset-0 bg-ink/20 dark:bg-black/70" aria-hidden="true" onClick={onClose} />
+      <div className="fixed inset-0 bg-ink/20" aria-hidden="true" onClick={onClose} />
       <div
         ref={panelRef}
         role="dialog"
@@ -82,22 +83,22 @@ export function Dialog({ open, title, description, onClose, children, variant = 
         tabIndex={-1}
         className={`${panelClass} flex flex-col overflow-hidden border border-line bg-white shadow-dialog focus:outline-none`}
       >
-        <div className="flex items-start justify-between gap-4 border-b border-line px-5 py-4 sm:px-6">
+        <div className="flex items-start justify-between gap-4 border-b border-line px-5 py-5 sm:px-8">
           <div>
-            <h2 id={titleId} className="font-bold tracking-[-0.015em] text-lg text-ink">
+            <h2 id={titleId} className="text-[22px] font-medium leading-tight tracking-[-0.02em] text-ink">
               {title}
             </h2>
             {description && (
-              <div id={descriptionId} className="mt-1 text-sm text-ink-soft">
+              <div id={descriptionId} className="mt-1.5 text-[15px] leading-snug text-ink-soft">
                 {description}
               </div>
             )}
           </div>
-          <button type="button" onClick={onClose} className="btn-ghost -mr-2 p-2" aria-label="Close">
+          <button type="button" onClick={onClose} className="btn-ghost -mr-2 p-2" aria-label={t('Close')}>
             <X className="h-5 w-5" aria-hidden="true" />
           </button>
         </div>
-        <div className="relative overflow-y-auto px-5 py-5 sm:px-6">{children}</div>
+        <div className="relative overflow-y-auto px-5 py-6 sm:px-8">{children}</div>
       </div>
     </div>,
     document.body,

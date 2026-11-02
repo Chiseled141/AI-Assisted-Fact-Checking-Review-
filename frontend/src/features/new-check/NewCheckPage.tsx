@@ -23,6 +23,7 @@ import { useReveal } from '../../lib/useReveal';
 import { DemoScenarioPicker } from '../demo/DemoScenarioPicker';
 import { getPreferredScenario, setPreferredScenario } from '../demo/demoSettings';
 import { JudgePicker } from './JudgePicker';
+import { getLanguage, t } from '../../lib/i18n';
 
 const tabs: { value: InputType; label: string; Icon: typeof FileText }[] = [
   { value: 'text', label: 'Text', Icon: FileText },
@@ -117,7 +118,7 @@ function HowItWorksSteps() {
                 {String(index + 1).padStart(2, '0')}
               </span>
               <span className="min-w-0 flex-1 text-[18px] font-medium leading-snug tracking-[-0.015em] text-ink sm:text-[21px]">
-                {title}
+                {t(title)}
               </span>
               <ChevronDown
                 className={`h-4 w-4 shrink-0 transition-transform duration-200 ${
@@ -130,7 +131,7 @@ function HowItWorksSteps() {
               <div id={detailId} className="rise-in pb-5 pl-10 pr-1">
                 <ul className="list-disc space-y-2 pl-4 text-[15px] leading-[1.75] text-ink-soft marker:text-ink-faint">
                   {points.map((point) => (
-                    <li key={point}>{point}</li>
+                    <li key={point}>{t(point)}</li>
                   ))}
                 </ul>
               </div>
@@ -213,7 +214,7 @@ export function NewCheckPage() {
       );
       navigate(`/checks/${check.id}`);
     } catch (err) {
-      setServerError(err instanceof ValidationError ? err.message : 'Could not start the check. Please try again.');
+      setServerError(err instanceof ValidationError ? err.message : t('Could not start the check. Please try again.'));
       setSubmitting(false);
     }
   }
@@ -224,14 +225,14 @@ export function NewCheckPage() {
     const { added, errors } = await readTextFiles(picked, files);
     setFiles((prev) => [...prev, ...added]);
     setFileErrors(errors);
-    setFileStatus(added.length > 0 ? `Added ${added.map((file) => file.name).join(', ')}.` : '');
+    setFileStatus(added.length > 0 ? t('Added {names}.', { names: added.map((file) => file.name).join(', ') }) : '');
   }
 
   function removeFile(name: string) {
     setFiles((prev) => prev.filter((file) => file.name !== name));
     setFileErrors([]);
     setServerError(null);
-    setFileStatus(`Removed ${name}.`);
+    setFileStatus(t('Removed {name}.', { name }));
     textRef.current?.focus();
   }
 
@@ -254,11 +255,12 @@ export function NewCheckPage() {
     setMode(example.inputType);
     setAttempted(false);
     setServerError(null);
+    const value = getLanguage() === 'vi' ? example.valueVi : example.value;
     if (example.inputType === 'text') {
-      setText(example.value);
+      setText(value);
       requestAnimationFrame(() => textRef.current?.focus());
     } else {
-      setUrl(example.value);
+      setUrl(value);
       requestAnimationFrame(() => urlRef.current?.focus());
     }
   }
@@ -278,16 +280,16 @@ export function NewCheckPage() {
         <div className="relative mx-auto flex min-h-[calc(100svh-3.5rem)] max-w-5xl flex-col items-center justify-center px-4 py-12 sm:px-8">
           <p className="flex flex-wrap items-center justify-center gap-1.5 text-center text-[13px] text-ink-muted sm:text-sm">
             <Info className="h-4 w-4" aria-hidden="true" />
-            AI can be wrong. Review the evidence.
+            {t('AI can be wrong. Review the evidence.')}
           </p>
 
           <h1 className="mt-6 max-w-3xl text-center text-[30px] font-normal leading-[1.08] tracking-[-0.04em] text-ink sm:text-[42px] lg:text-[48px]">
-            <span className="font-bold text-primary">Trace claims.</span>
-            <span className="block text-ink-muted">Examine evidence.</span>
+            <span className="font-bold text-primary">{t('Trace claims.')}</span>
+            <span className="block text-ink-muted">{t('Examine evidence.')}</span>
           </h1>
 
           <div className="mt-8 w-full max-w-5xl sm:mt-10">
-            <form onSubmit={onSubmit} noValidate aria-label="New check" id="check-composer" className="scroll-mt-20">
+            <form onSubmit={onSubmit} noValidate aria-label={t('New check')} id="check-composer" className="scroll-mt-20">
               <div
                 onDragOver={onDragOver}
                 onDragLeave={(e) => {
@@ -298,11 +300,11 @@ export function NewCheckPage() {
                   dragging ? 'border-brand-200 ring-4 ring-brand-500/10' : ''
                 }`}
               >
-                <div id={ids.panel} role="tabpanel" aria-label={mode === 'text' ? 'Text input' : 'URL input'}>
+                <div id={ids.panel} role="tabpanel" aria-label={mode === 'text' ? t('Text input') : t('URL input')}>
                   {mode === 'text' ? (
                     <>
                       <label htmlFor="check-text" className="sr-only">
-                        Text to check
+                        {t('Text to check')}
                       </label>
                       <textarea
                         id="check-text"
@@ -316,13 +318,13 @@ export function NewCheckPage() {
                           if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) void onSubmit();
                         }}
                         rows={1}
-                        placeholder="Paste a claim or paragraph…"
+                        placeholder={t('Paste a claim or paragraph…')}
                         aria-invalid={Boolean(error)}
                         aria-describedby={describedBy}
                         className="block max-h-80 min-h-[3.5rem] w-full resize-none overflow-y-auto bg-transparent px-1.5 py-1 text-base leading-relaxed text-ink placeholder:text-ink-faint focus:outline-none sm:min-h-[4.5rem] sm:text-lg"
                       />
                       {files.length > 0 && (
-                        <ul className="flex flex-wrap gap-2 px-1.5 pt-2" aria-label="Attached files">
+                        <ul className="flex flex-wrap gap-2 px-1.5 pt-2" aria-label={t('Attached files')}>
                           {files.map((file) => (
                             <li
                               key={file.name}
@@ -334,7 +336,7 @@ export function NewCheckPage() {
                               <button
                                 type="button"
                                 onClick={() => removeFile(file.name)}
-                                aria-label={`Remove ${file.name}`}
+                                aria-label={t('Remove {name}', { name: file.name })}
                                 className="rounded-full p-1 text-ink-muted hover:bg-zinc-200 hover:text-ink"
                               >
                                 <X className="h-3.5 w-3.5" aria-hidden="true" />
@@ -351,8 +353,10 @@ export function NewCheckPage() {
                         </ul>
                       )}
                       <p id={ids.fileHint} className="sr-only">
-                        Up to {config.files.maxFiles} .txt or .md files, {Math.round(config.files.maxBytes / 1024)} KB each.
-                        Files are read in your browser and not uploaded.
+                        {t('Up to {count} .txt or .md files, {size} KB each. Files are read in your browser and not uploaded.', {
+                          count: config.files.maxFiles,
+                          size: Math.round(config.files.maxBytes / 1024),
+                        })}
                       </p>
                       <p className="sr-only" role="status" aria-live="polite">
                         {fileStatus}
@@ -361,7 +365,7 @@ export function NewCheckPage() {
                   ) : (
                     <div className="px-1.5 py-1">
                       <label htmlFor="check-url" className="sr-only">
-                        Article URL
+                        {t('Article URL')}
                       </label>
                       <input
                         id="check-url"
@@ -380,7 +384,7 @@ export function NewCheckPage() {
                         className="block w-full bg-transparent py-1 text-base text-ink placeholder:text-ink-faint focus:outline-none sm:text-lg"
                       />
                       <p id={ids.urlNote} className="mt-1 text-xs text-ink-muted">
-                        Demo only — the page is not fetched.
+                        {t('Demo only — the page is not fetched.')}
                       </p>
                     </div>
                   )}
@@ -392,7 +396,7 @@ export function NewCheckPage() {
                 </div>
 
                 <div className="relative mt-2 flex items-center gap-1.5">
-                  <div role="tablist" aria-label="Input type" className="flex gap-1">
+                  <div role="tablist" aria-label={t('Input type')} className="flex gap-1">
                     {tabs.map(({ value, label, Icon }) => {
                       const selected = mode === value;
                       return (
@@ -408,14 +412,15 @@ export function NewCheckPage() {
                           tabIndex={selected ? 0 : -1}
                           onClick={() => selectMode(value)}
                           onKeyDown={onTabKeyDown}
-                          className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-sm transition-colors ${
+                          className={`inline-flex items-center gap-1.5 whitespace-nowrap rounded-full border px-3 py-1.5 text-sm transition-colors ${
                             selected
                               ? 'border-brand-200 bg-brand-50 font-semibold text-brand-700'
-                              : 'border-transparent text-ink-muted hover:bg-white/70 hover:text-ink dark:hover:bg-white/10'
+                              : 'border-transparent text-ink-muted hover:bg-white/70 hover:text-ink'
                           }`}
                         >
                           <Icon className="h-4 w-4" aria-hidden="true" />
-                          {label}
+                          {/* Icon only on narrow phones, so the send button stays inside the box. */}
+                          <span className="sr-only min-[420px]:not-sr-only">{t(label)}</span>
                         </button>
                       );
                     })}
@@ -440,10 +445,10 @@ export function NewCheckPage() {
                         type="button"
                         onClick={() => fileInputRef.current?.click()}
                         disabled={atFileLimit}
-                        aria-label="Add files"
+                        aria-label={t('Add files')}
                         aria-describedby={ids.fileHint}
-                        title="Add .txt or .md files (or drop them here)"
-                        className="inline-flex h-9 w-9 items-center justify-center rounded-full text-ink-muted transition-colors hover:bg-white/70 hover:text-ink disabled:cursor-not-allowed disabled:opacity-40 dark:hover:bg-white/10"
+                        title={t('Add .txt or .md files (or drop them here)')}
+                        className="inline-flex h-9 w-9 items-center justify-center rounded-full text-ink-muted transition-colors hover:bg-white/70 hover:text-ink disabled:cursor-not-allowed disabled:opacity-40"
                       >
                         <Paperclip className="h-4 w-4" aria-hidden="true" />
                       </button>
@@ -458,12 +463,12 @@ export function NewCheckPage() {
                         className={`hidden font-sans text-xs tabular-nums sm:inline ${overLimit ? 'text-rose-700' : 'text-ink-faint'}`}
                       >
                         {text.length.toLocaleString('en-US')} / {config.text.maxLength.toLocaleString('en-US')}
-                        <span className="sr-only"> characters</span>
+                        <span className="sr-only"> {t('characters')}</span>
                       </span>
                     )}
                     <button
                       type="submit"
-                      aria-label="Check claims"
+                      aria-label={t('Check claims')}
                       className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary text-on-primary transition-colors hover:bg-primary-hover disabled:cursor-not-allowed disabled:opacity-50"
                       disabled={submitting}
                     >
@@ -480,7 +485,7 @@ export function NewCheckPage() {
 
             <section aria-labelledby="examples-heading" className="mt-5 flex flex-col items-center sm:mt-6">
               <h2 id="examples-heading" className="sr-only">
-                Examples
+                {t('Examples')}
               </h2>
               <ul className="flex flex-wrap justify-center gap-2.5">
                 {exampleInputs.map((example) => (
@@ -491,7 +496,7 @@ export function NewCheckPage() {
                       ) : (
                         <Link2 className="h-4 w-4 text-brand-600" aria-hidden="true" />
                       )}
-                      {example.label}
+                      {t(example.label)}
                     </button>
                   </li>
                 ))}
@@ -504,7 +509,7 @@ export function NewCheckPage() {
                 className="inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs text-ink-faint transition-colors hover:text-ink"
               >
                 <ChevronDown className="h-3.5 w-3.5 motion-safe:animate-bounce" aria-hidden="true" />
-                How it works
+                {t('How it works')}
               </a>
             </div>
           </div>
@@ -514,15 +519,15 @@ export function NewCheckPage() {
       <section id="how-it-works" aria-labelledby="how-heading" className="scroll-mt-16">
         <div className="mx-auto w-full max-w-5xl px-4 pb-12 pt-8 sm:px-8 sm:pb-16 sm:pt-10">
           <div className="mx-auto max-w-2xl text-center">
-            <p className="text-[13px] font-medium text-brand-600">Guide</p>
+            <p className="text-[13px] font-medium text-brand-600">{t('Guide')}</p>
             <h2
               id="how-heading"
               className="mt-2.5 text-[28px] font-medium leading-[1.15] tracking-[-0.025em] text-ink sm:mt-3 sm:text-[38px]"
             >
-              How it works
+              {t('How it works')}
             </h2>
             <p className="mx-auto mt-2.5 max-w-[30rem] text-[15px] leading-[1.65] text-ink-soft">
-              How a check runs — and where each verdict comes from.
+              {t('How a check runs — and where each verdict comes from.')}
             </p>
             <a
               href="#check-composer"
@@ -531,7 +536,7 @@ export function NewCheckPage() {
               }}
               className="mt-5 inline-flex items-center gap-1.5 rounded-full bg-ink py-2.5 pl-4 pr-3.5 text-sm font-medium text-page transition-opacity hover:opacity-90"
             >
-              Start a check
+              {t('Start a check')}
               <ArrowUpRight className="h-4 w-4" aria-hidden="true" />
             </a>
           </div>

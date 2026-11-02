@@ -3,6 +3,7 @@ import { X } from 'lucide-react';
 import type { Attachment } from '../types/models';
 import { isSafeImageDataUrl } from '../lib/validation';
 import { formatBytes } from '../lib/format';
+import { t } from '../lib/i18n';
 
 interface Props {
   items: Attachment[];
@@ -19,14 +20,14 @@ export function ScreenshotThumbs({ items, onRemove }: Props) {
 
   return (
     <div>
-      <ul className="flex flex-wrap gap-2" aria-label="Screenshots">
+      <ul className="flex flex-wrap gap-2" aria-label={t('Screenshots')}>
         {safe.map((item) => (
           <li key={item.id} className="relative">
             <button
               type="button"
               onClick={() => setOpenId(openId === item.id ? null : item.id)}
               aria-expanded={openId === item.id}
-              aria-label={`${openId === item.id ? 'Hide' : 'View'} screenshot ${item.name}`}
+              aria-label={t(openId === item.id ? 'Hide screenshot {name}' : 'View screenshot {name}', { name: item.name })}
               className={`block h-20 w-28 overflow-hidden border bg-zinc-50 ${openId === item.id ? 'border-brand-500' : 'border-line hover:border-line-strong'}`}
             >
               <img src={item.dataUrl} alt="" className="h-full w-full object-cover" />
@@ -38,7 +39,7 @@ export function ScreenshotThumbs({ items, onRemove }: Props) {
               <button
                 type="button"
                 onClick={() => onRemove(item.id)}
-                aria-label={`Remove screenshot ${item.name}`}
+                aria-label={t('Remove screenshot {name}', { name: item.name })}
                 className="absolute -right-2 -top-2 rounded-full border border-line bg-white p-1 text-ink-muted shadow-sm hover:text-ink"
               >
                 <X className="h-3 w-3" aria-hidden="true" />
@@ -49,7 +50,7 @@ export function ScreenshotThumbs({ items, onRemove }: Props) {
       </ul>
       {open && (
         <figure className="mt-3 border border-line bg-zinc-50 p-2">
-          <img src={open.dataUrl} alt={`Screenshot: ${open.name}`} className="mx-auto max-h-[60vh] w-auto" />
+          <img src={open.dataUrl} alt={t('Screenshot: {name}', { name: open.name })} className="mx-auto max-h-[60vh] w-auto" />
           <figcaption className="mt-1 text-center font-sans text-[11px] text-ink-muted">{open.name}</figcaption>
         </figure>
       )}

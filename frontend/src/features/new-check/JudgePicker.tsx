@@ -2,6 +2,7 @@ import { useEffect, useId, useRef, useState } from 'react';
 import { Check } from 'lucide-react';
 import { config } from '../../config';
 import { judgeName } from '../../lib/judges';
+import { t } from '../../lib/i18n';
 
 type JudgeOption = (typeof config.judges.options)[number];
 
@@ -10,13 +11,13 @@ interface Props {
   onChange: (ids: string[]) => void;
 }
 
-/** The lab's logo. Mono marks flip to white in dark mode; brand-colour logos are shown as they are. */
+/** The lab's logo. */
 function JudgeLogo({ option, className }: { option: JudgeOption; className: string }) {
   return (
     <img
       src={option.logo}
       alt=""
-      className={`shrink-0 ${option.mono ? 'dark:invert' : ''} ${className}`}
+      className={`shrink-0 ${className}`}
       draggable={false}
     />
   );
@@ -71,10 +72,10 @@ export function JudgePicker({ value, onChange }: Props) {
         type="button"
         aria-expanded={open}
         aria-controls={menuId}
-        aria-label={`Judges: ${label}`}
-        title={`Judges: ${label}`}
+        aria-label={t('Judges: {label}', { label })}
+        title={t('Judges: {label}', { label })}
         onClick={() => setOpen((current) => !current)}
-        className="inline-flex h-8 shrink-0 items-center gap-2 rounded-full px-2 font-sans text-xs text-ink-muted transition-colors hover:bg-white/70 hover:text-ink dark:hover:bg-white/10"
+        className="inline-flex h-8 shrink-0 items-center gap-2 rounded-full px-2 font-sans text-xs text-ink-muted transition-colors hover:bg-white/70 hover:text-ink"
       >
         <span className="flex items-center gap-1" aria-hidden="true">
           {selectedOptions.map((option) => (
@@ -88,11 +89,11 @@ export function JudgePicker({ value, onChange }: Props) {
         <div
           ref={menuRef}
           id={menuId}
-          className="absolute bottom-full right-0 z-40 mb-2 w-[20rem] max-w-[calc(100vw-2.5rem)] rounded-2xl border border-line bg-white p-1.5 text-left shadow-[0_24px_60px_-24px_rgb(18_56_41_/_0.35)] dark:border-white/10 dark:bg-[#151b19] dark:shadow-black/50"
+          className="absolute bottom-full right-0 z-40 mb-2 w-[20rem] max-w-[calc(100vw-2.5rem)] rounded-2xl border border-line bg-white p-1.5 text-left shadow-[0_24px_60px_-24px_rgb(18_56_41_/_0.35)]"
         >
           <fieldset>
             <legend className="px-3 pb-1 pt-2 font-sans text-xs text-ink-muted">
-              Judges for the next check. Pick {config.judges.count}; a new pick replaces the older one.
+              {t('Judges for the next check. Pick {count}; a new pick replaces the older one.', { count: config.judges.count })}
             </legend>
             <div className="space-y-0.5">
               {config.judges.options.map((option) => {
@@ -102,8 +103,8 @@ export function JudgePicker({ value, onChange }: Props) {
                     key={option.id}
                     className={`flex cursor-pointer items-center gap-3 rounded-xl px-3 py-3 font-sans text-sm transition-colors has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-brand-500/40 ${
                       selected
-                        ? 'bg-zinc-100/70 text-ink dark:bg-white/[0.08]'
-                        : 'text-ink-soft hover:bg-zinc-100/70 dark:hover:bg-white/[0.06]'
+                        ? 'bg-zinc-100/70 text-ink'
+                        : 'text-ink-soft hover:bg-zinc-100/70'
                     }`}
                   >
                     <span
@@ -111,7 +112,7 @@ export function JudgePicker({ value, onChange }: Props) {
                       className={`flex h-4 w-4 shrink-0 items-center justify-center rounded border transition-colors ${
                         selected
                           ? 'border-brand-600 bg-brand-600 text-on-primary'
-                          : 'border-line-strong bg-white dark:bg-transparent'
+                          : 'border-line-strong bg-white'
                       }`}
                     >
                       {selected && <Check className="h-3 w-3" strokeWidth={3} aria-hidden="true" />}

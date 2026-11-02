@@ -18,8 +18,10 @@ import {
   PARTIAL_FAILURE_REASON,
   STALE_CONFLICT_AUTHOR,
   fixtureClaims,
+  seedChecks,
 } from '../../mocks/fixtures';
 import type { FixtureRevision } from '../../mocks/fixtures';
+import { sourceAnalysis, sourceRatings } from '../../mocks/sourceAnalysis';
 import type {
   AssessmentRevision,
   Check,
@@ -30,6 +32,7 @@ import type {
   CreateCheckInput,
   EvidenceSnapshot,
   JudgeVerdict,
+  SourceAnalysis,
   ListChecksParams,
   Page,
 } from '../../types/models';
@@ -37,6 +40,8 @@ import { isTerminal } from '../../types/models';
 import type { CheckService, PublishCorrectionResult } from '../contract';
 import { NotFoundError, ValidationError, VersionConflictError } from '../errors';
 import { type DemoDb, type StoredCheck, loadDb, saveDb } from './demoDb';
+import { getLanguage, t } from '../../lib/i18n';
+import { realExampleClaimsVi } from '../../mocks/realExample';
 
 let latency: number = config.mockLatency;
 
@@ -93,12 +98,22 @@ function advance(db: DemoDb, check: StoredCheck, now: number): boolean {
   return true;
 }
 
+/** A submitted URL the demo has real claims for. */
+function knownUrlExample(url: string | undefined) {
+  return url ? seedChecks.find((seed) => seed.value === url && seed.article) : undefined;
+}
+
 function materializeClaims(db: DemoDb, check: StoredCheck): void {
   const createdMs = new Date(check.createdAt).getTime();
   const retrievedAt = new Date(createdMs + stage.queued + stage.extracting + stage.retrieving / 2).toISOString();
   const assessedAt = new Date(createdMs + COMPLETES_AFTER).toISOString();
 
-  fixtureClaims.forEach((fixture, index) => {
+  const claims =
+    seedChecks.find((seed) => seed.id === check.id)?.claims ??
+    knownUrlExample(check.inputUrl)?.claims ??
+    (check.language === 'vi' ? realExampleClaimsVi : fixtureClaims);
+
+  claims.forEach((fixture, index) => {
     const claimId = `${check.id}_c${index + 1}`;
     const unavailable = check.scenario === 'partial_failure' && fixture.failsInPartialScenario;
     const evidenceIdByKey = new Map<string, string>();
@@ -121,9 +136,13 @@ function materializeClaims(db: DemoDb, check: StoredCheck): void {
           publishedAt: item.publishedAt,
           updatedAt: item.updatedAt,
           retrievedAt: fetchedAt,
+          imageUrl: item.imageUrl,
           // Illustrative captures ship in public/captures (one per fixture source).
-          capture: { url: `/captures/${item.key}.svg`, capturedAt: fetchedAt, width: 1280, height: 800 },
+          ...(item.noCapture
+            ? {}
+            : { capture: { url: `/captures/${item.key}.svg`, capturedAt: fetchedAt, width: 1280, height: 800 } }),
           relation: item.relation,
+          analysis: analysisFor(check, item.key),
         };
       });
     }
@@ -133,6 +152,7 @@ function materializeClaims(db: DemoDb, check: StoredCheck): void {
       checkId: check.id,
       position: index + 1,
       text: fixture.text,
+      topic: fixture.topic,
       timeContext: fixture.timeContext,
       status: unavailable ? 'unavailable' : 'assessed',
       evidenceIds: [...evidenceIdByKey.values()],
@@ -159,7 +179,7 @@ function materializeClaims(db: DemoDb, check: StoredCheck): void {
               Object.entries(revision.freshness ?? {}).map(([key, judgment]) => [evidenceIdByKey.get(key)!, judgment]),
             ),
             ...(revision.kind === 'ai_assessment' ? { model: FIXTURE_MODEL } : {}),
-            ...(revision.judges ? { judges: judgesFor(check, revision.judges) } : {}),
+            ...(revision.judges ? { judges: judgesFor(check, revision.judges, revision.rationale) } : {}),
             author: revision.author,
             createdAt:
               revision.kind === 'ai_assessment'
@@ -169,21 +189,35 @@ function materializeClaims(db: DemoDb, check: StoredCheck): void {
     db.revisions[claimId] = revisions;
   });
 
-  check.claimCount = fixtureClaims.length;
+  check.claimCount = claims.length;
 }
 
 /**
  * Fixture verdicts are simulated. The judge names come from the judges the check was started
  * with, in order; the first judge is the one whose verdict the revision shows.
  */
-function judgesFor(check: StoredCheck, judges: NonNullable<FixtureRevision['judges']>): JudgeVerdict[] {
+function judgesFor(check: StoredCheck, judges: NonNullable<FixtureRevision['judges']>, rationale: string): JudgeVerdict[] {
   const ids = check.judgeIds ?? config.judges.defaultIds;
   return judges.map((judge, index) => ({
     judge: judgeName(ids[index]),
     verdict: judge.verdict,
     confidence: judge.confidence,
+    review: judge.review ?? rationale,
     primary: index === 0,
   }));
+}
+
+/** The notes are simulated too, and get their judge names from the check the same way. */
+function analysisFor(check: StoredCheck, evidenceKey: string): SourceAnalysis | undefined {
+  const analysis = sourceAnalysis[evidenceKey];
+  if (!analysis) return undefined;
+  const ids = check.judgeIds ?? config.judges.defaultIds;
+  const { judgeNotes, ...rest } = analysis;
+  const ratings = sourceRatings[evidenceKey];
+  return {
+    ...rest,
+    judgeNotes: judgeNotes.map((note, index) => ({ judge: judgeName(ids[index]), note, ratings: ratings[index] })),
+  };
 }
 
 function toCheck(stored: StoredCheck): Check {
@@ -252,18 +286,21 @@ export const mockCheckService: CheckService = {
       input.inputType === 'text' && value.trim() === '' && files.length > 0
         ? files.map((file) => file.name).join(', ')
         : deriveTitle(input.inputType, value);
+    const example = input.inputType === 'url' ? knownUrlExample(value.trim()) : undefined;
     const check: StoredCheck = {
       id: newId('chk'),
       title,
       inputType: input.inputType,
       ...(input.inputType === 'text' ? { inputText: value.trim() } : { inputUrl: value.trim() }),
       ...(files.length > 0 ? { files: files.map(({ name, size, text }) => ({ name, size, text })) } : {}),
+      ...(example ? { article: example.article, claimsMatchInput: true } : {}),
       status: 'queued',
       createdAt: now,
       updatedAt: now,
       scenario: input.scenario ?? 'completed',
       judgeIds,
       seeded: false,
+      language: getLanguage(),
     };
     db.checks[check.id] = check;
     saveDb(db);
@@ -293,6 +330,8 @@ export const mockCheckService: CheckService = {
 
     const matches = Object.values(db.checks)
       .filter((check) => {
+        const language = seedChecks.find((seed) => seed.id === check.id)?.language;
+        if (language && language !== getLanguage()) return false;
         if (status === 'processing' && isTerminal(check.status)) return false;
         if (status === 'completed' && check.status !== 'completed') return false;
         if (status === 'failed' && check.status !== 'failed') return false;
@@ -326,31 +365,31 @@ export const mockCheckService: CheckService = {
     const check = requireCheck(db, claim.checkId);
 
     if (claim.status !== 'assessed') {
-      throw new ValidationError('This claim has no assessment to correct because verification was unavailable.');
+      throw new ValidationError(t('This claim has no assessment to correct because verification was unavailable.'));
     }
     const reason = request.reason.trim();
     if (reason.length < config.correction.minReasonLength) {
-      throw new ValidationError(`Explain the correction in at least ${config.correction.minReasonLength} characters.`);
+      throw new ValidationError(t('Explain the correction in at least {count} characters.', { count: config.correction.minReasonLength }));
     }
     if (request.evidenceIds.some((id) => !claim.evidenceIds.includes(id))) {
-      throw new ValidationError('Corrections can only cite evidence already attached to this claim.');
+      throw new ValidationError(t('Corrections can only cite evidence already attached to this claim.'));
     }
     const attachments = request.attachments ?? [];
     const shots = config.correction.screenshots;
     const allowedTypes: readonly string[] = shots.types;
     if (attachments.length > shots.maxFiles) {
-      throw new ValidationError(`You can attach up to ${shots.maxFiles} screenshots.`);
+      throw new ValidationError(t('You can attach up to {count} screenshots.', { count: shots.maxFiles }));
     }
     if (attachments.some((a) => !allowedTypes.includes(a.type) || !isSafeImageDataUrl(a.dataUrl))) {
-      throw new ValidationError('Screenshots must be PNG, JPG, WebP, or GIF images.');
+      throw new ValidationError(t('Screenshots must be PNG, JPG, WebP, or GIF images.'));
     }
     const freshness = request.citationFreshness ?? {};
     for (const [evidenceId, judgment] of Object.entries(freshness)) {
       if (!request.evidenceIds.includes(evidenceId)) {
-        throw new ValidationError('Freshness can only be set for evidence cited in this correction.');
+        throw new ValidationError(t('Freshness can only be set for evidence cited in this correction.'));
       }
       if (judgment.status === 'outdated' && !judgment.reason?.trim()) {
-        throw new ValidationError('Explain why each outdated source no longer applies.');
+        throw new ValidationError(t('Explain why each outdated source no longer applies.'));
       }
     }
 

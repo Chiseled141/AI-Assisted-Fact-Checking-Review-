@@ -6,7 +6,7 @@
   /*
    * Color channels ("r g b") consumed by tailwind.config.js.
    * Qoder-inspired: neutral graphite surfaces, thin borders, one green accent.
-   * Light theme: crisp white/gray. Dark theme: near-black canvas, off-white text.
+   * Crisp white and gray surfaces.
    */
   :root {
     color-scheme: light;
@@ -62,58 +62,6 @@
     --primary-edge: 5 150 105;
   }
 
-  .dark {
-    color-scheme: dark;
-    --surface: 17 19 21;
-    --ink: 235 237 239;
-    --ink-soft: 197 202 207;
-    --ink-muted: 138 144 150;
-    --ink-faint: 122 129 136;
-    --line: 32 35 38;
-    --line-strong: 49 53 57;
-    --brand-50: 10 31 23;
-    --brand-100: 14 44 32;
-    --brand-200: 22 68 47;
-    --brand-500: 34 197 94;
-    --brand-600: 74 222 128;
-    --brand-700: 134 239 172;
-    --brand-900: 220 252 231;
-    --zinc-50: 15 17 19;
-    --zinc-100: 22 25 28;
-    --zinc-200: 30 34 37;
-    --zinc-300: 46 51 55;
-    --zinc-600: 138 144 150;
-    --zinc-700: 197 202 207;
-    --emerald-50: 8 30 23;
-    --emerald-200: 18 66 48;
-    --emerald-700: 52 211 153;
-    --emerald-800: 110 231 183;
-    --emerald-900: 167 243 208;
-    --rose-50: 32 13 15;
-    --rose-200: 87 28 34;
-    --rose-400: 248 113 113;
-    --rose-600: 248 113 113;
-    --rose-700: 252 165 165;
-    --rose-800: 254 205 211;
-    --rose-900: 255 228 230;
-    --amber-50: 30 23 8;
-    --amber-200: 90 55 10;
-    --amber-300: 120 70 12;
-    --amber-400: 251 191 36;
-    --amber-700: 251 191 36;
-    --amber-800: 253 230 138;
-    --amber-900: 254 243 199;
-    --amber-950: 255 251 235;
-    --page: 9 10 11;
-    --primary: 0 210 106;
-    --primary-hover: 56 227 133;
-    --on-primary: 6 12 9;
-    --pop: 74 222 128;
-    --candy: 245 180 80;
-    --flame: 74 222 128;
-    --fire-edge: 9 10 11;
-    --primary-edge: 0 210 106;
-  }
   body {
     /* A slightly heavier reading weight, like an editorial news face. */
     @apply bg-page font-sans text-ink antialiased;
@@ -167,13 +115,6 @@
       radial-gradient(45% 45% at 84% 18%, rgb(196 214 234 / 0.55), transparent 70%),
       linear-gradient(180deg, #eef3ef 0%, rgb(var(--page)) 58%);
   }
-  .dark .home-atmosphere {
-    background-image:
-      radial-gradient(70% 55% at 50% -12%, rgb(16 185 129 / 0.19), transparent 65%),
-      radial-gradient(45% 45% at 84% 18%, rgb(59 130 246 / 0.09), transparent 70%),
-      linear-gradient(180deg, #0e1412 0%, rgb(var(--page)) 58%);
-  }
-
   /* Frosted composer used on the landing page. */
   .home-composer {
     border: 1px solid rgb(255 255 255 / 0.72);
@@ -184,14 +125,6 @@
     backdrop-filter: blur(24px) saturate(1.15);
     -webkit-backdrop-filter: blur(24px) saturate(1.15);
   }
-  .dark .home-composer {
-    border-color: rgb(255 255 255 / 0.08);
-    background: rgb(255 255 255 / 0.04);
-    box-shadow:
-      0 30px 90px -42px rgb(0 0 0 / 0.9),
-      inset 0 1px 0 rgb(255 255 255 / 0.04);
-  }
-
   /* Fade the top of the dotted world into the page behind the composer. */
   .world-map {
     -webkit-mask-image: linear-gradient(to bottom, transparent 1%, #000 19%);
@@ -211,14 +144,6 @@
     color: rgb(var(--ink));
     background: rgb(255 255 255 / 0.9);
   }
-  .dark .home-pill {
-    background: rgb(255 255 255 / 0.045);
-    border-color: rgb(255 255 255 / 0.09);
-  }
-  .dark .home-pill:hover {
-    background: rgb(255 255 255 / 0.09);
-    color: rgb(var(--ink));
-  }
 }
 
 /* Scroll reveal: elements rise and fade in once they enter the viewport (see useReveal). */
@@ -232,6 +157,47 @@
 .reveal.is-visible {
   opacity: 1;
   transform: none;
+}
+
+/* Check result pages: section labels match the homepage's "Guide" label; slow fades, and photos that drift in on hover. */
+.press-label {
+  font-size: 13px;
+  font-weight: 500;
+  color: rgb(var(--brand-600));
+}
+@keyframes press-rise {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+.press-rise {
+  animation: press-rise 800ms cubic-bezier(0.16, 1, 0.3, 1) both;
+  animation-delay: var(--press-delay, 0ms);
+}
+.press .reveal {
+  transition:
+    opacity 800ms cubic-bezier(0.16, 1, 0.3, 1),
+    transform 800ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+.press-lift {
+  transition:
+    transform 400ms cubic-bezier(0.16, 1, 0.3, 1),
+    border-color 400ms cubic-bezier(0.16, 1, 0.3, 1),
+    background-color 400ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+.press-lift:hover {
+  transform: translateY(-2px);
+}
+.press-photo {
+  transition: transform 6s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.press-card:hover .press-photo {
+  transform: scale(1.06);
 }
 
 /* Entrance for panels that appear on click. */
@@ -271,6 +237,13 @@ html {
 @media (prefers-reduced-motion: reduce) {
   .reveal {
     opacity: 1;
+    transform: none;
+  }
+  .press-rise {
+    animation: none;
+  }
+  .press-lift:hover,
+  .press-card:hover .press-photo {
     transform: none;
   }
   *,

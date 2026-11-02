@@ -5,6 +5,7 @@ import { PROCESSING_STAGES } from '../../types/models';
 import { formatDateTime, statusLabel } from '../../lib/format';
 import { DemoModeLabel } from '../../components/Badges';
 import { config } from '../../config';
+import { t } from '../../lib/i18n';
 
 const stageHint: Record<(typeof PROCESSING_STAGES)[number], string> = {
   queued: 'Waiting for a worker',
@@ -53,28 +54,28 @@ export function ProcessingView({ check }: { check: Check }) {
               <span className="absolute inline-flex h-full w-full rounded-full bg-brand-500 opacity-50 motion-safe:animate-ping" />
               <span className="relative inline-flex h-2 w-2 rounded-full bg-brand-500" />
             </span>
-            Live check
+            {t('Live check')}
           </p>
           <DemoModeLabel />
         </div>
 
         <h1 className="mt-5 text-[30px] font-medium leading-[1.12] tracking-[-0.03em] text-ink sm:mt-6 sm:text-[40px]">
-          Checking claims
+          {t('Checking claims')}
         </h1>
         <p className="mt-3 break-words text-[15px] leading-[1.7] text-ink-soft">{check.title}</p>
         <p className="mt-1.5 text-xs text-ink-faint">
-          Started <time dateTime={check.createdAt}>{formatDateTime(check.createdAt)}</time>
+          {t('Started')} <time dateTime={check.createdAt}>{formatDateTime(check.createdAt)}</time>
         </p>
 
         <p className="sr-only" role="status" aria-live="polite">
-          Current stage: {statusLabel[check.status]}
+          {t('Current stage: {stage}', { stage: statusLabel[check.status] })}
         </p>
 
         <div className="mt-9 sm:mt-10">
           <div className="flex items-baseline justify-between gap-4">
-            <p className="text-[13px] text-ink-muted">Check progress</p>
+            <p className="text-[13px] text-ink-muted">{t('Check progress')}</p>
             <p className="text-[13px] tabular-nums text-ink-muted">
-              Stage <span className="font-medium text-ink">{currentIndex + 1}</span> of {TOTAL_STAGES}
+              {t('Stage {current} of {total}', { current: currentIndex + 1, total: TOTAL_STAGES })}
             </p>
           </div>
           <div className="mt-2.5 flex gap-1.5" aria-hidden="true">
@@ -100,7 +101,7 @@ export function ProcessingView({ check }: { check: Check }) {
           </div>
         </div>
 
-        <ol className="mt-7 border-t border-line" aria-label="Processing stages">
+        <ol className="mt-7 border-t border-line" aria-label={t('Processing stages')}>
           {PROCESSING_STAGES.map((stage, index) => {
             const done = index < currentIndex;
             const active = index === currentIndex;
@@ -129,7 +130,7 @@ export function ProcessingView({ check }: { check: Check }) {
                     }`}
                   >
                     {statusLabel[stage]}
-                    <span className="sr-only">{done ? ' — done' : active ? ' — in progress' : ' — pending'}</span>
+                    <span className="sr-only">{done ? t(' — done') : active ? t(' — in progress') : t(' — pending')}</span>
                   </p>
                   {done ? (
                     <CheckIcon className="h-4 w-4 shrink-0 text-brand-600" strokeWidth={2.5} aria-hidden="true" />
@@ -144,9 +145,9 @@ export function ProcessingView({ check }: { check: Check }) {
                 </div>
                 {active && (
                   <div className="rise-in pl-10">
-                    <p className="mt-1.5 text-[15px] leading-[1.7] text-ink-soft">{stageHint[stage]}</p>
+                    <p className="mt-1.5 text-[15px] leading-[1.7] text-ink-soft">{t(stageHint[stage])}</p>
                     {nextStage && (
-                      <p className="mt-1.5 text-xs text-ink-faint">Up next · {statusLabel[nextStage]}</p>
+                      <p className="mt-1.5 text-xs text-ink-faint">{t('Up next · {stage}', { stage: statusLabel[nextStage] })}</p>
                     )}
                   </div>
                 )}
@@ -157,7 +158,7 @@ export function ProcessingView({ check }: { check: Check }) {
 
         <p className="mt-8 flex items-start gap-2 text-xs leading-[1.7] text-ink-faint">
           <Info className="mt-0.5 h-3.5 w-3.5 shrink-0" aria-hidden="true" />
-          Simulated processing. No AI model, search, or URL fetch is called.
+          {t('Simulated processing. No AI model, search, or URL fetch is called.')}
         </p>
       </div>
     </div>

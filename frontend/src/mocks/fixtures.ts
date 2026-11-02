@@ -2,7 +2,18 @@
 // Every place, organisation, publication, figure, and excerpt below is fictional.
 // Marlow City and its sources do not exist; URLs use the reserved example.org domain.
 // No quotation here is attributed to a real publisher.
+// The one check with real sources keeps them separately, in realExample.ts.
 
+import {
+  fileExampleClaimsVi,
+  fileExampleVi,
+  REAL_EXAMPLE_INPUT,
+  REAL_EXAMPLE_INPUT_VI,
+  realExampleClaims,
+  realExampleClaimsVi,
+  urlExampleArticleVi,
+  urlExampleClaimsVi,
+} from './realExample';
 import type {
   EvidenceRelation,
   FactCheckMatch,
@@ -10,6 +21,8 @@ import type {
   InputType,
   JudgeVerdict,
   Verdict,
+  CheckedArticle,
+  SubmittedFile,
 } from '../types/models';
 
 export interface FixtureEvidence {
@@ -22,6 +35,10 @@ export interface FixtureEvidence {
   publishedAt: string;
   updatedAt?: string;
   relation: EvidenceRelation;
+  /** Lead image of the real article. Fictional sources have none. */
+  imageUrl?: string;
+  /** No illustrative page capture ships in public/captures for this source. */
+  noCapture?: boolean;
 }
 
 export interface FixtureRevision {
@@ -31,9 +48,11 @@ export interface FixtureRevision {
   cites: string[];
   /** Freshness of cited snapshots for this revision, keyed by evidence key. */
   freshness?: Record<string, FreshnessJudgment>;
-  /** AI revisions: each judge's own verdict. */
-  /** AI revisions: each judge's verdict, in the order the check's judges are listed. Names come from the check. */
-  judges?: Pick<JudgeVerdict, 'verdict' | 'confidence'>[];
+  /**
+   * AI revisions: each judge's verdict, in the order the check's judges are listed. Names come from the check.
+   * A judge without its own review wrote the revision's rationale.
+   */
+  judges?: (Pick<JudgeVerdict, 'verdict' | 'confidence'> & { review?: string })[];
   author: string;
   /** Minutes after the check was created. */
   offsetMinutes: number;
@@ -42,6 +61,8 @@ export interface FixtureRevision {
 export interface FixtureClaim {
   key: string;
   text: string;
+  /** Short noun phrase used in the check's overall statement. */
+  topic: string;
   /** Time period the claim refers to. Freshness is judged against this. */
   timeContext: string;
   evidence: FixtureEvidence[];
@@ -59,6 +80,7 @@ export const FIXTURE_TOPIC = 'Marlow City Harbor Line (fictional)';
 export const fixtureClaims: FixtureClaim[] = [
   {
     key: 'opening',
+    topic: 'the March 2024 opening',
     text: 'The Harbor Line light rail in Marlow City opened to passengers in March 2024.',
     timeContext: 'March 2024',
     evidence: [
@@ -93,7 +115,12 @@ export const fixtureClaims: FixtureClaim[] = [
         freshness: { 'mcta-release': { status: 'current' }, 'ledger-opening': { status: 'current' } },
         judges: [
           { verdict: 'supported', confidence: 0.93 },
-          { verdict: 'supported', confidence: 0.9 },
+          {
+            verdict: 'supported',
+            confidence: 0.9,
+            review:
+              'The operator’s announcement and a separate newspaper report both give 18 March 2024, which falls inside the month the claim names.',
+          },
         ],
         author: 'ClaimTrace assessment model (simulated)',
         offsetMinutes: 1,
@@ -102,6 +129,7 @@ export const fixtureClaims: FixtureClaim[] = [
   },
   {
     key: 'ridership',
+    topic: 'the 50,000 daily trips figure',
     text: 'Harbor Line ridership reached 50,000 daily trips within its first six months.',
     timeContext: 'March–September 2024 (first six months)',
     factCheck: {
@@ -147,7 +175,12 @@ export const fixtureClaims: FixtureClaim[] = [
         },
         judges: [
           { verdict: 'contradicted', confidence: 0.88 },
-          { verdict: 'insufficient_evidence', confidence: 0.61 },
+          {
+            verdict: 'insufficient_evidence',
+            confidence: 0.61,
+            review:
+              'Reported boardings of 31,400 are well below 50,000, but boardings and trips may not be counted the same way, and no source states daily trips directly. That leaves too little for a firm verdict.',
+          },
         ],
         author: 'ClaimTrace assessment model (simulated)',
         offsetMinutes: 1,
@@ -156,6 +189,7 @@ export const fixtureClaims: FixtureClaim[] = [
   },
   {
     key: 'budget',
+    topic: 'the under-budget finish',
     text: 'The Harbor Line was completed under its original budget of $1.2 billion.',
     timeContext: 'Completion and final accounting (2024–2025)',
     evidence: [
@@ -189,7 +223,12 @@ export const fixtureClaims: FixtureClaim[] = [
         freshness: { 'mcta-budget': { status: 'current' } },
         judges: [
           { verdict: 'supported', confidence: 0.72 },
-          { verdict: 'supported', confidence: 0.68 },
+          {
+            verdict: 'supported',
+            confidence: 0.68,
+            review:
+              'The release says the line stayed within its approved programme budget, which points toward the claim. It gives no figure, though, so confidence is moderate.',
+          },
         ],
         author: 'ClaimTrace assessment model (simulated)',
         offsetMinutes: 1,
@@ -215,6 +254,7 @@ export const fixtureClaims: FixtureClaim[] = [
   },
   {
     key: 'congestion',
+    topic: 'the one-third drop in congestion',
     text: 'City officials say the Harbor Line reduced downtown traffic congestion by a third.',
     timeContext: 'Present (as of this check)',
     failsInPartialScenario: true,
@@ -246,7 +286,12 @@ export const fixtureClaims: FixtureClaim[] = [
         },
         judges: [
           { verdict: 'insufficient_evidence', confidence: 0.81 },
-          { verdict: 'insufficient_evidence', confidence: 0.77 },
+          {
+            verdict: 'insufficient_evidence',
+            confidence: 0.77,
+            review:
+              'Nothing in the evidence gives a one-third figure, and the minutes only mention anecdotes. The traffic study scheduled for spring 2025 would be the next thing to check.',
+          },
         ],
         author: 'ClaimTrace assessment model (simulated)',
         offsetMinutes: 1,
@@ -268,6 +313,8 @@ export interface ExampleInput {
   label: string;
   inputType: InputType;
   value: string;
+  /** What the example fills in when the interface is in Vietnamese. */
+  valueVi: string;
 }
 
 export const exampleInputs: ExampleInput[] = [
@@ -277,12 +324,14 @@ export const exampleInputs: ExampleInput[] = [
     inputType: 'text',
     value:
       'Marlow City’s Harbor Line light rail opened to passengers in March 2024. Ridership reached 50,000 daily trips within its first six months, and the line was completed under its original budget of $1.2 billion. City officials say it has reduced downtown traffic congestion by a third.',
+    valueVi: REAL_EXAMPLE_INPUT_VI,
   },
   {
     id: 'news-url',
     label: 'News URL',
     inputType: 'url',
     value: 'https://example.org/marlow-ledger/2024/10/harbor-line-six-months',
+    valueVi: 'https://vnexpress.net/who-tuyen-bo-covid-19-khong-con-la-tinh-trang-y-te-khan-cap-toan-cau-4601715.html',
   },
   {
     id: 'budget-text',
@@ -290,6 +339,7 @@ export const exampleInputs: ExampleInput[] = [
     inputType: 'text',
     value:
       'The Harbor Line was finished under budget, costing less than the $1.2 billion originally approved by the city council.',
+    valueVi: 'Dự án đường sắt đô thị Cát Linh - Hà Đông đã hoàn thành trong tổng mức đầu tư được phê duyệt ban đầu.',
   },
 ];
 
@@ -300,9 +350,53 @@ export interface SeedCheck {
   scenario: 'completed' | 'partial_failure' | 'failed' | 'stale_conflict';
   /** How long ago the check was created, in hours. */
   hoursAgo: number;
+  /** Claims for this check. Defaults to `fixtureClaims`. */
+  claims?: FixtureClaim[];
+  /** Only listed in history when the interface is in this language. */
+  language?: 'en' | 'vi';
+  article?: CheckedArticle;
+  files?: SubmittedFile[];
 }
 
 export const seedChecks: SeedCheck[] = [
+  {
+    id: 'chk_demo_real',
+    inputType: 'text',
+    value: REAL_EXAMPLE_INPUT,
+    scenario: 'completed',
+    hoursAgo: 1,
+    claims: realExampleClaims,
+    language: 'en',
+  },
+  {
+    id: 'chk_demo_real_vi',
+    inputType: 'text',
+    value: REAL_EXAMPLE_INPUT_VI,
+    scenario: 'completed',
+    hoursAgo: 1,
+    claims: realExampleClaimsVi,
+    language: 'vi',
+  },
+  {
+    id: 'chk_demo_url_vi',
+    inputType: 'url',
+    value: exampleInputs[1].valueVi!,
+    scenario: 'completed',
+    hoursAgo: 0.5,
+    claims: urlExampleClaimsVi,
+    article: urlExampleArticleVi,
+    language: 'vi',
+  },
+  {
+    id: 'chk_demo_file_vi',
+    inputType: 'text',
+    value: '',
+    scenario: 'completed',
+    hoursAgo: 0.75,
+    claims: fileExampleClaimsVi,
+    files: [fileExampleVi],
+    language: 'vi',
+  },
   { id: 'chk_demo_transit', inputType: 'text', value: exampleInputs[0].value, scenario: 'completed', hoursAgo: 2 },
   { id: 'chk_demo_url', inputType: 'url', value: exampleInputs[1].value, scenario: 'partial_failure', hoursAgo: 5 },
   {

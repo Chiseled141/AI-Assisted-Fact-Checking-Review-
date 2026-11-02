@@ -1,13 +1,11 @@
 /** @type {import('tailwindcss').Config} */
 
-// Colors resolve to CSS variables (see src/index.css) so one set of class names
-// works in both themes; `.dark` on <html> swaps the variable values.
+// Colors resolve to CSS variables (see src/index.css).
 const v = (name) => `rgb(var(--${name}) / <alpha-value>)`;
 const shades = (palette, keys) => Object.fromEntries(keys.map((k) => [k, v(`${palette}-${k}`)]));
 
 export default {
   content: ['./index.html', './src/**/*.{ts,tsx}'],
-  darkMode: 'class',
   theme: {
     extend: {
       fontFamily: {

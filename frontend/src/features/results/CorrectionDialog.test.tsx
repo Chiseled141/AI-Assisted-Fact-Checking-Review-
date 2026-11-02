@@ -1,8 +1,14 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { renderApp } from '../../test/renderApp';
 import { checkService } from '../../services';
+
+// The button is off for now, but the dialog behind it should keep working.
+vi.mock('../../config', async (importOriginal) => {
+  const { config } = await importOriginal<typeof import('../../config')>();
+  return { config: { ...config, correction: { ...config.correction, showReviewButton: true } } };
+});
 
 async function openReview(checkId: string, claimName: RegExp) {
   const user = userEvent.setup();
@@ -11,12 +17,18 @@ async function openReview(checkId: string, claimName: RegExp) {
   await user.click(within(card).getByRole('button', { name: claimName }));
   await user.click(screen.getByRole('button', { name: /review assessment/i }));
   const dialog = await screen.findByRole('dialog', { name: /review assessment/i });
-  // Wait for the claim's evidence snapshots to load into the form.
-  await within(dialog).findAllByRole('checkbox');
   return { user, dialog };
 }
 
 describe('Publishing a correction', () => {
+  it('is not offered when verification was unavailable', async () => {
+    renderApp('/checks/chk_demo_url');
+    const claim = await screen.findByRole('article', { name: /downtown traffic congestion/i });
+    await userEvent.setup().click(within(claim).getByRole('button', { name: /downtown traffic congestion/i }));
+    expect(await screen.findByText(/no evidence was retrieved/i)).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /review assessment/i })).not.toBeInTheDocument();
+  });
+
   it('creates a new revision and preserves the original AI assessment', async () => {
     const { user, dialog } = await openReview('chk_demo_transit', /opened to passengers in march 2024/i);
 
@@ -25,7 +37,7 @@ describe('Publishing a correction', () => {
       within(dialog).getByLabelText(/correction reason/i),
       'Both sources describe the opening ceremony, not the start of regular service.',
     );
-    await user.click(within(dialog).getByRole('button', { name: 'Publish correction' }));
+    await user.click(within(dialog).getByRole('button', { name: 'Send' }));
 
     expect(await within(dialog).findByText(/published as revision 2/i)).toBeInTheDocument();
 
@@ -46,35 +58,57 @@ describe('Publishing a correction', () => {
 
   it('requires a correction reason', async () => {
     const { user, dialog } = await openReview('chk_demo_transit', /opened to passengers in march 2024/i);
-    await user.click(within(dialog).getByRole('button', { name: 'Publish correction' }));
+    await user.click(within(dialog).getByRole('button', { name: 'Send' }));
     expect(within(dialog).getByText(/explain why in at least/i)).toBeInTheDocument();
     expect(await checkService.getClaimRevisions('chk_demo_transit_c1')).toHaveLength(1);
   });
 });
 
-describe('Freshness in corrections', () => {
-  it('requires a reason when a cited source is marked outdated, then saves it with the revision', async () => {
+describe('Citations in corrections', () => {
+  it('keeps the current citations and their freshness when the verdict stays the same', async () => {
     const { user, dialog } = await openReview('chk_demo_transit', /opened to passengers in march 2024/i);
-
-    await user.selectOptions(within(dialog).getByLabelText('Freshness of Harbor Line opens to passengers'), 'outdated');
-    await user.type(within(dialog).getByLabelText(/correction reason/i), 'Service dates were later revised.');
-    await user.click(within(dialog).getByRole('button', { name: 'Publish correction' }));
-    expect(within(dialog).getByText('Explain why this source is outdated.')).toBeInTheDocument();
-    expect(await checkService.getClaimRevisions('chk_demo_transit_c1')).toHaveLength(1);
-
-    await user.type(
-      within(dialog).getByLabelText('Freshness reason for Harbor Line opens to passengers'),
-      'A later timetable superseded this release.',
-    );
-    await user.click(within(dialog).getByRole('button', { name: 'Publish correction' }));
+    await user.type(within(dialog).getByLabelText(/correction reason/i), 'Adding the exact date to the record.');
+    await user.click(within(dialog).getByRole('button', { name: 'Send' }));
     expect(await within(dialog).findByText(/published as revision 2/i)).toBeInTheDocument();
 
     const [original, correction] = await checkService.getClaimRevisions('chk_demo_transit_c1');
-    expect(original.citationFreshness?.['chk_demo_transit_c1_e1']?.status).toBe('current');
-    expect(correction.citationFreshness?.['chk_demo_transit_c1_e1']).toEqual({
-      status: 'outdated',
-      reason: 'A later timetable superseded this release.',
-    });
+    expect(correction.citedEvidenceIds).toEqual(original.citedEvidenceIds);
+    expect(correction.citationFreshness).toEqual(original.citationFreshness);
+  });
+
+  it('marks the cited sources outdated when the verdict is outdated', async () => {
+    const { user, dialog } = await openReview('chk_demo_transit', /opened to passengers in march 2024/i);
+    await user.click(within(dialog).getByRole('radio', { name: 'Outdated' }));
+    await user.type(within(dialog).getByLabelText(/correction reason/i), 'A later timetable replaced these dates.');
+    await user.click(within(dialog).getByRole('button', { name: 'Send' }));
+    expect(await within(dialog).findByText(/published as revision 2/i)).toBeInTheDocument();
+
+    const [original, correction] = await checkService.getClaimRevisions('chk_demo_transit_c1');
+    expect(correction.verdict).toBe('outdated');
+    expect(correction.citedEvidenceIds).toEqual(original.citedEvidenceIds);
+    for (const id of correction.citedEvidenceIds) {
+      expect(correction.citationFreshness?.[id]).toEqual({
+        status: 'outdated',
+        reason: 'A later timetable replaced these dates.',
+      });
+    }
+  });
+
+  it('cites the sources that fit a changed verdict', async () => {
+    const user = userEvent.setup();
+    renderApp('/checks/chk_demo_transit?claim=3');
+    await screen.findByText('Harbor Line delivered on schedule');
+    await user.click(screen.getByRole('button', { name: /review assessment/i }));
+    const dialog = await screen.findByRole('dialog', { name: /review assessment/i });
+
+    await user.click(within(dialog).getByRole('radio', { name: 'Supported' }));
+    await user.type(within(dialog).getByLabelText(/correction reason/i), 'The approved budget is the right measure here.');
+    await user.click(within(dialog).getByRole('button', { name: 'Send' }));
+    expect(await within(dialog).findByText(/published as revision/i)).toBeInTheDocument();
+
+    const correction = (await checkService.getClaimRevisions('chk_demo_transit_c3')).at(-1)!;
+    expect(correction.verdict).toBe('supported');
+    expect(correction.citedEvidenceIds).toEqual(['chk_demo_transit_c3_e1']);
   });
 });
 
@@ -83,13 +117,13 @@ describe('Stale-version conflict', () => {
     const { user, dialog } = await openReview('chk_demo_conflict', /opened to passengers in march 2024/i);
 
     await user.type(within(dialog).getByLabelText(/correction reason/i), 'Adding the exact opening date to the record.');
-    await user.click(within(dialog).getByRole('button', { name: 'Publish correction' }));
+    await user.click(within(dialog).getByRole('button', { name: 'Send' }));
 
     const alert = await within(dialog).findByRole('alert');
     expect(alert).toHaveTextContent(/changed while you were reviewing/i);
     expect(alert).toHaveTextContent(/nothing was overwritten/i);
     expect(alert).toHaveTextContent(/demo simulation/i);
-    expect(within(dialog).getByRole('button', { name: 'Publish correction' })).toBeDisabled();
+    expect(within(dialog).getByRole('button', { name: 'Send' })).toBeDisabled();
 
     // The concurrent revision is kept; the stale request did not create one.
     const afterConflict = await checkService.getClaimRevisions('chk_demo_conflict_c1');
@@ -100,7 +134,7 @@ describe('Stale-version conflict', () => {
     expect(await within(dialog).findByText(/latest version loaded \(revision 2\)/i)).toBeInTheDocument();
     expect(within(dialog).getByLabelText(/correction reason/i)).toHaveValue('Adding the exact opening date to the record.');
 
-    await user.click(within(dialog).getByRole('button', { name: 'Publish correction' }));
+    await user.click(within(dialog).getByRole('button', { name: 'Send' }));
     expect(await within(dialog).findByText(/published as revision 3/i)).toBeInTheDocument();
   });
 });
@@ -116,7 +150,7 @@ describe('Correction screenshots', () => {
     expect(await within(dialog).findByRole('button', { name: 'Remove screenshot proof.png' })).toBeInTheDocument();
 
     await user.type(within(dialog).getByLabelText(/correction reason/i), 'Screenshot of the timetable shows a later date.');
-    await user.click(within(dialog).getByRole('button', { name: 'Publish correction' }));
+    await user.click(within(dialog).getByRole('button', { name: 'Send' }));
     expect(await within(dialog).findByText(/with 1 screenshot/i)).toBeInTheDocument();
 
     const [, revision] = await checkService.getClaimRevisions('chk_demo_transit_c1');

@@ -1,23 +1,21 @@
-import { type ClipboardEvent, type FormEvent, type ReactNode, useEffect, useId, useRef, useState } from 'react';
-import { ArrowRight, CircleCheck, CircleHelp, CircleX, ImagePlus, Loader2, RefreshCw, TriangleAlert } from 'lucide-react';
+import { type ClipboardEvent, type FormEvent, useEffect, useId, useRef, useState } from 'react';
+import { ArrowRight, ArrowUp, CalendarX, CircleCheck, CircleHelp, CircleX, ImagePlus, Loader2, RefreshCw, TriangleAlert } from 'lucide-react';
 import type {
   AssessmentRevision,
   Attachment,
   Claim,
-  EvidenceRelation,
   EvidenceSnapshot,
   Freshness,
-  FreshnessJudgment,
   Verdict,
 } from '../../types/models';
 import { config } from '../../config';
-import { formatCalendarDate, verdictLabel } from '../../lib/format';
+import { verdictLabel } from '../../lib/format';
 import { checkService, ValidationError, VersionConflictError } from '../../services';
-import { RelationBadge, RevisionKindBadge, VerdictBadge } from '../../components/Badges';
+import { RevisionKindBadge, VerdictBadge } from '../../components/Badges';
 import { Dialog } from '../../components/Dialog';
 import { ScreenshotThumbs } from '../../components/ScreenshotThumbs';
 import { readScreenshots } from '../../lib/images';
-import { citationNumber } from './citations';
+import { t } from '../../lib/i18n';
 
 interface Props {
   open: boolean;
@@ -36,8 +34,8 @@ export function CorrectionDialog({ open, claim, ...rest }: Props) {
       open={open}
       onClose={rest.onClose}
       wide
-      title={`Review assessment · Claim ${claim.position}`}
-      description={<span className="line-clamp-2">“{claim.text}”</span>}
+      title={t('Review assessment · Claim {position}', { position: claim.position })}
+      description={<span className="line-clamp-3">“{claim.text}”</span>}
     >
       {/* Remount per opening so the form starts from the version the reviewer sees now. */}
       {open && <CorrectionForm key={`${claim.id}`} claim={claim} {...rest} />}
@@ -47,50 +45,51 @@ export function CorrectionDialog({ open, claim, ...rest }: Props) {
 
 const verdictOptions: {
   value: Verdict;
-  hint: string;
   Icon: typeof CircleCheck;
-  iconClass: string;
+  idleClass: string;
   selectedClass: string;
-  suggests?: EvidenceRelation;
+  composerClass: string;
 }[] = [
   {
     value: 'supported',
-    hint: 'Evidence backs the claim',
     Icon: CircleCheck,
-    iconClass: 'text-emerald-700',
-    selectedClass: 'border-emerald-700 bg-emerald-50',
-    suggests: 'supporting',
+    idleClass: 'bg-emerald-50 text-emerald-800 hover:border-emerald-200',
+    selectedClass: 'border-emerald-700 bg-emerald-700 text-page',
+    composerClass: '!border-emerald-200 !bg-emerald-50/50 focus-within:!border-emerald-700/40',
   },
   {
     value: 'contradicted',
-    hint: 'Evidence shows it is false',
     Icon: CircleX,
-    iconClass: 'text-rose-700',
-    selectedClass: 'border-rose-700 bg-rose-50',
-    suggests: 'contradicting',
+    idleClass: 'bg-rose-50 text-rose-800 hover:border-rose-200',
+    selectedClass: 'border-rose-600 bg-rose-600 text-page',
+    composerClass: '!border-rose-200 !bg-rose-50/50 focus-within:!border-rose-600/40',
   },
   {
     value: 'insufficient_evidence',
-    hint: 'Not enough to decide',
     Icon: CircleHelp,
-    iconClass: 'text-amber-700',
-    selectedClass: 'border-amber-700 bg-amber-50',
+    idleClass: 'bg-amber-50 text-amber-900 hover:border-amber-200',
+    selectedClass: 'border-amber-700 bg-amber-700 text-page',
+    composerClass: '!border-amber-200 !bg-amber-50/50 focus-within:!border-amber-700/40',
+  },
+  {
+    value: 'outdated',
+    Icon: CalendarX,
+    idleClass: 'bg-slate-100 text-slate-700 hover:border-slate-300',
+    selectedClass: 'border-slate-600 bg-slate-600 text-page',
+    composerClass: '!border-slate-300 !bg-slate-100/50 focus-within:!border-slate-600/40',
   },
 ];
 
-function Step({ n, title, aside, children }: { n: number; title: ReactNode; aside?: ReactNode; children: ReactNode }) {
-  return (
-    <div>
-      <div className="mb-2 flex items-baseline justify-between gap-3">
-        <span className="flex items-baseline gap-2 text-sm font-semibold text-ink">
-          <span className="font-sans text-xs text-ink-faint">{String(n).padStart(2, '0')}</span>
-          {title}
-        </span>
-        {aside}
-      </div>
-      {children}
-    </div>
-  );
+/**
+ * A correction that changes the verdict cites the sources that fit the new one. Otherwise, or when
+ * none fit, it keeps what the current revision cited.
+ */
+function citationsFor(verdict: Verdict, current: Claim['current'], evidence: EvidenceSnapshot[] | null): string[] {
+  const kept = current?.citedEvidenceIds ?? [];
+  const relation = verdict === 'supported' ? 'supporting' : verdict === 'contradicted' ? 'contradicting' : null;
+  if (!relation || current?.verdict === verdict) return kept;
+  const fitting = (evidence ?? []).filter((item) => item.relation === relation).map((item) => item.id);
+  return fitting.length > 0 ? fitting : kept;
 }
 
 type Phase =
@@ -107,16 +106,11 @@ function CorrectionForm({
   onReloadLatest,
   onShowHistory,
 }: Omit<Props, 'open'>) {
-  const ids = { reason: useId(), reasonError: useId(), evidenceError: useId(), verdict: useId(), shotHint: useId() };
+  const ids = { reason: useId(), reasonError: useId(), shotHint: useId() };
   const current = claim.current;
 
   const [verdict, setVerdict] = useState<Verdict>(current?.verdict ?? 'insufficient_evidence');
   const [reason, setReason] = useState('');
-  const [selectedEvidence, setSelectedEvidence] = useState<string[]>(current?.citedEvidenceIds ?? []);
-  // Starts from the current revision's judgments; a correction records its own copy.
-  const [freshness, setFreshness] = useState<Record<string, FreshnessJudgment>>(() => ({
-    ...(current?.citationFreshness ?? {}),
-  }));
   const [expectedVersion, setExpectedVersion] = useState(claim.currentVersion);
   const [attempted, setAttempted] = useState(false);
   const [phase, setPhase] = useState<Phase>({ kind: 'editing' });
@@ -140,31 +134,23 @@ function CorrectionForm({
 
   const reasonError =
     reason.trim().length < config.correction.minReasonLength
-      ? `Explain why in at least ${config.correction.minReasonLength} characters.`
+      ? t('Explain why in at least {count} characters.', { count: config.correction.minReasonLength })
       : reason.length > config.correction.maxReasonLength
-        ? `Keep the reason under ${config.correction.maxReasonLength} characters.`
+        ? t('Keep the reason under {count} characters.', { count: config.correction.maxReasonLength })
         : null;
-  const freshnessMissingReason = selectedEvidence.some(
-    (id) => freshness[id]?.status === 'outdated' && !freshness[id]?.reason?.trim(),
-  );
-  const evidenceError =
-    verdict !== 'insufficient_evidence' && selectedEvidence.length === 0
-      ? `Select at least one snapshot that shows the claim is ${verdictLabel[verdict].toLowerCase()}.`
-      : null;
-
   async function addScreenshots(files: File[]) {
     if (files.length === 0) return;
     const { added, errors } = await readScreenshots(files, attachments.length);
     setAttachments((prev) => [...prev, ...added]);
     setShotErrors(errors);
-    setShotStatus(added.length > 0 ? `Attached ${added.map((a) => a.name).join(', ')}.` : '');
+    setShotStatus(added.length > 0 ? t('Attached {names}.', { names: added.map((a) => a.name).join(', ') }) : '');
   }
 
   function removeScreenshot(id: string) {
     const removed = attachments.find((a) => a.id === id);
     setAttachments((prev) => prev.filter((a) => a.id !== id));
     setShotErrors([]);
-    if (removed) setShotStatus(`Removed ${removed.name}.`);
+    if (removed) setShotStatus(t('Removed {name}.', { name: removed.name }));
   }
 
   function onPaste(event: ClipboardEvent<HTMLFormElement>) {
@@ -174,29 +160,28 @@ function CorrectionForm({
     void addScreenshots(images);
   }
 
-  function setFreshnessFor(id: string, patch: Partial<FreshnessJudgment>) {
-    setFreshness((prev) => ({ ...prev, [id]: { ...prev[id], status: prev[id]?.status ?? 'unknown', ...patch } }));
-  }
-
-  function toggleEvidence(id: string) {
-    setSelectedEvidence((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]));
-  }
-
   async function submit(event: FormEvent) {
     event.preventDefault();
     setAttempted(true);
     setFormError(null);
-    if (reasonError || evidenceError || freshnessMissingReason) return;
+    if (reasonError) return;
 
     setPhase({ kind: 'submitting' });
+    const cited = citationsFor(verdict, current, evidence);
     try {
       const { revision } = await checkService.publishCorrection(claim.id, {
         verdict,
         reason,
-        evidenceIds: selectedEvidence,
+        evidenceIds: cited,
         attachments,
         citationFreshness: Object.fromEntries(
-          selectedEvidence.map((id) => [id, freshness[id] ?? { status: 'unknown' as Freshness }]),
+          cited.map((id) => [
+            id,
+            // Calling the claim outdated means its sources no longer apply, for the reason given.
+            verdict === 'outdated'
+              ? { status: 'outdated' as Freshness, reason }
+              : (current?.citationFreshness?.[id] ?? { status: 'unknown' as Freshness }),
+          ]),
         ),
         expectedVersion,
       });
@@ -207,7 +192,7 @@ function CorrectionForm({
         setPhase({ kind: 'conflict', currentVersion: err.currentVersion, reloading: false, reloaded: false });
       } else {
         setPhase({ kind: 'editing' });
-        setFormError(err instanceof ValidationError ? err.message : 'The correction could not be published. Try again.');
+        setFormError(err instanceof ValidationError ? err.message : t('The correction could not be published. Try again.'));
       }
     }
   }
@@ -218,7 +203,7 @@ function CorrectionForm({
     const latest = await onReloadLatest();
     if (!latest) {
       setPhase({ ...phase, reloading: false });
-      setFormError('Could not load the latest version. Try again.');
+      setFormError(t('Could not load the latest version. Try again.'));
       return;
     }
     setExpectedVersion(latest.currentVersion);
@@ -230,34 +215,36 @@ function CorrectionForm({
       <div role="status" className="text-sm">
         <div className="flex flex-col items-center px-2 py-4 text-center">
           <CircleCheck className="h-10 w-10 text-emerald-700" aria-hidden="true" />
-          <p className="mt-3 text-base font-semibold text-ink">Correction published as revision {phase.revision.version}.</p>
+          <p className="mt-3 text-base font-semibold text-ink">{t('Correction published as revision {version}.', { version: phase.revision.version })}</p>
           <p className="mt-3 flex flex-wrap items-center justify-center gap-2">
             {phase.previousVerdict && phase.previousVerdict !== phase.revision.verdict ? (
               <>
                 <VerdictBadge verdict={phase.previousVerdict} />
-                <ArrowRight className="h-4 w-4 text-ink-muted" aria-label="changed to" />
+                <ArrowRight className="h-4 w-4 text-ink-muted" aria-label={t('changed to')} />
                 <VerdictBadge verdict={phase.revision.verdict} />
               </>
             ) : (
               <>
                 <VerdictBadge verdict={phase.revision.verdict} />
-                <span className="text-xs text-ink-muted">Verdict unchanged</span>
+                <span className="text-xs text-ink-muted">{t('Verdict unchanged')}</span>
               </>
             )}
           </p>
           {phase.revision.attachments?.length ? (
             <p className="mt-2 text-xs text-ink-muted">
-              With {phase.revision.attachments.length} screenshot{phase.revision.attachments.length === 1 ? '' : 's'}
+              {t(phase.revision.attachments.length === 1 ? 'With {count} screenshot' : 'With {count} screenshots', {
+                count: phase.revision.attachments.length,
+              })}
             </p>
           ) : null}
-          <p className="mt-3 max-w-sm text-ink-soft">The original AI assessment is kept in the revision history.</p>
+          <p className="mt-3 max-w-sm text-ink-soft">{t('The original AI assessment is kept in the revision history.')}</p>
         </div>
         <div className="mt-4 flex flex-wrap justify-center gap-2 border-t border-line pt-4">
           <button type="button" className="btn-secondary" onClick={onShowHistory}>
-            View revision history
+            {t('View revision history')}
           </button>
           <button type="button" className="btn-primary" onClick={onClose} ref={doneButtonRef}>
-            Done
+            {t('Done')}
           </button>
         </div>
       </div>
@@ -266,248 +253,92 @@ function CorrectionForm({
 
   const submitting = phase.kind === 'submitting';
   const blockedByConflict = phase.kind === 'conflict' && !phase.reloaded;
-  const suggested = verdictOptions.find((o) => o.value === verdict)?.suggests;
-  const verdictChanged = current ? current.verdict !== verdict : true;
 
   return (
-    <form onSubmit={submit} onPaste={onPaste} noValidate className="text-sm">
-      <div className="space-y-6">
-        {current && (
-          <details className="group border border-line bg-zinc-50">
-            <summary className="flex cursor-pointer list-none flex-wrap items-center gap-2 px-3 py-2.5 [&::-webkit-details-marker]:hidden">
-              <span className="text-xs text-ink-muted">Current</span>
-              <VerdictBadge verdict={current.verdict} />
-              <RevisionKindBadge kind={current.kind} version={current.version} />
-              <span className="ml-auto text-xs text-brand-700 group-open:hidden">Show reasoning</span>
-              <span className="ml-auto hidden text-xs text-brand-700 group-open:inline">Hide reasoning</span>
-            </summary>
-            <p className="border-t border-line px-3 py-2.5 text-ink-soft">
-              {current.rationale} <span className="text-xs text-ink-muted">— {current.author}</span>
-            </p>
-          </details>
-        )}
+    <form onSubmit={submit} onPaste={onPaste} noValidate className="space-y-6 text-sm">
+      {current && (
+        <section>
+          <h3 className="flex flex-wrap items-center gap-x-2 gap-y-1 text-[13px] font-normal text-ink-muted">
+            {t('Current assessment')}
+            <VerdictBadge verdict={current.verdict} />
+            {current.kind === 'human_correction' && <RevisionKindBadge kind={current.kind} version={current.version} />}
+          </h3>
+          <p className="mt-1.5 text-[15px] leading-[1.65] text-ink-soft">{current.rationale}</p>
+        </section>
+      )}
 
-        {phase.kind === 'conflict' && (
-          <div
-            role="alert"
-            className={`border p-4 ${
-              phase.reloaded ? 'border-brand-200 bg-brand-50 text-brand-900' : 'border-amber-300 bg-amber-50 text-amber-950'
-            }`}
-          >
-            {phase.reloaded ? (
-              <p>Latest version loaded (revision {phase.currentVersion}). Your draft was kept.</p>
-            ) : (
-              <>
-                <p className="flex items-center gap-2 font-semibold">
-                  <TriangleAlert className="h-4 w-4" aria-hidden="true" />
-                  This claim changed while you were reviewing it
-                </p>
-                <p className="mt-1">
-                  Revision {phase.currentVersion} was published after you opened this form. Your correction was not saved,
-                  and nothing was overwritten. Reload to see the latest version.
-                </p>
-                <button
-                  type="button"
-                  className="btn-secondary mt-3 border-amber-300"
-                  onClick={() => void reloadLatest()}
-                  disabled={phase.reloading}
-                  ref={reloadButtonRef}
-                >
-                  <RefreshCw className={`h-4 w-4 ${phase.reloading ? 'animate-spin' : ''}`} aria-hidden="true" />
-                  {phase.reloading ? 'Reloading…' : 'Reload latest version'}
-                </button>
-              </>
-            )}
-            <p className="mt-3 text-xs opacity-80">
-              Demo simulation: a concurrent edit is injected on first publish.
-            </p>
-          </div>
-        )}
+      {phase.kind === 'conflict' && (
+        <div
+          role="alert"
+          className={`rounded-xl border p-4 ${
+            phase.reloaded ? 'border-brand-200 bg-brand-50 text-brand-900' : 'border-amber-300 bg-amber-50 text-amber-950'
+          }`}
+        >
+          {phase.reloaded ? (
+            <p>{t('Latest version loaded (revision {version}). Your draft was kept.', { version: phase.currentVersion })}</p>
+          ) : (
+            <>
+              <p className="flex items-center gap-2 font-semibold">
+                <TriangleAlert className="h-4 w-4" aria-hidden="true" />
+                {t('This claim changed while you were reviewing it')}
+              </p>
+              <p className="mt-1">
+                {t(
+                  'Revision {version} was published after you opened this form. Your correction was not saved, and nothing was overwritten. Reload to see the latest version.',
+                  { version: phase.currentVersion },
+                )}
+              </p>
+              <button
+                type="button"
+                className="btn-secondary mt-3 border-amber-300"
+                onClick={() => void reloadLatest()}
+                disabled={phase.reloading}
+                ref={reloadButtonRef}
+              >
+                <RefreshCw className={`h-4 w-4 ${phase.reloading ? 'animate-spin' : ''}`} aria-hidden="true" />
+                {phase.reloading ? t('Reloading…') : t('Reload latest version')}
+              </button>
+            </>
+          )}
+          <p className="mt-3 text-xs opacity-80">
+            {t('Demo simulation: a concurrent edit is injected on first publish.')}
+          </p>
+        </div>
+      )}
 
+      <div className="space-y-3">
         <fieldset>
-          <legend className="sr-only">Proposed verdict</legend>
-          <Step n={1} title="Your verdict">
-            <div className="grid gap-2 sm:grid-cols-3">
-              {verdictOptions.map(({ value, hint, Icon, iconClass, selectedClass }) => {
-                const checked = verdict === value;
-                return (
-                  <label
-                    key={value}
-                    className={`relative flex cursor-pointer flex-col gap-1 border p-3 transition-colors focus-within:outline focus-within:outline-2 focus-within:outline-brand-500 ${
-                      checked ? selectedClass : 'border-line bg-white hover:border-line-strong'
-                    }`}
-                  >
-                    <input
-                      type="radio"
-                      name="verdict"
-                      value={value}
-                      checked={checked}
-                      onChange={() => setVerdict(value)}
-                      aria-labelledby={`${ids.verdict}-${value}`}
-                      aria-describedby={`${ids.verdict}-${value}-hint`}
-                      className="sr-only"
-                    />
-                    <span className="flex items-center gap-2">
-                      <Icon className={`h-4 w-4 ${iconClass}`} aria-hidden="true" />
-                      <span id={`${ids.verdict}-${value}`} className="font-semibold text-ink">
-                        {verdictLabel[value]}
-                      </span>
-                    </span>
-                    <span id={`${ids.verdict}-${value}-hint`} className="text-xs text-ink-muted">
-                      {hint}
-                      {current?.verdict === value && ' · current'}
-                    </span>
-                  </label>
-                );
-              })}
-            </div>
-          </Step>
+          <legend className="sr-only">{t('Proposed verdict')}</legend>
+          <div className="flex flex-wrap gap-1.5">
+            {verdictOptions.map(({ value, Icon, idleClass, selectedClass }) => {
+              const checked = verdict === value;
+              return (
+                <label
+                  key={value}
+                  className={`relative inline-flex cursor-pointer items-center gap-1.5 whitespace-nowrap rounded-full border px-3 py-1.5 transition-colors [&:has(:focus-visible)]:outline [&:has(:focus-visible)]:outline-2 [&:has(:focus-visible)]:outline-offset-2 [&:has(:focus-visible)]:outline-brand-500 ${
+                    checked ? `${selectedClass} font-semibold` : `border-transparent ${idleClass}`
+                  }`}
+                >
+                  <input
+                    type="radio"
+                    name="verdict"
+                    value={value}
+                    checked={checked}
+                    onChange={() => setVerdict(value)}
+                    className="sr-only"
+                  />
+                  <Icon className="h-4 w-4" aria-hidden="true" />
+                  {verdictLabel[value]}
+                </label>
+              );
+            })}
+          </div>
         </fieldset>
 
-        <Step
-          n={2}
-          title={<label htmlFor={ids.reason}>Correction reason</label>}
-          aside={
-            <span className="font-sans text-xs text-ink-faint">
-              {reason.trim().length} / {config.correction.maxReasonLength}
-            </span>
-          }
-        >
-          <textarea
-            id={ids.reason}
-            value={reason}
-            onChange={(e) => setReason(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) e.currentTarget.form?.requestSubmit();
-            }}
-            rows={3}
-            maxLength={config.correction.maxReasonLength + 100}
-            className="field resize-y"
-            placeholder="What does the evidence show?"
-            aria-invalid={attempted && Boolean(reasonError)}
-            aria-describedby={attempted && reasonError ? ids.reasonError : undefined}
-            data-autofocus
-          />
-          {attempted && reasonError && (
-            <p id={ids.reasonError} className="mt-1 text-rose-700">
-              {reasonError}
-            </p>
-          )}
-        </Step>
-
-        <fieldset aria-describedby={attempted && evidenceError ? ids.evidenceError : undefined}>
-          <legend className="sr-only">Cited evidence</legend>
-          <Step
-            n={3}
-            title="Cited evidence"
-            aside={
-              evidence && (
-                <span className="font-sans text-xs text-ink-faint">
-                  {selectedEvidence.length} of {evidence.length} selected
-                </span>
-              )
-            }
-          >
-            {evidence === null ? (
-              <p className="flex items-center gap-2 text-ink-soft">
-                <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" /> Loading snapshots…
-              </p>
-            ) : (
-              <ul className="divide-y divide-line border border-line">
-                {evidence.map((item) => {
-                  const checked = selectedEvidence.includes(item.id);
-                  return (
-                    <li key={item.id}>
-                      <label
-                        className={`flex cursor-pointer gap-3 p-3 transition-colors ${checked ? 'bg-brand-50/60' : 'bg-white hover:bg-zinc-50'}`}
-                      >
-                        <input
-                          type="checkbox"
-                          checked={checked}
-                          onChange={() => toggleEvidence(item.id)}
-                          className="mt-0.5 h-4 w-4 shrink-0 accent-brand-600"
-                        />
-                        <span className="min-w-0 flex-1">
-                          <span className="flex flex-wrap items-center gap-2">
-                            <span className="font-sans text-xs text-brand-700">[{citationNumber(claim, item.id)}]</span>
-                            <span className="font-semibold text-ink">{item.sourceTitle}</span>
-                            <RelationBadge relation={item.relation} />
-                            {suggested === item.relation && !checked && (
-                              <span className="text-xs text-brand-700">matches your verdict</span>
-                            )}
-                          </span>
-                          <span className="mt-1 line-clamp-2 block text-xs text-ink-muted">{item.excerpt}</span>
-                          <span className="mt-1 block font-sans text-[11px] text-ink-faint">
-                            published {item.publishedAt ? formatCalendarDate(item.publishedAt) : 'unknown'}
-                          </span>
-                        </span>
-                      </label>
-                      {checked && (
-                        <div className="flex flex-wrap items-start gap-2 border-t border-line bg-white px-3 py-2 pl-10">
-                          <label className="flex items-center gap-2 text-xs text-ink-soft">
-                            Freshness for this claim
-                            <select
-                              value={freshness[item.id]?.status ?? 'unknown'}
-                              onChange={(e) => setFreshnessFor(item.id, { status: e.target.value as Freshness })}
-                              className="field w-auto py-1 text-xs"
-                              aria-label={`Freshness of ${item.sourceTitle}`}
-                            >
-                              <option value="current">Current</option>
-                              <option value="outdated">Outdated</option>
-                              <option value="unknown">Unknown</option>
-                            </select>
-                          </label>
-                          {freshness[item.id]?.status && freshness[item.id].status !== 'current' && (
-                            <div className="min-w-[200px] flex-1">
-                              <input
-                                type="text"
-                                value={freshness[item.id]?.reason ?? ''}
-                                onChange={(e) => setFreshnessFor(item.id, { reason: e.target.value })}
-                                placeholder={
-                                  freshness[item.id].status === 'outdated'
-                                    ? 'Why it no longer applies (required)'
-                                    : 'Why applicability is unclear (optional)'
-                                }
-                                aria-label={`Freshness reason for ${item.sourceTitle}`}
-                                aria-invalid={
-                                  attempted && freshness[item.id].status === 'outdated' && !freshness[item.id].reason?.trim()
-                                }
-                                className="field py-1 text-xs"
-                              />
-                              {attempted && freshness[item.id].status === 'outdated' && !freshness[item.id].reason?.trim() && (
-                                <p className="mt-1 text-xs text-rose-700">Explain why this source is outdated.</p>
-                              )}
-                            </div>
-                          )}
-                        </div>
-                      )}
-                    </li>
-                  );
-                })}
-              </ul>
-            )}
-            {attempted && evidenceError && (
-              <p id={ids.evidenceError} className="mt-2 text-rose-700">
-                {evidenceError}
-              </p>
-            )}
-          </Step>
-        </fieldset>
-
-        <Step
-          n={4}
-          title="Screenshots"
-          aside={
-            <span className="font-sans text-xs text-ink-faint">
-              optional · {attachments.length}/{maxShots}
-            </span>
-          }
-        >
-          {attachments.length > 0 && (
-            <div className="mb-3 pt-2">
-              <ScreenshotThumbs items={attachments} onRemove={removeScreenshot} />
-            </div>
-          )}
+        <div>
+          <label htmlFor={ids.reason} className="sr-only">
+            {t('Correction reason')}
+          </label>
           <div
             onDragOver={(e) => {
               if (!e.dataTransfer.types.includes('Files')) return;
@@ -520,41 +351,85 @@ function CorrectionForm({
               setShotDragging(false);
               void addScreenshots(Array.from(e.dataTransfer.files));
             }}
-            className={`flex flex-wrap items-center gap-x-2 gap-y-1 border border-dashed px-3 py-2.5 text-ink-muted ${
-              shotDragging ? 'border-brand-500 bg-brand-50' : 'border-line-strong'
+            className={`home-composer rounded-[24px] p-3.5 transition-colors sm:p-4 ${
+              shotDragging
+                ? '!border-brand-500 !bg-brand-50'
+                : verdictOptions.find((option) => option.value === verdict)?.composerClass ?? '!border-line focus-within:!border-brand-200'
             }`}
           >
-            <ImagePlus className="h-4 w-4 shrink-0" aria-hidden="true" />
-            <span>Paste, drop, or</span>
-            <input
-              ref={shotInputRef}
-              type="file"
-              multiple
-              accept={config.correction.screenshots.accept}
-              className="sr-only"
-              tabIndex={-1}
-              aria-hidden="true"
-              data-testid="screenshot-input"
-              onChange={(e) => {
-                void addScreenshots(Array.from(e.target.files ?? []));
-                e.target.value = '';
+            {attachments.length > 0 && (
+              <div className="mb-3">
+                <ScreenshotThumbs items={attachments} onRemove={removeScreenshot} />
+              </div>
+            )}
+            <textarea
+              id={ids.reason}
+              value={reason}
+              onChange={(e) => setReason(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) e.currentTarget.form?.requestSubmit();
               }}
+              rows={4}
+              maxLength={config.correction.maxReasonLength + 100}
+              className="block w-full resize-none bg-transparent px-1.5 pt-0.5 text-base leading-relaxed text-ink outline-none placeholder:text-ink-muted"
+              placeholder={t('What should be corrected?')}
+              aria-invalid={attempted && Boolean(reasonError)}
+              aria-describedby={attempted && reasonError ? ids.reasonError : undefined}
+              data-autofocus
             />
-            <button
-              type="button"
-              onClick={() => shotInputRef.current?.click()}
-              disabled={attachments.length >= maxShots}
-              aria-describedby={ids.shotHint}
-              className="font-semibold text-brand-700 underline decoration-brand-200 underline-offset-2 hover:decoration-brand-600 disabled:cursor-not-allowed disabled:text-ink-faint disabled:no-underline"
-            >
-              add screenshots
-            </button>
+            <div className="mt-2 flex items-center justify-between gap-3">
+              <input
+                ref={shotInputRef}
+                type="file"
+                multiple
+                accept={config.correction.screenshots.accept}
+                className="sr-only"
+                tabIndex={-1}
+                aria-hidden="true"
+                data-testid="screenshot-input"
+                onChange={(e) => {
+                  void addScreenshots(Array.from(e.target.files ?? []));
+                  e.target.value = '';
+                }}
+              />
+              <button
+                type="button"
+                onClick={() => shotInputRef.current?.click()}
+                disabled={attachments.length >= maxShots}
+                aria-label={t('add screenshots')}
+                aria-describedby={ids.shotHint}
+                title={t('PNG, JPG, WebP, or GIF · stays in your browser')}
+                className="-ml-[3px] inline-flex h-9 w-9 items-center justify-center rounded-full text-ink-muted transition-colors hover:bg-zinc-100 hover:text-ink disabled:cursor-not-allowed disabled:opacity-40"
+              >
+                <ImagePlus className="h-[18px] w-[18px]" aria-hidden="true" />
+              </button>
+              <span id={ids.shotHint} className="sr-only">
+                {t('PNG, JPG, WebP, or GIF · stays in your browser')}
+              </span>
+              <button
+                type="submit"
+                disabled={submitting || blockedByConflict}
+                ref={publishButtonRef}
+                aria-label={submitting ? t('Sending…') : t('Send')}
+                title={t('Send')}
+                className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary text-on-primary transition-colors hover:bg-primary-hover disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                {submitting ? (
+                  <Loader2 className="h-5 w-5 animate-spin" aria-hidden="true" />
+                ) : (
+                  <ArrowUp className="h-5 w-5" aria-hidden="true" />
+                )}
+              </button>
+            </div>
           </div>
-          <p id={ids.shotHint} className="mt-1.5 text-xs text-ink-muted">
-            PNG, JPG, WebP, or GIF · stays in your browser
-          </p>
+
+          {attempted && reasonError && (
+            <p id={ids.reasonError} className="mt-1.5 text-rose-700">
+              {reasonError}
+            </p>
+          )}
           {shotErrors.length > 0 && (
-            <ul role="alert" className="mt-2 space-y-0.5 text-rose-700">
+            <ul role="alert" className="mt-1.5 space-y-0.5 text-rose-700">
               {shotErrors.map((message) => (
                 <li key={message}>{message}</li>
               ))}
@@ -563,37 +438,14 @@ function CorrectionForm({
           <p className="sr-only" role="status" aria-live="polite">
             {shotStatus}
           </p>
-        </Step>
-
-        {formError && (
-          <p role="alert" className="text-rose-700">
-            {formError}
-          </p>
-        )}
-      </div>
-
-      <div className="sticky -bottom-5 -mx-5 -mb-5 mt-6 flex flex-wrap items-center justify-between gap-3 border-t border-line bg-white px-5 py-3 sm:-mx-6 sm:px-6">
-        <p className="flex flex-wrap items-center gap-1.5 text-xs text-ink-muted">
-          {current && verdictChanged ? (
-            <>
-              <VerdictBadge verdict={current.verdict} />
-              <ArrowRight className="h-3.5 w-3.5" aria-label="to" />
-              <VerdictBadge verdict={verdict} />
-            </>
-          ) : (
-            <span>Verdict unchanged</span>
-          )}
-        </p>
-        <div className="flex gap-2">
-          <button type="button" className="btn-ghost" onClick={onClose}>
-            Cancel
-          </button>
-          <button type="submit" className="btn-primary" disabled={submitting || blockedByConflict} ref={publishButtonRef}>
-            {submitting && <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />}
-            {submitting ? 'Publishing…' : 'Publish correction'}
-          </button>
         </div>
       </div>
+
+      {formError && (
+        <p role="alert" className="text-rose-700">
+          {formError}
+        </p>
+      )}
     </form>
   );
 }

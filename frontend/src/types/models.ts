@@ -6,7 +6,7 @@ export type InputType = 'text' | 'url';
 /** Processing lifecycle of a check. `completed` and `failed` are terminal. */
 export type CheckStatus = 'queued' | 'extracting' | 'retrieving' | 'assessing' | 'completed' | 'failed';
 
-export type Verdict = 'supported' | 'contradicted' | 'insufficient_evidence';
+export type Verdict = 'supported' | 'contradicted' | 'insufficient_evidence' | 'outdated';
 
 /**
  * `assessed` claims have at least one revision with a verdict.
@@ -42,6 +42,13 @@ export interface SubmittedFile {
   text: string;
 }
 
+export interface CheckedArticle {
+  title: string;
+  publisher?: string;
+  /** YYYY-MM-DD */
+  publishedAt?: string;
+}
+
 export interface Check {
   id: string;
   title: string;
@@ -50,6 +57,10 @@ export interface Check {
   inputUrl?: string;
   /** Text checks only. */
   files?: SubmittedFile[];
+  /** What is known about the article at `inputUrl`, when the demo has it. */
+  article?: CheckedArticle;
+  /** Demo-only: the claims really come from this input, rather than being sample data. */
+  claimsMatchInput?: boolean;
   status: CheckStatus;
   createdAt: string;
   updatedAt: string;
@@ -61,6 +72,19 @@ export interface Check {
   judgeIds?: string[];
   /** Demo-only metadata; a real backend would not return this. */
   scenario: DemoScenario;
+}
+
+/** Editorial rating of a source: good, mixed, or bad. Separate from verdicts and freshness. */
+export type SourceTrust = 'green' | 'yellow' | 'red';
+
+export interface SourceEntry {
+  domain: string;
+  name: string;
+  trust: SourceTrust;
+  /** One line on what this source is, e.g. "Official website of the Government of Vietnam". */
+  about?: string;
+  /** File name in public/source-logos. Missing means the UI shows a monogram. */
+  logo?: string;
 }
 
 /** Screenshot of the source page taken when the evidence was retrieved. */
@@ -85,8 +109,24 @@ export interface EvidenceSnapshot {
   /** Last update date stated by the source, when known (YYYY-MM-DD). */
   updatedAt?: string;
   retrievedAt: string;
+  /** The article's own lead image (its og:image), shown from the publisher's server, never copied. */
+  imageUrl?: string;
   capture?: PageCapture;
   relation: EvidenceRelation;
+  analysis?: SourceAnalysis;
+}
+
+/** What each judge scores a source on, in chart order. */
+export const ratingCriteria = ['match', 'directness', 'timing', 'detail'] as const;
+export type RatingCriterion = (typeof ratingCriteria)[number];
+
+/** What an article says, and how the AI judges read it. The assessment, notes and ratings are simulated in this demo. */
+export interface SourceAnalysis {
+  summary: string;
+  keyPoints: string[];
+  assessment: string;
+  /** `ratings` are scores out of 100, in `ratingCriteria` order. */
+  judgeNotes: { judge: string; note: string; ratings: number[] }[];
 }
 
 /**
@@ -99,6 +139,8 @@ export interface JudgeVerdict {
   verdict: Verdict;
   /** 0–1. */
   confidence: number;
+  /** The judge's overall reasoning for its verdict. */
+  review: string;
   primary: boolean;
 }
 
@@ -148,6 +190,8 @@ export interface Claim {
   checkId: string;
   position: number;
   text: string;
+  /** Short noun phrase for the overall statement (e.g. "the March 2024 opening"). */
+  topic?: string;
   /** Time period the claim refers to, when known (e.g. "March 2024"). */
   timeContext?: string;
   status: ClaimStatus;

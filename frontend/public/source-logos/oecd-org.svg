@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://web.resource.org/cc/"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://inkscape.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   id="svg1398"
+   sodipodi:version="0.32"
+   inkscape:version="0.43"
+   width="270"
+   height="170"
+   sodipodi:docbase="/tmp/wiki"
+   sodipodi:docname="OECD Logo.svg"
+   version="1.0">
+  <metadata
+     id="metadata1403">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title>OECD Logo</dc:title>
+        <dc:creator>
+          <cc:Agent>
+            <dc:title>SvenK</dc:title>
+          </cc:Agent>
+        </dc:creator>
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <defs
+     id="defs1401" />
+  <sodipodi:namedview
+     inkscape:window-height="726"
+     inkscape:window-width="1091"
+     inkscape:pageshadow="2"
+     inkscape:pageopacity="0.0"
+     borderopacity="1.0"
+     bordercolor="#666666"
+     pagecolor="#ffffff"
+     id="base"
+     inkscape:zoom="1.0051974"
+     inkscape:cx="196.00635"
+     inkscape:cy="-55.157839"
+     inkscape:window-x="0"
+     inkscape:window-y="224"
+     inkscape:current-layer="svg1398" />
+  <g
+     id="g2286"
+     transform="translate(-0.673906,-3.288652)">
+    <path
+       sodipodi:nodetypes="cccccscccccccscccccccscccccccsc"
+       id="path1409"
+       d="M 70.68589,139.73646 L 54.011358,113.5 L 54.005679,88.282857 L 54,63.065714 L 70.272443,37.358709 C 79.222287,23.219857 86.984787,11.504849 87.522443,11.325359 C 88.144424,11.117719 88.416966,19.226149 88.271722,33.617205 L 88.043445,56.235396 L 77.961631,72.20706 L 67.879818,88.178724 L 77.962494,104.23375 L 88.045171,120.28878 L 88.100426,142.73321 C 88.130817,155.07765 87.976748,165.35659 87.758052,165.57528 C 87.539355,165.79398 79.856882,154.16651 70.68589,139.73646 z M 42.702489,163.66708 C 42.42117,162.93398 34.929779,150.89648 26.054953,136.91708 L 9.918906,111.5 L 10.209453,87.5 L 10.5,63.5 L 27.334615,37.25 C 36.593654,22.8125 44.468654,10.999545 44.834615,10.998989 C 45.200577,10.998433 45.366298,21.235933 45.202885,33.748989 L 44.90577,56.5 L 34.921026,72.351639 L 24.936281,88.203278 L 34.931306,104.03745 L 44.926331,119.87162 L 45.213165,142.43668 C 45.421971,158.86326 45.189061,165.00151 44.356989,165.00087 C 43.728333,165.00039 42.983808,164.40019 42.702489,163.66708 z "
+       style="fill:#000000" />
+    <path
+       sodipodi:nodetypes="cssssssssc"
+       style="fill:#4786bc;fill-opacity:1"
+       d="M 172.15628,159.98846 C 142.86283,155.88896 117.3493,134.7997 108.65637,107.5 C 103.1884,90.328118 105.64532,67.626696 114.65153,52.105851 C 124.87458,34.487967 142.79661,20.866811 163,15.359909 C 171.99169,12.909015 194.87665,12.864884 204,15.280845 C 219.87773,19.485439 237.66485,31.163151 246.69363,43.310337 C 252.07187,50.546144 258.19592,63.181415 260.11421,71 C 262.03064,78.810969 261.81632,96.034117 259.70357,104 C 251.29462,135.70498 221.85598,158.74314 187.59791,160.42863 C 182.59406,160.67482 175.64533,160.47674 172.15628,159.98846 z "
+       id="path1411" />
+  </g>
+</svg>

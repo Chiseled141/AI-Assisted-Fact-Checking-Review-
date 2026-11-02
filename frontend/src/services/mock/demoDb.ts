@@ -10,6 +10,8 @@ import { seedChecks } from '../../mocks/fixtures';
 export interface StoredCheck extends Check {
   /** Seeded history entries include a saved human correction. */
   seeded: boolean;
+  /** Interface language when the check was started; Vietnamese checks use Vietnamese sources. */
+  language?: 'en' | 'vi';
   /** Stale-conflict scenario: the concurrent edit is injected only once. */
   conflictSimulated?: boolean;
 }
@@ -19,6 +21,7 @@ export interface StoredClaim {
   checkId: string;
   position: number;
   text: string;
+  topic?: string;
   timeContext?: string;
   status: ClaimStatus;
   evidenceIds: string[];
@@ -55,9 +58,12 @@ export function createSeedDb(now = Date.now()): DemoDb {
     const createdAt = new Date(now - seed.hoursAgo * 3_600_000).toISOString();
     db.checks[seed.id] = {
       id: seed.id,
-      title: deriveTitle(seed.inputType, seed.value),
+      title: seed.files ? seed.files.map((file) => file.name).join(', ') : deriveTitle(seed.inputType, seed.value),
       inputType: seed.inputType,
       ...(seed.inputType === 'text' ? { inputText: seed.value } : { inputUrl: seed.value }),
+      ...(seed.files ? { files: seed.files } : {}),
+      ...(seed.article ? { article: seed.article } : {}),
+      claimsMatchInput: Boolean(seed.article || seed.files),
       status: 'queued',
       createdAt,
       updatedAt: createdAt,

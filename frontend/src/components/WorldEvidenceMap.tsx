@@ -16,7 +16,7 @@ export function WorldEvidenceMap() {
           viewBox={`0 0 ${WORLD_MAP_WIDTH} ${WORLD_MAP_HEIGHT}`}
           className="world-map block h-auto w-full"
         >
-          <path d={WORLD_DOTS} className="fill-ink opacity-[0.16] dark:opacity-[0.19]" />
+          <path d={WORLD_DOTS} className="fill-ink opacity-[0.16]" />
         </svg>
       </div>
     </div>

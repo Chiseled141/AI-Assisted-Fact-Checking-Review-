@@ -2,6 +2,7 @@ import { useEffect, useId, useRef, useState } from 'react';
 import { Check, CircleCheck, CloudOff, FlaskConical, GitCompareArrows, TriangleAlert } from 'lucide-react';
 import type { DemoScenario } from '../../types/models';
 import { demoScenarios, scenarioLabel } from './demoSettings';
+import { t } from '../../lib/i18n';
 
 const scenarioIcons: Record<DemoScenario, typeof CircleCheck> = {
   completed: CircleCheck,
@@ -57,10 +58,10 @@ export function DemoScenarioPicker({ value, onChange }: Props) {
         type="button"
         aria-expanded={open}
         aria-controls={menuId}
-        aria-label={`Demo scenario: ${scenarioLabel(value)}`}
-        title={`Demo scenario: ${scenarioLabel(value)}`}
+        aria-label={t('Demo scenario: {label}', { label: t(scenarioLabel(value)) })}
+        title={t('Demo scenario: {label}', { label: t(scenarioLabel(value)) })}
         onClick={() => setOpen((current) => !current)}
-        className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-ink-muted transition-colors hover:bg-white/70 hover:text-ink dark:hover:bg-white/10"
+        className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-ink-muted transition-colors hover:bg-white/70 hover:text-ink"
       >
         <FlaskConical className="h-4 w-4" aria-hidden="true" />
       </button>
@@ -69,10 +70,10 @@ export function DemoScenarioPicker({ value, onChange }: Props) {
         <div
           ref={menuRef}
           id={menuId}
-          className="absolute bottom-full right-0 z-40 mb-2 max-h-[70svh] w-[19rem] max-w-[calc(100vw-2.5rem)] overflow-y-auto rounded-2xl border border-line bg-white p-1.5 text-left shadow-[0_24px_60px_-24px_rgb(18_56_41_/_0.35)] dark:border-white/10 dark:bg-[#151b19] dark:shadow-black/50"
+          className="absolute bottom-full right-0 z-40 mb-2 max-h-[70svh] w-[19rem] max-w-[calc(100vw-2.5rem)] overflow-y-auto rounded-2xl border border-line bg-white p-1.5 text-left shadow-[0_24px_60px_-24px_rgb(18_56_41_/_0.35)]"
         >
           <fieldset>
-            <legend className="sr-only">Demo scenario for the next check</legend>
+            <legend className="sr-only">{t('Demo scenario for the next check')}</legend>
             <div className="space-y-0.5">
               {demoScenarios.map((scenario) => {
                 const Icon = scenarioIcons[scenario.value];
@@ -80,15 +81,15 @@ export function DemoScenarioPicker({ value, onChange }: Props) {
                 return (
                   <label
                     key={scenario.value}
-                    className="flex cursor-pointer items-start gap-2.5 rounded-xl px-3 py-2.5 transition-colors hover:bg-zinc-100/70 has-[:checked]:bg-brand-50/70 has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-brand-500/40 dark:hover:bg-white/[0.06] dark:has-[:checked]:bg-white/[0.08]"
+                    className="flex cursor-pointer items-start gap-2.5 rounded-xl px-3 py-2.5 transition-colors hover:bg-zinc-100/70 has-[:checked]:bg-brand-50/70 has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-brand-500/40"
                   >
                     <Icon
                       className={`mt-0.5 h-4 w-4 shrink-0 ${selected ? 'text-brand-600' : 'text-ink-muted'}`}
                       aria-hidden="true"
                     />
                     <span className="min-w-0 flex-1">
-                      <span className="block text-sm font-semibold text-ink">{scenario.label}</span>
-                      <span className="mt-0.5 block text-xs leading-relaxed text-ink-muted">{scenario.description}</span>
+                      <span className="block text-sm font-semibold text-ink">{t(scenario.label)}</span>
+                      <span className="mt-0.5 block text-xs leading-relaxed text-ink-muted">{t(scenario.description)}</span>
                     </span>
                     {selected && <Check className="mt-0.5 h-4 w-4 shrink-0 text-brand-600" aria-hidden="true" />}
                     <input

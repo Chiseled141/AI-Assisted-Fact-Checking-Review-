@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
-import { Link, useParams } from 'react-router-dom';
+import { Link, Navigate, useLocation, useParams } from 'react-router-dom';
 import { Loader2, SearchX } from 'lucide-react';
 import { checkService, NotFoundError } from '../../services';
 import type { CheckDetail } from '../../types/models';
@@ -7,6 +7,8 @@ import { isTerminal } from '../../types/models';
 import { ProcessingView } from './ProcessingView';
 import { FailedView } from './FailedView';
 import { ResultsView } from '../results/ResultsView';
+import { t, useLanguage } from '../../lib/i18n';
+import { localizedCheckId } from '../demo/demoSettings';
 
 const POLL_INTERVAL_MS = 600;
 
@@ -19,6 +21,13 @@ type LoadState =
 /** Routes a check to its processing, failed, or results view and polls while it runs. */
 export function CheckPage() {
   const { checkId = '' } = useParams();
+  const { search } = useLocation();
+  const localizedId = localizedCheckId(checkId, useLanguage());
+  if (localizedId) return <Navigate to={{ pathname: `/checks/${localizedId}`, search }} replace />;
+  return <CheckView key={checkId} checkId={checkId} />;
+}
+
+function CheckView({ checkId }: { checkId: string }) {
   const [state, setState] = useState<LoadState>({ kind: 'loading' });
 
   const load = useCallback(async () => {
@@ -30,7 +39,7 @@ export function CheckPage() {
       setState(
         err instanceof NotFoundError
           ? { kind: 'not-found' }
-          : { kind: 'error', message: 'This check could not be loaded. Please try again.' },
+          : { kind: 'error', message: t('This check could not be loaded. Please try again.') },
       );
       return null;
     }
@@ -58,7 +67,7 @@ export function CheckPage() {
     return (
       <div className="flex justify-center px-4 py-24 text-ink-soft" role="status">
         <Loader2 className="mr-2 h-5 w-5 animate-spin" aria-hidden="true" />
-        Loading check…
+        {t('Loading check…')}
       </div>
     );
   }
@@ -68,24 +77,24 @@ export function CheckPage() {
       <div className="mx-auto max-w-lg px-4 py-24 text-center">
         <SearchX className="mx-auto h-10 w-10 text-ink-muted" aria-hidden="true" />
         <h1 className="mt-4 font-extrabold tracking-[-0.025em] text-2xl text-ink">
-          {state.kind === 'not-found' ? 'Check not found' : 'Something went wrong'}
+          {state.kind === 'not-found' ? t('Check not found') : t('Something went wrong')}
         </h1>
         <p className="mt-2 text-ink-soft">
           {state.kind === 'not-found'
-            ? 'This check isn’t saved in this browser.'
+            ? t('This check isn’t saved in this browser.')
             : state.message}
         </p>
         <div className="mt-6 flex justify-center gap-3">
           {state.kind === 'error' && (
             <button type="button" className="btn-secondary" onClick={() => void load()}>
-              Try again
+              {t('Try again')}
             </button>
           )}
           <Link to="/history" className="btn-secondary">
-            Open history
+            {t('Open history')}
           </Link>
           <Link to="/" className="btn-primary">
-            New check
+            {t('New check')}
           </Link>
         </div>
       </div>

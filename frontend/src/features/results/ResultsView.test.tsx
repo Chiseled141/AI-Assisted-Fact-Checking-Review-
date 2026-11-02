@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { renderApp } from '../../test/renderApp';
@@ -25,19 +25,42 @@ describe('Results workspace', () => {
     );
   });
 
-  it('selects the claim and focuses the passage when a citation is clicked', async () => {
-    const user = userEvent.setup();
+  it('marks fictional demo sources as not rated, and shows no review button for now', async () => {
     renderApp('/checks/chk_demo_transit');
     await screen.findByText('Harbor Line opens to passengers');
 
-    const ridership = screen.getByRole('article', { name: /ridership reached 50,000/i });
-    await user.click(within(ridership).getByRole('button', { name: /ridership reached 50,000/i }));
-    await screen.findByText('Six-month ridership summary, Harbor Line');
-    await user.click(screen.getByRole('button', { name: /citation 2/i }));
+    expect(within(evidencePanel()).getAllByText('Not rated').length).toBeGreaterThan(0);
+    expect(screen.queryByRole('link', { name: 'How sources are rated' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Review assessment' })).not.toBeInTheDocument();
+  });
 
-    const passage = (await screen.findByText('What the Harbor Line promised, and when')).closest('li');
-    expect(passage).toHaveAttribute('aria-current', 'true');
-    expect(passage).toHaveFocus();
+  it('shows logos and ratings for the real-source example', async () => {
+    const user = userEvent.setup();
+    renderApp('/checks/chk_demo_real');
+    await screen.findByText('Hanoi gets country’s 1st metro service');
+
+    expect(evidencePanel().querySelectorAll('img[src^="/source-logos/"]')).toHaveLength(5);
+    expect(within(evidencePanel()).getAllByText('Trusted source')).toHaveLength(5);
+    expect(within(evidencePanel()).queryByText('Not rated')).not.toBeInTheDocument();
+    expect(within(evidencePanel()).getByText('Official news site of the Government of Vietnam')).toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: /WHO declared COVID-19 over/i }));
+    await screen.findByText('A monumental moment: End of international emergency');
+    expect(within(evidencePanel()).getByText('Mixed source')).toBeInTheDocument();
+  });
+
+  it('links each source to its page in a new tab', async () => {
+    renderApp('/checks/chk_demo_real');
+    await screen.findByText('Hanoi gets country’s 1st metro service');
+
+    const links = within(evidencePanel()).getAllByRole('link', { name: /^visit source/i });
+    expect(links).toHaveLength(5);
+    expect(links[0]).toHaveAttribute(
+      'href',
+      'https://e.vnexpress.net/news/business/economy/hanoi-gets-country-s-1st-metro-service-4382113.html',
+    );
+    expect(links[0]).toHaveAttribute('target', '_blank');
+    expect(links[0]).toHaveAttribute('rel', expect.stringContaining('noopener'));
   });
 
   it('shows the source date, exact retrieval time, and page capture for each snapshot', async () => {
@@ -78,16 +101,179 @@ describe('Results workspace', () => {
     expect(within(target).getByText('Freshness unknown')).toBeInTheDocument();
   });
 
-  it('can close the evidence panel and reopen it', async () => {
+  it('says how each source relates to the claim and whether the verdict used it', async () => {
+    const user = userEvent.setup();
+    renderApp('/checks/chk_demo_real');
+    const passage = (await screen.findByText('Ngày 6/11, chính thức khai thác thương mại tuyến đường sắt Cát Linh - Hà Đông')).closest('li')!;
+    expect(within(passage).getByText('This source gives background but does not settle the claim.')).toBeInTheDocument();
+    expect(within(passage).getByText('Used in verdict').nextElementSibling).toHaveTextContent('No');
+    expect(within(passage).getByText('Website').nextElementSibling).toHaveTextContent('nhandan.vn');
+    await user.click(screen.getByRole('button', { name: /WHO declared COVID-19 over/i }));
+    const remarks = (await screen.findByText('A monumental moment: End of international emergency')).closest('li')!;
+    expect(within(remarks).getByText('Used in verdict').nextElementSibling).toHaveTextContent('Yes');
+  });
+
+  it('has no citation number buttons', async () => {
+    renderApp('/checks/chk_demo_transit');
+    await screen.findByText('Harbor Line opens to passengers');
+    expect(screen.queryByRole('button', { name: /^citation/i })).not.toBeInTheDocument();
+  });
+
+  it('moves between claims with next and previous, with no next on the last claim', async () => {
     const user = userEvent.setup();
     renderApp('/checks/chk_demo_transit');
     await screen.findByText('Harbor Line opens to passengers');
+    expect(screen.queryByRole('button', { name: 'Previous claim' })).not.toBeInTheDocument();
 
-    await user.click(screen.getByRole('button', { name: 'Close evidence panel' }));
-    expect(screen.queryByRole('list', { name: /evidence snapshots for claim/i })).not.toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: 'Next claim' }));
+    expect(evidencePanel()).toHaveAccessibleName('Evidence snapshots for claim 2');
+    expect(screen.getByText('Claim 2 of 4')).toBeInTheDocument();
 
-    await user.click(screen.getByRole('button', { name: /^show evidence · claim 1$/i }));
-    expect(evidencePanel()).toHaveAccessibleName('Evidence snapshots for claim 1');
+    await user.click(screen.getByRole('button', { name: 'Next claim' }));
+    await user.click(screen.getByRole('button', { name: 'Next claim' }));
+    expect(evidencePanel()).toHaveAccessibleName('Evidence snapshots for claim 4');
+    expect(screen.queryByRole('button', { name: 'Next claim' })).not.toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: 'Previous claim' }));
+    expect(evidencePanel()).toHaveAccessibleName('Evidence snapshots for claim 3');
+  });
+
+  it('shows the article a URL check read, and keeps that article out of its own evidence', async () => {
+    renderApp('/checks/chk_demo_url_vi');
+    const title = 'WHO tuyên bố Covid-19 không còn là tình trạng y tế khẩn cấp toàn cầu';
+    expect(await screen.findByRole('heading', { name: title })).toBeInTheDocument();
+    expect(screen.getByText('Article checked')).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: /open article/i })).toHaveAttribute('href', expect.stringContaining('vnexpress.net'));
+    expect(screen.queryByText(/sample data/i)).not.toBeInTheDocument();
+
+    expect(screen.getAllByRole('article')).toHaveLength(1);
+    await screen.findByRole('list', { name: /evidence snapshots/i });
+    expect(within(evidencePanel()).getAllByRole('listitem').map((item) => item.textContent).join()).not.toContain('VnExpress');
+  });
+
+  it('shows the file a check read', async () => {
+    const user = userEvent.setup();
+    renderApp('/checks/chk_demo_file_vi');
+    expect(await screen.findByRole('heading', { name: 'ghi-chu-giao-thong-ha-noi.txt' })).toBeInTheDocument();
+    expect(screen.getByText('File checked')).toBeInTheDocument();
+    expect(screen.queryByText(/sample data/i)).not.toBeInTheDocument();
+    expect(screen.getAllByRole('article')).toHaveLength(1);
+
+    await user.click(screen.getByText('File contents'));
+    expect(screen.getByText(/Ghi chú ví dụ về giao thông Hà Nội/)).toBeVisible();
+  });
+
+  it('says so when the demo did not really read the link', async () => {
+    renderApp('/checks/chk_demo_url');
+    expect(await screen.findByText(/did not read this link/i)).toBeInTheDocument();
+  });
+
+  it('shows nothing extra for pasted text', async () => {
+    renderApp('/checks/chk_demo_transit');
+    await screen.findByText('Harbor Line opens to passengers');
+    expect(screen.queryByText('Article checked')).not.toBeInTheDocument();
+    expect(screen.queryByText('File checked')).not.toBeInTheDocument();
+  });
+
+  it('shows both AI models’ overall reviews together, with neither verdict repeated when they agree', async () => {
+    renderApp('/checks/chk_demo_real');
+    await screen.findByText('Hanoi gets country’s 1st metro service');
+
+    const reviews = screen.getByRole('list', { name: 'Reviews from both AI models' });
+    const [first, second] = within(reviews).getAllByRole('listitem');
+    expect(within(first).getByText('GPT Luna').tagName).toBe('STRONG');
+    expect(within(first).getByText(/Four reports published on 6 November 2021/)).toBeInTheDocument();
+    expect(within(first).getByText('95% confidence')).toBeInTheDocument();
+    expect(within(second).getByText('Claude Haiku 5.5').tagName).toBe('STRONG');
+    expect(within(second).getByText(/The date holds up/)).toBeInTheDocument();
+    expect(within(second).getByText('92% confidence')).toBeInTheDocument();
+    expect(within(reviews).queryByText('Supported')).not.toBeInTheDocument();
+  });
+
+  it('says so when the two AI models reach different verdicts, and shows each verdict', async () => {
+    renderApp('/checks/chk_demo_transit?claim=2');
+    expect(await screen.findByText('AI judges disagree')).toBeInTheDocument();
+
+    const reviews = screen.getByRole('list', { name: 'Reviews from both AI models' });
+    expect(within(reviews).getByText('Contradicted')).toBeInTheDocument();
+    expect(within(reviews).getByText('Insufficient evidence')).toBeInTheDocument();
+    expect(within(reviews).getByText(/boardings and trips may not be counted the same way, and no source/)).toBeInTheDocument();
+  });
+
+  it('shows what a source says, and opens the two AI models’ comments below it', async () => {
+    const user = userEvent.setup();
+    renderApp('/checks/chk_demo_real');
+    await screen.findByText('Hanoi gets country’s 1st metro service');
+    expect(screen.getByText(/first train leaving Cat Linh station at 7:40/)).toBeInTheDocument();
+
+    const toggle = screen.getByRole('button', { name: /^see analysis: hanoi gets/i });
+    const comment = screen.getByText(/I read this as direct support/);
+    expect(toggle).toHaveAttribute('aria-expanded', 'false');
+    expect(comment).not.toBeVisible();
+
+    await user.click(toggle);
+    expect(toggle).toHaveAttribute('aria-expanded', 'true');
+    expect(comment).toBeVisible();
+    const comments = screen.getByRole('heading', { name: 'Comments from both AI models', hidden: false }).parentElement!;
+    expect(comments.querySelector('img[src="/logos/openai.svg"]')).toBeInTheDocument();
+    expect(comments.querySelector('img[src="/logos/anthropic.svg"]')).toBeInTheDocument();
+
+    // The chart's numbers are in a table too, one row per criterion and one column per model.
+    const heading = screen.getByRole('heading', { name: 'How both AI models rated this source', hidden: false });
+    const table = within(heading.parentElement!).getAllByRole('table')[0];
+    expect(within(table).getAllByRole('columnheader')).toHaveLength(3);
+    const row = within(table).getByRole('row', { name: /matches the claim/i });
+    expect(within(row).getAllByRole('cell').map((cell) => cell.textContent)).toEqual(['96', '88']);
+
+    const kinds = within(heading.parentElement!).getByRole('group', { name: 'Chart type' });
+    expect(within(kinds).getByRole('button', { name: 'Bars' })).toHaveAttribute('aria-pressed', 'true');
+    await user.click(within(kinds).getByRole('button', { name: 'Radar' }));
+    expect(within(kinds).getByRole('button', { name: 'Radar' })).toHaveAttribute('aria-pressed', 'true');
+    expect(within(kinds).getByRole('button', { name: 'Bars' })).toHaveAttribute('aria-pressed', 'false');
+
+    await user.click(screen.getByRole('button', { name: /^hide analysis: hanoi gets/i }));
+    expect(comment).not.toBeVisible();
+  });
+
+  describe('on wide screens', () => {
+    const original = window.matchMedia;
+    beforeEach(() => {
+      window.matchMedia = ((query: string) => ({
+        matches: query.includes('min-width'),
+        addEventListener: () => {},
+        removeEventListener: () => {},
+      })) as unknown as typeof window.matchMedia;
+    });
+    afterEach(() => {
+      window.matchMedia = original;
+    });
+
+    it('opens a source when it is hovered, and it stays open', async () => {
+      const user = userEvent.setup();
+      renderApp('/checks/chk_demo_real');
+      await screen.findByText('Hanoi gets country’s 1st metro service');
+
+      await user.hover(screen.getByRole('button', { name: /show source: first metro line/i }));
+      expect(await screen.findByRole('link', { name: /^visit source: first metro line/i })).toBeInTheDocument();
+      expect(screen.getByText(/put into operation in the capital city/)).toBeInTheDocument();
+
+      await user.unhover(screen.getByRole('link', { name: /^visit source: first metro line/i }));
+      expect(screen.getByRole('link', { name: /^visit source: first metro line/i })).toBeInTheDocument();
+    });
+
+    it('opens one source at a time', async () => {
+      const user = userEvent.setup();
+      renderApp('/checks/chk_demo_real');
+      await screen.findByText('Hanoi gets country’s 1st metro service');
+      const links = () => within(evidencePanel()).getAllByRole('link', { name: /^visit source/i });
+      expect(links()).toHaveLength(1);
+      expect(screen.getByRole('button', { name: /show source: first metro line/i })).toBeInTheDocument();
+
+      await user.click(screen.getByRole('button', { name: /show source: first metro line/i }));
+      expect(links()).toHaveLength(1);
+      expect(links()[0]).toHaveAttribute('href', expect.stringContaining('en.baochinhphu.vn'));
+      expect(screen.getByText(/put into operation in the capital city/)).toBeInTheDocument();
+    });
   });
 
   it('opens the claim named in the URL', async () => {
@@ -97,20 +283,30 @@ describe('Results workspace', () => {
     expect(within(budget).getByRole('button', { name: /original budget/i })).toHaveAttribute('aria-pressed', 'true');
   });
 
-  it('shows the share of supported claims, labeled as not a truth score', async () => {
+  it('starts at the claims, with the selected claim as the page heading', async () => {
     renderApp('/checks/chk_demo_transit');
     await screen.findByText('Harbor Line opens to passengers');
-    // Seeded transit check: 1 supported out of 4 claims.
-    expect(screen.getByText('25')).toBeInTheDocument();
-    expect(screen.getByText('of claims supported')).toBeInTheDocument();
-    expect(screen.getByText('Share of claims, not a truth score')).toBeInTheDocument();
+    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent(/opened to passengers in March 2024/);
+    expect(screen.queryByText(/claims checked/i)).not.toBeInTheDocument();
+    expect(screen.queryByText('claims supported')).not.toBeInTheDocument();
+  });
+
+  it('shows each real source\u2019s article image, and no image for fictional sources', async () => {
+    const { unmount } = renderApp('/checks/chk_demo_real');
+    await screen.findByText('Hanoi gets country\u2019s 1st metro service');
+    expect(evidencePanel().querySelector('img[src^="https://i1-english.vnecdn.net/"]')).toHaveAttribute('referrerpolicy', 'no-referrer');
+    unmount();
+
+    renderApp('/checks/chk_demo_transit');
+    await screen.findByText('Harbor Line opens to passengers');
+    // Article images load with no referrer. The AI labs' logos in the comments are ours.
+    expect(evidencePanel().querySelector('img[referrerpolicy]')).toBeNull();
   });
 
   it('shows a provider failure as verification unavailable, not a verdict', async () => {
     renderApp('/checks/chk_demo_url');
     const claim = await screen.findByRole('article', { name: /downtown traffic congestion/i });
     expect(within(claim).getByText('Verification unavailable')).toBeInTheDocument();
-    expect(within(claim).queryByRole('button', { name: /review assessment/i })).not.toBeInTheDocument();
     expect(within(claim).queryByText(/insufficient evidence/i)).not.toBeInTheDocument();
   });
 });

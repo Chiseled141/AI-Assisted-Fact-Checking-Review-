@@ -1,6 +1,7 @@
 import { config } from '../config';
 import type { Attachment } from '../types/models';
 import { isSafeImageDataUrl, validateScreenshot } from './validation';
+import { t } from './i18n';
 
 const limits = config.correction.screenshots;
 
@@ -57,7 +58,7 @@ export async function readScreenshots(
   const errors: string[] = [];
 
   for (const file of picked) {
-    const name = file.name || 'Pasted screenshot';
+    const name = file.name || t('Pasted screenshot');
     const error = validateScreenshot({ name, size: file.size, type: file.type }, existingCount + added.length);
     if (error) {
       errors.push(error);
@@ -66,11 +67,11 @@ export async function readScreenshots(
     try {
       const { dataUrl, type } = await shrink(await readDataUrl(file), file);
       const size = Math.round((dataUrl.length - dataUrl.indexOf(',') - 1) * 0.75);
-      if (!isSafeImageDataUrl(dataUrl)) errors.push(`“${name}” could not be read as an image.`);
-      else if (size > limits.maxStoredBytes) errors.push(`“${name}” is still too large after resizing. Try cropping it.`);
+      if (!isSafeImageDataUrl(dataUrl)) errors.push(t('“{name}” could not be read as an image.', { name }));
+      else if (size > limits.maxStoredBytes) errors.push(t('“{name}” is still too large after resizing. Try cropping it.', { name }));
       else added.push({ id: newAttachmentId(), name, type, size, dataUrl });
     } catch {
-      errors.push(`“${name}” could not be read as an image.`);
+      errors.push(t('“{name}” could not be read as an image.', { name }));
     }
   }
   return { added, errors };

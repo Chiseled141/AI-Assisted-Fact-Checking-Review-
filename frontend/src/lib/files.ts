@@ -1,5 +1,6 @@
 import type { SubmittedFile } from '../types/models';
 import { validateFile, validateFileText } from './validation';
+import { t } from './i18n';
 
 function readFileText(file: File): Promise<string> {
   if (typeof file.text === 'function') return file.text();
@@ -34,7 +35,7 @@ export async function readTextFiles(
       if (textError) errors.push(textError);
       else added.push({ name: file.name, size: file.size, text });
     } catch {
-      errors.push(`“${file.name}” could not be read.`);
+      errors.push(t('“{name}” could not be read.', { name: file.name }));
     }
   }
   return { added, errors };

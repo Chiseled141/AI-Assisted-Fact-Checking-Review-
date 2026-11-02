@@ -1,8 +1,11 @@
 import '@testing-library/jest-dom/vitest';
-import { afterEach, beforeEach } from 'vitest';
+import { afterEach, beforeEach, vi } from 'vitest';
 import { cleanup } from '@testing-library/react';
 import { setMockLatency } from '../services/mock/mockCheckService';
 import { clearDbCache } from '../services/mock/demoDb';
+
+// Highcharts needs a real browser to load. Tests read the chart's numbers from its table instead.
+vi.mock('../features/results/RatingPlot', () => ({ default: () => null }));
 
 // Newer Node versions ship their own (disabled) localStorage global that shadows jsdom's.
 // Install a simple in-memory Storage so tests behave the same on every Node version.
@@ -31,7 +34,6 @@ Object.defineProperty(window, 'localStorage', { value: new MemoryStorage(), conf
 
 beforeEach(() => {
   window.localStorage.clear();
-  document.documentElement.classList.remove('dark');
   clearDbCache();
   setMockLatency(0);
 });

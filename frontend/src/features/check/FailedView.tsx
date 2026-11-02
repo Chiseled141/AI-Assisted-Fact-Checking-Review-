@@ -5,6 +5,7 @@ import type { Check } from '../../types/models';
 import { checkService } from '../../services';
 import { formatDateTime } from '../../lib/format';
 import { DemoModeLabel } from '../../components/Badges';
+import { t } from '../../lib/i18n';
 
 export function FailedView({ check }: { check: Check }) {
   const navigate = useNavigate();
@@ -22,7 +23,7 @@ export function FailedView({ check }: { check: Check }) {
       );
       navigate(`/checks/${next.id}`);
     } catch {
-      setRetryError('Could not start a new check. Please try again.');
+      setRetryError(t('Could not start a new check. Please try again.'));
       setRetrying(false);
     }
   }
@@ -33,17 +34,17 @@ export function FailedView({ check }: { check: Check }) {
         <div className="flex flex-wrap items-center justify-between gap-3">
           <h1 className="flex items-center gap-2 font-extrabold tracking-[-0.025em] text-2xl text-ink">
             <TriangleAlert className="h-6 w-6 text-rose-600" aria-hidden="true" />
-            Check failed
+            {t('Check failed')}
           </h1>
           <DemoModeLabel />
         </div>
         <p className="mt-2 break-words text-sm text-ink-soft">{check.title}</p>
         <div role="alert" className="mt-6 border border-rose-200 bg-rose-50 p-4 text-sm text-rose-900">
-          {check.errorMessage ?? 'The check could not be completed.'}
+          {t(check.errorMessage ?? 'The check could not be completed.')}
         </div>
-        <p className="mt-4 text-sm text-ink-soft">No verdicts were produced.</p>
+        <p className="mt-4 text-sm text-ink-soft">{t('No verdicts were produced.')}</p>
         <p className="mt-2 text-xs text-ink-muted">
-          Started <time dateTime={check.createdAt}>{formatDateTime(check.createdAt)}</time>
+          {t('Started')} <time dateTime={check.createdAt}>{formatDateTime(check.createdAt)}</time>
         </p>
         {retryError && (
           <p role="alert" className="mt-4 text-sm text-rose-700">
@@ -53,10 +54,10 @@ export function FailedView({ check }: { check: Check }) {
         <div className="mt-6 flex flex-wrap gap-3">
           <button type="button" className="btn-primary" onClick={() => void retry()} disabled={retrying}>
             <RotateCcw className="h-4 w-4" aria-hidden="true" />
-            {retrying ? 'Starting…' : 'Run again'}
+            {retrying ? t('Starting…') : t('Run again')}
           </button>
           <Link to="/history" className="btn-secondary">
-            Back to history
+            {t('Back to history')}
           </Link>
         </div>
       </div>
