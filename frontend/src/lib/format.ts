@@ -112,7 +112,7 @@ export function deriveTitle(inputType: InputType, value: string): string {
   return truncate(firstSentence.replace(/\s+/g, ' '), 72);
 }
 
-export function truncate(value: string, max: number): string {
+function truncate(value: string, max: number): string {
   return value.length <= max ? value : `${value.slice(0, max - 1).trimEnd()}…`;
 }
 

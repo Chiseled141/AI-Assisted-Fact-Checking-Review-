@@ -1,10 +1,12 @@
-# AI-Assisted-Fact-Checking-Review-
-An AI-assisted fact-checking web app that extracts claims from text, retrieves evidence, and generates cited assessments. Users can review verdicts and publish corrections while preserving evidence and assessment history.
+# ClaimTrace
 
-## Frontend
+An AI-assisted fact-checking web app. It extracts claims from text, a link or a file, retrieves evidence from trusted sources, and returns cited verdicts from two AI models.
 
-The demo frontend lives in [`frontend/`](frontend/README.md) (React + TypeScript + Vite). It runs in demo mode with simulated results:
+| Folder | What it is | How to run it |
+|---|---|---|
+| `frontend/` | React, TypeScript, Vite | `npm install && npm run dev` |
+| `backend/` | FastAPI pipeline and API | `uv sync && uv run uvicorn app.main:app --port 8000` |
 
-```bash
-cd frontend && npm install && npm run dev
-```
+The frontend runs on its own in demo mode, with sample data. To use the real backend, follow [`AGENT.md`](AGENT.md).
+
+Architecture, a guide to the files, and project rules are in [`AGENT.md`](AGENT.md).

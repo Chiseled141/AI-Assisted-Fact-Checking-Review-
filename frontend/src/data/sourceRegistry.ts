@@ -1,4 +1,4 @@
-// Source ratings from TRUSTED_SOURCES.md. Logos live in public/source-logos.
+// Source ratings. The backend keeps a copy in app/data/source_ratings.json. Logos live in public/source-logos.
 // `logo` is left out where public/source-logos/manifest.json has no usable image for that source, so the UI shows a monogram.
 // Red sources were never fetched, so they have no logo.
 

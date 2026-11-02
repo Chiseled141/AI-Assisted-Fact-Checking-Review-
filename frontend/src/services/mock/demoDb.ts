@@ -16,7 +16,7 @@ export interface StoredCheck extends Check {
   conflictSimulated?: boolean;
 }
 
-export interface StoredClaim {
+interface StoredClaim {
   id: string;
   checkId: string;
   position: number;
@@ -52,7 +52,7 @@ function isDemoDb(value: unknown): value is DemoDb {
   );
 }
 
-export function createSeedDb(now = Date.now()): DemoDb {
+function createSeedDb(now = Date.now()): DemoDb {
   const db: DemoDb = { schemaVersion: config.storageSchemaVersion, checks: {}, claims: {}, evidence: {}, revisions: {} };
   for (const seed of seedChecks) {
     const createdAt = new Date(now - seed.hoursAgo * 3_600_000).toISOString();
@@ -93,11 +93,6 @@ export function loadDb(): DemoDb {
 export function saveDb(db: DemoDb): void {
   cache = db;
   writeJson(STORAGE_KEY, db);
-}
-
-export function resetDb(): void {
-  removeItem(STORAGE_KEY);
-  cache = null;
 }
 
 /** Drop the in-memory cache so the next load re-reads storage (used by tests). */

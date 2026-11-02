@@ -1,0 +1,44 @@
+[project]
+name = "claimtrace-backend"
+version = "0.1.0"
+description = "FastAPI server for ClaimTrace: extracts claims, retrieves evidence and returns cited verdicts."
+requires-python = ">=3.11,<3.13"
+dependencies = [
+  "fastapi>=0.115",
+  "uvicorn[standard]>=0.30",
+  "sqlalchemy>=2.0",
+  "pydantic-settings>=2.4",
+  "httpx>=0.27",
+  "openai>=1.50",
+  "trafilatura>=1.12",
+  "rank-bm25>=0.2.2",
+  "redis>=8.1.0",
+  "alembic>=1.20.1",
+]
+
+[project.optional-dependencies]
+postgres = ["psycopg[binary]>=3.2"]
+
+[dependency-groups]
+dev = [
+    "pytest>=8",
+    "pyyaml>=6.0.3",
+    "ruff>=0.17.3",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]
+
+[tool.uv]
+package = false
+
+[tool.ruff]
+line-length = 130
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B"]
+ignore = ["B008"]  # FastAPI's Depends() in defaults is how it is meant to be used.
+
+[tool.ruff.lint.per-file-ignores]
+"tests/*" = ["E501", "E402"]

@@ -1,5 +1,6 @@
 import { useMemo } from 'react';
 import { Check as CheckIcon, Info } from 'lucide-react';
+import { demoMode } from '../../services';
 import type { Check } from '../../types/models';
 import { PROCESSING_STAGES } from '../../types/models';
 import { formatDateTime, statusLabel } from '../../lib/format';
@@ -56,7 +57,7 @@ export function ProcessingView({ check }: { check: Check }) {
             </span>
             {t('Live check')}
           </p>
-          <DemoModeLabel />
+          {demoMode && <DemoModeLabel />}
         </div>
 
         <h1 className="mt-5 text-[30px] font-medium leading-[1.12] tracking-[-0.03em] text-ink sm:mt-6 sm:text-[40px]">
@@ -156,10 +157,12 @@ export function ProcessingView({ check }: { check: Check }) {
           })}
         </ol>
 
-        <p className="mt-8 flex items-start gap-2 text-xs leading-[1.7] text-ink-faint">
-          <Info className="mt-0.5 h-3.5 w-3.5 shrink-0" aria-hidden="true" />
-          {t('Simulated processing. No AI model, search, or URL fetch is called.')}
-        </p>
+        {demoMode && (
+          <p className="mt-8 flex items-start gap-2 text-xs leading-[1.7] text-ink-faint">
+            <Info className="mt-0.5 h-3.5 w-3.5 shrink-0" aria-hidden="true" />
+            {t('Simulated processing. No AI model, search, or URL fetch is called.')}
+          </p>
+        )}
       </div>
     </div>
   );

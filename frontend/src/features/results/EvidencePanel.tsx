@@ -1,4 +1,5 @@
 import { CalendarDays, CalendarX, CloudOff, Loader2, PencilLine } from 'lucide-react';
+import { demoMode } from '../../services';
 import { config } from '../../config';
 import type { Claim, EvidenceSnapshot } from '../../types/models';
 import { RevisionKindBadge, VerdictHeadline } from '../../components/Badges';
@@ -84,7 +85,7 @@ export function EvidencePanel({
                 {claim.timeContext}
               </span>
             )}
-            {reviews && <span>{t('Simulated in this demo')}</span>}
+            {reviews && demoMode && <span>{t('Simulated in this demo')}</span>}
             {outdatedCount > 0 && (
               <span className="inline-flex items-center gap-1 text-ink-soft">
                 <CalendarX className="h-3.5 w-3.5 text-candy" aria-hidden="true" />

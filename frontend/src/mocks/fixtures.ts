@@ -4,11 +4,11 @@
 // No quotation here is attributed to a real publisher.
 // The one check with real sources keeps them separately, in realExample.ts.
 
+import { exampleInputs, REAL_EXAMPLE_INPUT_VI } from '../data/examples';
 import {
   fileExampleClaimsVi,
   fileExampleVi,
   REAL_EXAMPLE_INPUT,
-  REAL_EXAMPLE_INPUT_VI,
   realExampleClaims,
   realExampleClaimsVi,
   urlExampleArticleVi,
@@ -25,7 +25,7 @@ import type {
   SubmittedFile,
 } from '../types/models';
 
-export interface FixtureEvidence {
+interface FixtureEvidence {
   key: string;
   sourceTitle: string;
   publisher?: string;
@@ -74,8 +74,6 @@ export interface FixtureClaim {
 }
 
 export const FIXTURE_MODEL = { name: 'fixture-assessor (simulated)', promptVersion: 'assess-v3' };
-
-export const FIXTURE_TOPIC = 'Marlow City Harbor Line (fictional)';
 
 export const fixtureClaims: FixtureClaim[] = [
   {
@@ -307,41 +305,6 @@ export const FAILED_CHECK_REASON =
   'Evidence retrieval failed because the search provider was unreachable (simulated outage). No claims were assessed.';
 
 export const STALE_CONFLICT_AUTHOR = 'Another reviewer (simulated)';
-
-export interface ExampleInput {
-  id: string;
-  label: string;
-  inputType: InputType;
-  value: string;
-  /** What the example fills in when the interface is in Vietnamese. */
-  valueVi: string;
-}
-
-export const exampleInputs: ExampleInput[] = [
-  {
-    id: 'transit-text',
-    label: 'Transit news',
-    inputType: 'text',
-    value:
-      'Marlow City’s Harbor Line light rail opened to passengers in March 2024. Ridership reached 50,000 daily trips within its first six months, and the line was completed under its original budget of $1.2 billion. City officials say it has reduced downtown traffic congestion by a third.',
-    valueVi: REAL_EXAMPLE_INPUT_VI,
-  },
-  {
-    id: 'news-url',
-    label: 'News URL',
-    inputType: 'url',
-    value: 'https://example.org/marlow-ledger/2024/10/harbor-line-six-months',
-    valueVi: 'https://vnexpress.net/who-tuyen-bo-covid-19-khong-con-la-tinh-trang-y-te-khan-cap-toan-cau-4601715.html',
-  },
-  {
-    id: 'budget-text',
-    label: 'Budget claim',
-    inputType: 'text',
-    value:
-      'The Harbor Line was finished under budget, costing less than the $1.2 billion originally approved by the city council.',
-    valueVi: 'Dự án đường sắt đô thị Cát Linh - Hà Đông đã hoàn thành trong tổng mức đầu tư được phê duyệt ban đầu.',
-  },
-];
 
 export interface SeedCheck {
   id: string;

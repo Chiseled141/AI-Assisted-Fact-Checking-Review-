@@ -14,7 +14,7 @@ export const config = {
   /**
    * LLM judges offered in the new-check picker. Names are display labels only; real model IDs
    * go here once they are confirmed. `defaultIds` is the picker's starting pair (demo only); the
-   * evaluation pair is frozen separately after the candidate test in the plan.
+   * evaluation pair is frozen separately after a test on about 30 claims.
    */
   judges: {
     count: 2,

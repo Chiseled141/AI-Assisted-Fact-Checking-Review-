@@ -248,6 +248,33 @@ const interfaceText: Record<string, string> = {
     'Bản demo không đọc link này. Các nhận định bên dưới là dữ liệu mẫu.',
   'This demo did not read these files. The claims below are sample data.':
     'Bản demo không đọc các tệp này. Các nhận định bên dưới là dữ liệu mẫu.',
+  'When they agree, that verdict is shown. When they disagree, you see both.':
+    'Khi hai mô hình đồng ý, kết luận đó được hiển thị. Khi bất đồng, bạn thấy cả hai.',
+  'Written by the AI models from this page’s text. They can be wrong, so check the source.':
+    'Do các mô hình AI viết dựa trên nội dung trang này. Chúng có thể sai, nên hãy đối chiếu với nguồn.',
+  'Every check is saved with its evidence and revisions.': 'Mọi lượt kiểm tra đều được lưu, kèm bằng chứng và các phiên bản.',
+  'Checks you run appear here.': 'Các lượt kiểm tra của bạn sẽ hiện ở đây.',
+  'The server is missing its API keys, so it can’t run checks yet.':
+    'Máy chủ chưa có API key nên chưa chạy được lượt kiểm tra.',
+  'Too many checks. Please try again later.': 'Bạn đã chạy quá nhiều lượt kiểm tra. Hãy thử lại sau.',
+  'Enter a valid link.': 'Hãy nhập một đường link hợp lệ.',
+  'Enter some text or attach a file.': 'Hãy nhập văn bản hoặc đính kèm tệp.',
+  'Pick exactly 2 different judges.': 'Hãy chọn đúng 2 mô hình khác nhau.',
+  'Only http and https links can be checked.': 'Chỉ kiểm tra được link http và https.',
+  'This link cannot be fetched.': 'Không thể tải link này.',
+  'This link does not point to a public website.': 'Link này không trỏ đến một trang web công khai.',
+  'This link is not a web page.': 'Link này không phải là trang web.',
+  'This page is too large to read.': 'Trang này quá lớn để đọc.',
+  'This link redirects too many times.': 'Link này chuyển hướng quá nhiều lần.',
+  'The page could not be reached.': 'Không truy cập được trang này.',
+  'No article text could be read from this page.': 'Không đọc được nội dung bài viết từ trang này.',
+  'The claims could not be extracted.': 'Không tách được các nhận định.',
+  'Something went wrong while running this check.': 'Đã có lỗi khi chạy lượt kiểm tra này.',
+  'The server restarted while this check was running.': 'Máy chủ đã khởi động lại khi lượt kiểm tra đang chạy.',
+  'Evidence could not be retrieved, so there is no verdict.': 'Không lấy được bằng chứng nên chưa có kết luận.',
+  'The AI judges could not assess this claim, so there is no verdict.': 'Các mô hình AI không đánh giá được nhận định này nên chưa có kết luận.',
+  'No readable source was found for this claim, so it cannot be verified.':
+    'Không tìm thấy nguồn đọc được cho nhận định này nên chưa thể xác minh.',
   'Chart type': 'Loại biểu đồ',
   Bars: 'Cột',
   Dumbbell: 'Quả tạ',
@@ -335,7 +362,6 @@ const interfaceText: Record<string, string> = {
   'add screenshots': 'thêm ảnh chụp màn hình',
   'PNG, JPG, WebP, or GIF · stays in your browser': 'PNG, JPG, WebP hoặc GIF · chỉ lưu trên trình duyệt của bạn',
   to: 'sang',
-  Cancel: 'Hủy',
   'Sending…': 'Đang gửi…',
   'Send': 'Gửi',
 

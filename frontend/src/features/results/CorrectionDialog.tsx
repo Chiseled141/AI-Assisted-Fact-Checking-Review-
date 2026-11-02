@@ -10,7 +10,7 @@ import type {
 } from '../../types/models';
 import { config } from '../../config';
 import { verdictLabel } from '../../lib/format';
-import { checkService, ValidationError, VersionConflictError } from '../../services';
+import { checkService, ValidationError, VersionConflictError, demoMode } from '../../services';
 import { RevisionKindBadge, VerdictBadge } from '../../components/Badges';
 import { Dialog } from '../../components/Dialog';
 import { ScreenshotThumbs } from '../../components/ScreenshotThumbs';
@@ -300,9 +300,11 @@ function CorrectionForm({
               </button>
             </>
           )}
-          <p className="mt-3 text-xs opacity-80">
-            {t('Demo simulation: a concurrent edit is injected on first publish.')}
-          </p>
+          {demoMode && (
+            <p className="mt-3 text-xs opacity-80">
+              {t('Demo simulation: a concurrent edit is injected on first publish.')}
+            </p>
+          )}
         </div>
       )}
 

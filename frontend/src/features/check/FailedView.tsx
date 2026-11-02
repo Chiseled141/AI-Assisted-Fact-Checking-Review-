@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { RotateCcw, TriangleAlert } from 'lucide-react';
 import type { Check } from '../../types/models';
-import { checkService } from '../../services';
+import { checkService, demoMode } from '../../services';
 import { formatDateTime } from '../../lib/format';
 import { DemoModeLabel } from '../../components/Badges';
 import { t } from '../../lib/i18n';
@@ -36,7 +36,7 @@ export function FailedView({ check }: { check: Check }) {
             <TriangleAlert className="h-6 w-6 text-rose-600" aria-hidden="true" />
             {t('Check failed')}
           </h1>
-          <DemoModeLabel />
+          {demoMode && <DemoModeLabel />}
         </div>
         <p className="mt-2 break-words text-sm text-ink-soft">{check.title}</p>
         <div role="alert" className="mt-6 border border-rose-200 bg-rose-50 p-4 text-sm text-rose-900">

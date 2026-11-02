@@ -12,11 +12,11 @@ import {
   X,
 } from 'lucide-react';
 import { config } from '../../config';
-import { exampleInputs } from '../../mocks/fixtures';
+import { exampleInputs } from '../../data/examples';
 import { validateTextSubmission, validateUrl } from '../../lib/validation';
 import { readTextFiles } from '../../lib/files';
 import { formatBytes } from '../../lib/format';
-import { checkService, ValidationError } from '../../services';
+import { checkService, ValidationError, demoMode } from '../../services';
 import type { DemoScenario, InputType, SubmittedFile } from '../../types/models';
 import { WorldEvidenceMap } from '../../components/WorldEvidenceMap';
 import { useReveal } from '../../lib/useReveal';
@@ -58,7 +58,9 @@ const steps = [
     title: 'Judge with two models',
     points: [
       'Two AI models read the same evidence, and each gives a verdict with a confidence score.',
-      'When they agree, that verdict is shown. In this demo, the judges and verdicts are simulated.',
+      demoMode
+        ? 'When they agree, that verdict is shown. In this demo, the judges and verdicts are simulated.'
+        : 'When they agree, that verdict is shown. When they disagree, you see both.',
     ],
   },
   {
@@ -383,9 +385,11 @@ export function NewCheckPage() {
                         aria-describedby={describedBy}
                         className="block w-full bg-transparent py-1 text-base text-ink placeholder:text-ink-faint focus:outline-none sm:text-lg"
                       />
-                      <p id={ids.urlNote} className="mt-1 text-xs text-ink-muted">
-                        {t('Demo only — the page is not fetched.')}
-                      </p>
+                      {demoMode && (
+                        <p id={ids.urlNote} className="mt-1 text-xs text-ink-muted">
+                          {t('Demo only — the page is not fetched.')}
+                        </p>
+                      )}
                     </div>
                   )}
                   {error && (
@@ -456,7 +460,7 @@ export function NewCheckPage() {
                   )}
                   <div className="ml-auto flex items-center gap-2.5">
                     <JudgePicker value={judgeIds} onChange={setJudgeIds} />
-                    <DemoScenarioPicker value={scenario} onChange={changeScenario} />
+                    {demoMode && <DemoScenarioPicker value={scenario} onChange={changeScenario} />}
                     {mode === 'text' && text.length > 0 && (
                       <span
                         id={ids.count}

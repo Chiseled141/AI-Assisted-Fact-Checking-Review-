@@ -8,7 +8,6 @@ import {
   CircleX,
   CloudOff,
   FlaskConical,
-  Info,
   UserCheck,
 } from 'lucide-react';
 import type { CheckStatus, EvidenceRelation, Freshness, RevisionKind, SourceTrust, Verdict } from '../types/models';
@@ -32,31 +31,6 @@ export function VerdictBadge({ verdict }: { verdict: Verdict }) {
     <span className={`${pill} ${className}`}>
       <Icon className="h-3.5 w-3.5" aria-hidden="true" />
       {verdictLabel[verdict]}
-    </span>
-  );
-}
-
-export function UnavailableBadge() {
-  return (
-    <span className={`${pill} border-dashed border-line-strong bg-zinc-50 text-zinc-700`}>
-      <CloudOff className="h-3.5 w-3.5" aria-hidden="true" />
-      {t('Verification unavailable')}
-    </span>
-  );
-}
-
-const relationStyle: Record<EvidenceRelation, { className: string; Icon: typeof CircleCheck }> = {
-  supporting: { className: 'border-emerald-200 bg-emerald-50 text-emerald-800', Icon: CircleCheck },
-  contradicting: { className: 'border-rose-200 bg-rose-50 text-rose-800', Icon: CircleX },
-  contextual: { className: 'border-line bg-zinc-50 text-zinc-700', Icon: Info },
-};
-
-export function RelationBadge({ relation }: { relation: EvidenceRelation }) {
-  const { className, Icon } = relationStyle[relation];
-  return (
-    <span className={`${pill} ${className}`}>
-      <Icon className="h-3.5 w-3.5" aria-hidden="true" />
-      {relationLabel[relation]}
     </span>
   );
 }
@@ -121,7 +95,7 @@ export function DemoModeLabel({ className = '' }: { className?: string }) {
 
 /* Minimal text markers: a colored dot or word instead of a pill. Used on the results page. */
 
-export const verdictTone: Record<Verdict, { dot: string; text: string }> = {
+const verdictTone: Record<Verdict, { dot: string; text: string }> = {
   supported: { dot: 'bg-emerald-700', text: 'text-emerald-700' },
   contradicted: { dot: 'bg-rose-600', text: 'text-rose-600' },
   insufficient_evidence: { dot: 'bg-amber-700', text: 'text-amber-700' },
@@ -143,25 +117,6 @@ export function VerdictHeadline({ verdict }: { verdict: Verdict | null }) {
   const className = 'text-[24px] font-medium leading-[1.2] tracking-[-0.025em] sm:text-[30px]';
   if (!verdict) return <p className={`${className} text-ink-muted`}>{t('Verification unavailable.')}</p>;
   return <p className={`${className} ${verdictTone[verdict].text}`}>{verdictLabel[verdict]}.</p>;
-}
-
-export function UnavailableMark() {
-  return (
-    <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-ink-muted">
-      <span className="h-1.5 w-1.5 rounded-full border border-ink-faint" aria-hidden="true" />
-      {t('Verification unavailable')}
-    </span>
-  );
-}
-
-const relationTone: Record<EvidenceRelation, string> = {
-  supporting: 'text-emerald-700',
-  contradicting: 'text-rose-600',
-  contextual: 'text-ink-muted',
-};
-
-export function RelationText({ relation }: { relation: EvidenceRelation }) {
-  return <span className={`font-semibold ${relationTone[relation]}`}>{relationLabel[relation]}</span>;
 }
 
 const relationChip: Record<EvidenceRelation, string> = {

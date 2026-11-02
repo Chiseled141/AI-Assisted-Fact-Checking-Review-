@@ -1,5 +1,5 @@
 // Domain models shared by the UI and the service layer.
-// Field names are chosen to map cleanly onto a future Spring Boot JSON API.
+// The FastAPI backend returns the same field names.
 
 export type InputType = 'text' | 'url';
 

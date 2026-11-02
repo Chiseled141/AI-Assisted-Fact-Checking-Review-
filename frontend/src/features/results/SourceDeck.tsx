@@ -15,6 +15,7 @@ import { FreshnessText, RelationChip, SourceTrustMark } from '../../components/B
 import { SourceLogo } from '../../components/SourceLogo';
 import { judgeColor, RatingChart } from './RatingChart';
 import { judgeLogo } from '../../lib/judges';
+import { demoMode } from '../../services';
 import { getLanguage, t, translated } from '../../lib/i18n';
 
 function CaptureView({ capture, title }: { capture: PageCapture; title: string }) {
@@ -247,7 +248,9 @@ function AnalysisPanel({ id, analysis, open }: { id: string; analysis: SourceAna
           </div>
           <p className="mt-6 flex items-start gap-1.5 text-[13px] text-ink-muted">
             <Info className="mt-0.5 h-3.5 w-3.5 shrink-0" aria-hidden="true" />
-            {t('Demo: the analysis, scores and comments are simulated, not produced by a real AI model.')}
+            {demoMode
+              ? t('Demo: the analysis, scores and comments are simulated, not produced by a real AI model.')
+              : t('Written by the AI models from this page’s text. They can be wrong, so check the source.')}
           </p>
         </div>
       </div>

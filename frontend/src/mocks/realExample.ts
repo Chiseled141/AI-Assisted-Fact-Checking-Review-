@@ -164,8 +164,6 @@ export const realExampleClaims: FixtureClaim[] = [
 
 const SIMULATED_AUTHOR_VI = 'Mô hình đánh giá ClaimTrace (mô phỏng)';
 
-export const REAL_EXAMPLE_INPUT_VI =
-  'Tuyến đường sắt đô thị Cát Linh - Hà Đông chính thức vận hành thương mại ngày 6/11/2021. WHO tuyên bố COVID-19 không còn là tình trạng khẩn cấp y tế toàn cầu ngày 5/5/2023.';
 
 export const realExampleClaimsVi: FixtureClaim[] = [
   {

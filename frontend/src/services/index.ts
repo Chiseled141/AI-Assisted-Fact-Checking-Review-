@@ -1,11 +1,13 @@
-// The single place the UI gets its data from.
-// To use the Spring Boot API, implement CheckService with fetch calls
-// (see README) and export that implementation here instead.
+// The single place the UI gets its data from: the FastAPI backend when
+// VITE_API_URL is set (see services/mode.ts), otherwise the demo fixtures.
 
 import type { CheckService } from './contract';
+import { httpCheckService } from './httpCheckService';
 import { mockCheckService } from './mock/mockCheckService';
 
-export const checkService: CheckService = mockCheckService;
+// Written with the env var itself, so that a real build leaves the demo data out of the bundle.
+export const checkService: CheckService = import.meta.env.VITE_API_URL ? httpCheckService : mockCheckService;
+export { demoMode } from './mode';
 
-export type { CheckService, PublishCorrectionResult } from './contract';
+export type { CheckService } from './contract';
 export { NotFoundError, ValidationError, VersionConflictError } from './errors';

@@ -2,7 +2,7 @@ import { useEffect, useId, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { AlignLeft, ChevronLeft, ChevronRight, FileText, Link2, Loader2, Plus, Search } from 'lucide-react';
 import type { Check, ListChecksParams, Page } from '../../types/models';
-import { checkService } from '../../services';
+import { checkService, demoMode } from '../../services';
 import { formatDate, formatTime, inputTypeLabel, pluralize, statusLabel } from '../../lib/format';
 import { StatusBadge } from '../../components/Badges';
 import { t, useLanguage } from '../../lib/i18n';
@@ -126,7 +126,9 @@ export function HistoryPage() {
             </p>
           )}
           <p className="mt-3 max-w-[31rem] text-[15px] leading-[1.65] text-ink-soft">
-            {t('Every check is saved in this browser, with its evidence and revisions.')}
+            {demoMode
+              ? t('Every check is saved in this browser, with its evidence and revisions.')
+              : t('Every check is saved with its evidence and revisions.')}
           </p>
         </div>
         <Link to="/" className={actionButton}>
@@ -208,7 +210,9 @@ export function HistoryPage() {
             <p className="mx-auto mt-2 max-w-sm text-sm leading-[1.7] text-ink-soft">
               {filtered
                 ? t('Try a different search term or status.')
-                : t('Checks you run in demo mode are saved in this browser and appear here.')}
+                : demoMode
+                  ? t('Checks you run in demo mode are saved in this browser and appear here.')
+                  : t('Checks you run appear here.')}
             </p>
             {filtered ? (
               <button
