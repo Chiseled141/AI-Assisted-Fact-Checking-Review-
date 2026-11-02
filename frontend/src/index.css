@@ -89,6 +89,10 @@
   .btn-ghost {
     @apply btn text-ink-soft hover:bg-zinc-100 hover:text-ink;
   }
+  .eyebrow {
+    @apply font-sans text-[11px] font-semibold uppercase tracking-[0.1em] text-ink-muted;
+  }
+
   .panel {
     @apply rounded-xl border border-line bg-white;
   }

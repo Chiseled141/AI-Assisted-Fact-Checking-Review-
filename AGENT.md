@@ -102,6 +102,8 @@ The Markdown files in `backend/app/prompts/` are loaded at runtime. They are cod
 
 ## Setup and commands
 
+`SETUP.md` has the remaining setup steps, including the AWS server.
+
 ```bash
 # Backend, from backend/. Needs uv.
 cp .env.example .env     # OPENROUTER_API_KEY and TAVILY_API_KEY are required, GOOGLE_FACTCHECK_API_KEY is optional

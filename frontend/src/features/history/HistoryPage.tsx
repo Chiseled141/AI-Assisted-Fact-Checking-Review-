@@ -115,23 +115,27 @@ export function HistoryPage() {
 
   return (
     <div className="mx-auto w-full max-w-[1120px] px-4 pb-24 pt-12 sm:px-6 sm:pt-16">
-      <header className="flex flex-wrap items-end justify-between gap-x-6 gap-y-4">
-        <div>
-          <h1 className="text-[36px] font-semibold leading-[1.05] tracking-[-0.035em] text-ink sm:text-[44px]">
+      <header className="relative isolate flex flex-wrap items-start justify-between gap-6 overflow-hidden rounded-2xl border border-brand-200/70 bg-gradient-to-br from-brand-50 via-white to-white px-5 py-6 sm:items-end sm:px-7 sm:py-7">
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute -right-10 -top-24 -z-10 h-64 w-64 rounded-full bg-brand-200/50 blur-3xl"
+        />
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute -bottom-24 left-1/3 -z-10 h-44 w-44 rounded-full bg-emerald-200/35 blur-3xl"
+        />
+        <div className="relative">
+          <p className="eyebrow text-brand-700">{t('Review archive')}</p>
+          <h1 className="mt-3 text-[36px] font-medium leading-[1.05] tracking-[-0.04em] text-ink sm:text-[42px]">
             {t('History')}
           </h1>
-          {result && (
-            <p className="mt-1 text-[20px] italic leading-snug tracking-[-0.01em] text-orange-700 sm:text-[24px]">
-              ({pluralize(result.total, 'check')}.)
-            </p>
-          )}
           <p className="mt-3 max-w-[31rem] text-[15px] leading-[1.65] text-ink-soft">
             {demoMode
               ? t('Every check is saved in this browser, with its evidence and revisions.')
               : t('Every check is saved with its evidence and revisions.')}
           </p>
         </div>
-        <Link to="/" className={actionButton}>
+        <Link to="/" className={`${actionButton} relative`}>
           <Plus className="h-4 w-4" aria-hidden="true" />
           {t('New check')}
         </Link>

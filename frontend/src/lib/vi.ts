@@ -275,6 +275,7 @@ const interfaceText: Record<string, string> = {
   'The AI judges could not assess this claim, so there is no verdict.': 'Các mô hình AI không đánh giá được nhận định này nên chưa có kết luận.',
   'No readable source was found for this claim, so it cannot be verified.':
     'Không tìm thấy nguồn đọc được cho nhận định này nên chưa thể xác minh.',
+  'Review archive': 'Kho lưu trữ',
   'Chart type': 'Loại biểu đồ',
   Bars: 'Cột',
   Dumbbell: 'Quả tạ',
