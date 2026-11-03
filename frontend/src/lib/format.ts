@@ -5,30 +5,11 @@ const dateTime = () => new Intl.DateTimeFormat(locale(), { dateStyle: 'medium', 
 const dateOnly = () => new Intl.DateTimeFormat(locale(), { dateStyle: 'medium' });
 const timeOnly = () => new Intl.DateTimeFormat(locale(), { timeStyle: 'short' });
 
-const exactDateTime = () =>
-  new Intl.DateTimeFormat(locale(), {
-    dateStyle: 'medium',
-    timeStyle: 'long',
-  });
-const exactTime = () => new Intl.DateTimeFormat(locale(), { timeStyle: 'long' });
 // Vietnamese articles write dates as 6/11/2021, and the long form reads awkwardly mixed with them.
 const calendarDate = () =>
   getLanguage() === 'vi'
     ? new Intl.DateTimeFormat(locale(), { day: 'numeric', month: 'numeric', year: 'numeric' })
     : new Intl.DateTimeFormat(locale(), { dateStyle: 'long' });
-
-/** Date, time to the second, and time zone — for retrieval and capture timestamps. */
-export function formatExactDateTime(iso: string): string {
-  const date = new Date(iso);
-  return Number.isNaN(date.getTime()) ? t('Unknown time') : exactDateTime().format(date);
-}
-
-/** The same exact moment, split so the date and the time can sit on separate lines. */
-export function formatExactParts(iso: string): { date: string; time: string } {
-  const date = new Date(iso);
-  if (Number.isNaN(date.getTime())) return { date: t('Unknown time'), time: '' };
-  return { date: calendarDate().format(date), time: exactTime().format(date) };
-}
 
 /** Formats a YYYY-MM-DD calendar date without shifting it across time zones. */
 export function formatCalendarDate(ymd: string): string {

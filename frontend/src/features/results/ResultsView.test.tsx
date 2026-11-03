@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
-import { screen, within } from '@testing-library/react';
+import { screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { renderApp } from '../../test/renderApp';
 
@@ -63,15 +63,10 @@ describe('Results workspace', () => {
     expect(links[0]).toHaveAttribute('rel', expect.stringContaining('noopener'));
   });
 
-  it('shows the source date, exact retrieval time, and page capture for each snapshot', async () => {
+  it('shows the page capture for each snapshot', async () => {
     const user = userEvent.setup();
     renderApp('/checks/chk_demo_transit');
     const passage = (await screen.findByText('Harbor Line opens to passengers')).closest('li')!;
-
-    expect(within(passage).getByText('Published').nextElementSibling).toHaveTextContent('March 18, 2024');
-    const retrieved = within(passage).getByText('Retrieved').nextElementSibling!.querySelector('time')!;
-    expect(retrieved).toHaveAttribute('datetime', expect.stringMatching(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}/));
-    expect(retrieved.textContent).toMatch(/\d{1,2}:\d{2}:\d{2}/);
 
     expect(within(passage).queryByRole('img', { name: /page capture/i })).not.toBeInTheDocument();
     await user.click(within(passage).getByRole('button', { name: /show page capture/i }));
@@ -80,7 +75,7 @@ describe('Results workspace', () => {
     expect(within(passage).getByRole('button', { name: /hide page capture/i })).toHaveAttribute('aria-expanded', 'true');
   });
 
-  it('tags outdated and unknown-freshness evidence with a reason, separate from the verdict', async () => {
+  it('tags outdated evidence with a reason, separate from the verdict', async () => {
     const user = userEvent.setup();
     renderApp('/checks/chk_demo_transit');
 
@@ -94,23 +89,12 @@ describe('Results workspace', () => {
     const minutes = (await screen.findByText('City council transport committee minutes, October 2024')).closest('li')!;
     expect(within(minutes).getByText('Outdated')).toBeInTheDocument();
     expect(within(minutes).getByText(/why outdated/i).parentElement).toHaveTextContent(/study was due in spring 2025/);
-
-    const ridership = screen.getByRole('article', { name: /ridership reached 50,000/i });
-    await user.click(within(ridership).getByRole('button', { name: /ridership reached 50,000/i }));
-    const target = (await screen.findByText('What the Harbor Line promised, and when')).closest('li')!;
-    expect(within(target).getByText('Freshness unknown')).toBeInTheDocument();
   });
 
-  it('says how each source relates to the claim and whether the verdict used it', async () => {
-    const user = userEvent.setup();
+  it('says how each source relates to the claim', async () => {
     renderApp('/checks/chk_demo_real');
     const passage = (await screen.findByText('Ngày 6/11, chính thức khai thác thương mại tuyến đường sắt Cát Linh - Hà Đông')).closest('li')!;
     expect(within(passage).getByText('This source gives background but does not settle the claim.')).toBeInTheDocument();
-    expect(within(passage).getByText('Used in verdict').nextElementSibling).toHaveTextContent('No');
-    expect(within(passage).getByText('Website').nextElementSibling).toHaveTextContent('nhandan.vn');
-    await user.click(screen.getByRole('button', { name: /WHO declared COVID-19 over/i }));
-    const remarks = (await screen.findByText('A monumental moment: End of international emergency')).closest('li')!;
-    expect(within(remarks).getByText('Used in verdict').nextElementSibling).toHaveTextContent('Yes');
   });
 
   it('has no citation number buttons', async () => {
@@ -270,8 +254,9 @@ describe('Results workspace', () => {
       expect(screen.getByRole('button', { name: /show source: first metro line/i })).toBeInTheDocument();
 
       await user.click(screen.getByRole('button', { name: /show source: first metro line/i }));
+      // The old card's text fades out before the new card's text appears.
+      await waitFor(() => expect(links()[0]).toHaveAttribute('href', expect.stringContaining('en.baochinhphu.vn')));
       expect(links()).toHaveLength(1);
-      expect(links()[0]).toHaveAttribute('href', expect.stringContaining('en.baochinhphu.vn'));
       expect(screen.getByText(/put into operation in the capital city/)).toBeInTheDocument();
     });
   });

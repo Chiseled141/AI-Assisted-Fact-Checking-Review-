@@ -8,10 +8,10 @@ import type {
   PageCapture,
   SourceAnalysis,
 } from '../../types/models';
-import { formatCalendarDate, formatExactDateTime, formatExactParts, safeHref, safeImageSrc } from '../../lib/format';
+import { safeHref, safeImageSrc } from '../../lib/format';
 import { findSource, isVietnameseSource } from '../../lib/sources';
 import { useMediaQuery } from '../../lib/useMediaQuery';
-import { FreshnessText, RelationChip, SourceTrustMark } from '../../components/Badges';
+import { RelationChip, SourceTrustMark } from '../../components/Badges';
 import { SourceLogo } from '../../components/SourceLogo';
 import { judgeColor, RatingChart } from './RatingChart';
 import { judgeLogo } from '../../lib/judges';
@@ -66,12 +66,16 @@ function SourcePhoto({ item, fade }: { item: EvidenceSnapshot; fade: 'low' | 'fu
         onError={() => setFailed(true)}
         className="press-photo absolute inset-0 h-full w-full object-cover"
       />
-      {/* A light fade plus a text shadow keeps the text readable and the photo visible. */}
+      {/* A dark fade plus a text shadow keeps the text readable on bright photos. Both stay mounted so one can fade into the other. */}
       <div
         aria-hidden="true"
-        className={`absolute inset-x-0 bottom-0 bg-gradient-to-t ${
-          fade === 'low' ? 'h-[90%] from-black/75 via-black/45 to-transparent sm:h-2/3 sm:from-black/70 sm:via-black/35' : 'h-full from-black/70 via-black/30 to-black/10'
-        }`}
+        style={{ opacity: fade === 'low' ? 1 : 0 }}
+        className="absolute inset-x-0 bottom-0 h-full bg-gradient-to-t from-black/90 via-black/60 to-black/5 transition-opacity duration-500 sm:h-3/4 sm:from-black/85 sm:via-black/55 sm:to-transparent"
+      />
+      <div
+        aria-hidden="true"
+        style={{ opacity: fade === 'full' ? 1 : 0 }}
+        className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/70 to-black/50 transition-opacity duration-500"
       />
     </>
   );
@@ -99,8 +103,8 @@ function OpenCardContent({ item, judgment }: { item: EvidenceSnapshot; judgment?
             )}
             <span className="min-w-0">{item.publisher ?? hostname}</span>
           </p>
-          {source?.about && <p className="mt-0.5 text-xs leading-snug text-[#fff]/75">{t(source.about)}</p>}
-          <p className="mt-1.5 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-[#fff]/75">
+          {source?.about && <p className="mt-0.5 text-xs leading-snug text-[#fff]/90">{t(source.about)}</p>}
+          <p className="mt-1.5 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-[#fff]/90">
             <SourceTrustMark trust={source?.trust ?? null} onPhoto />
             {judgment?.status === 'outdated' && (
               <>
@@ -117,7 +121,7 @@ function OpenCardContent({ item, judgment }: { item: EvidenceSnapshot; judgment?
             rel="noopener noreferrer nofollow"
             title={item.url}
             aria-label={t('Visit source: {title} (opens in a new tab)', { title: item.sourceTitle })}
-            className="press-lift inline-flex h-8 shrink-0 items-center gap-1.5 rounded-full border border-[#fff]/60 bg-black/40 px-3 text-xs font-medium text-[#fff] backdrop-blur-sm hover:border-[#fff] hover:bg-black/60"
+            className="press-lift relative inline-flex h-8 shrink-0 items-center gap-1.5 rounded-full border border-[#fff]/60 bg-black/40 px-3 after:absolute after:inset-x-0 after:-inset-y-2 text-xs font-medium text-[#fff] backdrop-blur-sm hover:border-[#fff] hover:bg-black/60"
           >
             {t('Visit source')}
             <ExternalLink className="h-3.5 w-3.5" aria-hidden="true" />
@@ -160,18 +164,6 @@ const relationTone: Record<EvidenceRelation, string> = {
   contradicting: 'text-rose-600',
   contextual: 'text-ink-muted',
 };
-
-/** Marked with a "+", in the style of the spec lists on the reference page. */
-function DetailRow({ label, children }: { label: string; children: ReactNode }) {
-  return (
-    <div className="grid grid-cols-[minmax(0,2fr)_minmax(0,3fr)] gap-x-3">
-      <dt className="flex gap-2 text-[14px] leading-snug text-ink-muted before:font-semibold before:text-orange-600 before:content-['+']">
-        {label}
-      </dt>
-      <dd className="min-w-0 break-words text-[14px] font-medium leading-snug text-ink">{children}</dd>
-    </div>
-  );
-}
 
 /**
  * The longer reading of a source, sliding open below its details. It stays mounted so the height can
@@ -217,10 +209,9 @@ function AnalysisPanel({ id, analysis, open }: { id: string; analysis: SourceAna
 
           <div className="mt-8 grid gap-8 lg:grid-cols-[minmax(0,7fr)_minmax(0,5fr)] lg:gap-14">
             <section>
-              <h3 className="inline text-[20px] font-semibold tracking-[-0.02em] text-ink">
+              <h3 className="text-[20px] font-semibold tracking-[-0.02em] text-ink">
                 {t('How both AI models rated this source')}
-              </h3>{' '}
-              <span className="ml-1 whitespace-nowrap text-[18px] italic tracking-[-0.01em] text-orange-700">{t('(out of 100.)')}</span>
+              </h3>
               <div className="mt-3">
                 <RatingChart notes={analysis.judgeNotes} showChart={everOpened.current} />
               </div>
@@ -258,26 +249,24 @@ function AnalysisPanel({ id, analysis, open }: { id: string; analysis: SourceAna
   );
 }
 
-/** What the source says and how it relates to the claim, beside the facts about the snapshot. */
+/** What the source says and how it relates to the claim. */
 function SourceDetail({
   item,
-  cited,
   judgment,
   className = '',
 }: {
   item: EvidenceSnapshot;
-  cited: boolean;
   judgment?: FreshnessJudgment;
   className?: string;
 }) {
   // Kept when another source opens, so the analysis stays open while moving between sources.
   const [analysisOpen, setAnalysisOpen] = useState(false);
   const source = findSource(item.url);
-  const href = safeHref(item.url);
   const analysisId = `source-analysis-${item.id}`;
   return (
     <div className={className}>
-      <div key={item.id} className="rise-in grid gap-6 lg:grid-cols-[minmax(0,7fr)_minmax(0,5fr)] lg:gap-14">
+      {/* Same columns as the analysis panel below, so the two line up. */}
+      <div key={item.id} className="rise-in grid gap-4 lg:grid-cols-[minmax(0,7fr)_minmax(0,5fr)] lg:gap-14">
         <div>
           {source?.trust === 'red' && (
             <p className="mb-3 flex items-start gap-1.5 text-[13px] text-rose-700">
@@ -293,10 +282,13 @@ function SourceDetail({
           <p className={`mt-2 text-[18px] italic leading-snug tracking-[-0.01em] sm:text-[22px] ${relationTone[item.relation]}`}>
             {relationSentence[item.relation]}
           </p>
-          {item.analysis && <p className="mt-4 text-[15px] leading-[1.65] text-ink-soft">{item.analysis.summary}</p>}
+        </div>
+
+        <div className="space-y-4 lg:pt-6">
+          {item.analysis && <p className="text-[15px] leading-[1.65] text-ink-soft">{item.analysis.summary}</p>}
 
           {judgment?.reason && judgment.status === 'outdated' && (
-            <p className="mt-2 text-[13px] text-ink-soft">
+            <p className="text-[13px] text-ink-soft">
               <span className="font-semibold text-candy">{t('Why outdated:')} </span>
               {judgment.reason}
             </p>
@@ -309,65 +301,18 @@ function SourceDetail({
               aria-expanded={analysisOpen}
               aria-controls={analysisId}
               aria-label={t(analysisOpen ? 'Hide analysis: {title}' : 'See analysis: {title}', { title: item.sourceTitle })}
-              className="press-lift mt-4 inline-flex h-10 items-center gap-2 rounded-full bg-indigo-700 px-4 text-sm font-medium text-on-primary transition-colors hover:bg-indigo-800"
+              className="press-lift relative inline-flex h-9 items-center gap-1.5 rounded-md bg-indigo-950 px-3 after:absolute after:inset-x-0 after:-inset-y-1 text-[13px] font-medium text-on-primary transition-colors hover:bg-indigo-800"
             >
               {analysisOpen ? t('Hide analysis') : t('See analysis')}
               <ChevronDown
-                className={`h-4 w-4 transition-transform duration-300 motion-reduce:transition-none ${analysisOpen ? 'rotate-180' : ''}`}
+                className={`h-3.5 w-3.5 transition-transform duration-300 motion-reduce:transition-none ${analysisOpen ? 'rotate-180' : ''}`}
                 aria-hidden="true"
               />
             </button>
           )}
-        </div>
 
-        <div>
-          <dl className="space-y-3 lg:pt-6">
-            <DetailRow label={t('Website')}>
-              {href ? (
-                <a
-                  href={href}
-                  target="_blank"
-                  rel="noopener noreferrer nofollow"
-                  className="font-medium text-indigo-700 underline decoration-indigo-200 underline-offset-4 transition-colors hover:text-indigo-800 hover:decoration-indigo-700"
-                >
-                  {new URL(href).hostname}
-                </a>
-              ) : (
-                item.url
-              )}
-            </DetailRow>
-            <DetailRow label={t('Used in verdict')}>
-              <span
-                className={`inline-block rounded px-2 py-0.5 text-[13px] font-semibold ${
-                  cited ? 'bg-indigo-700 text-on-primary' : 'bg-zinc-200 text-ink'
-                }`}
-              >
-                {cited ? t('Yes') : t('No')}
-              </span>
-            </DetailRow>
-            <DetailRow label={t('Published')}>
-              {item.publishedAt ? <time dateTime={item.publishedAt}>{formatCalendarDate(item.publishedAt)}</time> : t('Unknown')}
-            </DetailRow>
-            <DetailRow label={t('Retrieved')}>
-              <time dateTime={item.retrievedAt} title={formatExactDateTime(item.retrievedAt)}>
-                {formatExactParts(item.retrievedAt).date}
-                <span className="block text-[13px] font-normal text-ink-muted">{formatExactParts(item.retrievedAt).time}</span>
-              </time>
-            </DetailRow>
-            {item.updatedAt && (
-              <DetailRow label={t('Updated')}>
-                <time dateTime={item.updatedAt}>{formatCalendarDate(item.updatedAt)}</time>
-              </DetailRow>
-            )}
-            {cited && judgment?.status !== 'outdated' && (
-              <DetailRow label={t('Freshness')}>
-                <FreshnessText status={judgment?.status ?? 'unknown'} />
-                {judgment?.reason && <span className="mt-0.5 block text-[13px] font-normal text-ink-muted">{judgment.reason}</span>}
-              </DetailRow>
-            )}
-          </dl>
           {item.capture && (
-            <div className="mt-2 text-[13px]">
+            <div className="text-[13px]">
               <CaptureView capture={item.capture} title={item.sourceTitle} />
             </div>
           )}
@@ -379,6 +324,60 @@ function SourceDetail({
 }
 
 const HOVER_OPEN_DELAY_MS = 120;
+const TEXT_FADE_MS = 120;
+const CLOSED_CARD_WIDTH = 124;
+const CARD_GAP = 14;
+const CARD_BORDERS = 4;
+const OPEN_CARD_MAX_WIDTH = 1240;
+
+/**
+ * The text inside a card in the row. The card's width animates, so the open text is held at the width
+ * it ends up with: the card reveals it instead of rewrapping it. The old text fades out before the new one comes in.
+ */
+function DeckCardContent({
+  item,
+  isOpen,
+  cardCount,
+  judgment,
+  onOpen,
+}: {
+  item: EvidenceSnapshot;
+  isOpen: boolean;
+  cardCount: number;
+  judgment?: FreshnessJudgment;
+  onOpen: () => void;
+}) {
+  const reduceMotion = useMediaQuery('(prefers-reduced-motion: reduce)');
+  const [showOpen, setShowOpen] = useState(isOpen);
+
+  useEffect(() => {
+    if (showOpen === isOpen) return;
+    const timer = setTimeout(() => setShowOpen(isOpen), reduceMotion ? 0 : TEXT_FADE_MS);
+    return () => clearTimeout(timer);
+  }, [isOpen, showOpen, reduceMotion]);
+
+  const closedSpace = (cardCount - 1) * (CLOSED_CARD_WIDTH + CARD_GAP) + CARD_BORDERS;
+  return (
+    <div
+      style={{ opacity: showOpen === isOpen ? 1 : 0, transitionDuration: `${TEXT_FADE_MS}ms` }}
+      className="absolute inset-0 transition-opacity"
+    >
+      {showOpen ? (
+        <div
+          key="open"
+          className="press-rise absolute inset-y-0 left-0"
+          style={{ width: `min(${OPEN_CARD_MAX_WIDTH - CARD_BORDERS}px, calc(100cqw - ${closedSpace}px))`, '--press-delay': '120ms' } as CSSProperties}
+        >
+          <OpenCardContent item={item} judgment={judgment} />
+        </div>
+      ) : (
+        <div key="closed" className="press-rise h-full" style={{ '--press-delay': '200ms' } as CSSProperties}>
+          <ClosedCardContent item={item} onOpen={onOpen} />
+        </div>
+      )}
+    </div>
+  );
+}
 
 function CardShell({
   className,
@@ -447,12 +446,7 @@ export function SourceDeck({ claim, items: allItems, citedIds, freshness }: Prop
                 <OpenCardContent item={item} judgment={judgmentFor(item.id)} />
               </div>
             </div>
-            <SourceDetail
-              item={item}
-              cited={citedIds.has(item.id)}
-              judgment={judgmentFor(item.id)}
-              className="px-4 pb-4 pt-4 sm:px-5"
-            />
+            <SourceDetail item={item} judgment={judgmentFor(item.id)} className="px-4 pb-4 pt-4 sm:px-5" />
           </CardShell>
         ))}
       </ol>
@@ -463,7 +457,7 @@ export function SourceDeck({ claim, items: allItems, citedIds, freshness }: Prop
 
   return (
     <>
-      <ol className="flex h-[400px] w-full gap-3.5" aria-label={label}>
+      <ol className="flex h-[400px] w-full gap-3.5 [container-type:inline-size]" aria-label={label}>
         {items.map((item, index) => {
           const isOpen = item.id === open.id;
           return (
@@ -477,18 +471,18 @@ export function SourceDeck({ claim, items: allItems, citedIds, freshness }: Prop
               onMouseLeave={() => clearTimeout(hoverTimer.current)}
             >
               <SourcePhoto item={item} fade={isOpen ? 'low' : 'full'} />
-              {isOpen ? (
-                <div className="press-rise relative h-full" style={{ '--press-delay': '180ms' } as CSSProperties}>
-                  <OpenCardContent item={item} judgment={judgmentFor(item.id)} />
-                </div>
-              ) : (
-                <ClosedCardContent item={item} onOpen={() => setOpenId(item.id)} />
-              )}
+              <DeckCardContent
+                item={item}
+                isOpen={isOpen}
+                cardCount={items.length}
+                judgment={judgmentFor(item.id)}
+                onOpen={() => setOpenId(item.id)}
+              />
             </CardShell>
           );
         })}
       </ol>
-      <SourceDetail item={open} cited={citedIds.has(open.id)} judgment={judgmentFor(open.id)} className="mt-5" />
+      <SourceDetail item={open} judgment={judgmentFor(open.id)} className="mt-5" />
     </>
   );
 }

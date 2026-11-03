@@ -27,7 +27,10 @@ export function JudgeReviews({ judges }: { judges: JudgeVerdict[] }) {
                   {judge}
                 </strong>
                 {disagree && <VerdictMark verdict={verdict} className="!text-[13px]" />}
-                <span className="ml-auto text-[13px] tabular-nums text-ink-muted">
+                <span aria-hidden="true" className="text-ink-muted">
+                  ·
+                </span>
+                <span className="text-[13px] tabular-nums text-ink-muted">
                   {t('{percent}% confidence', { percent: Math.round(confidence * 100) })}
                 </span>
               </div>

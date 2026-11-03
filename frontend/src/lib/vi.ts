@@ -65,29 +65,34 @@ const interfaceText: Record<string, string> = {
   'Each claim is one factual statement, like a date, figure, or quote.':
     'Mỗi nhận định là một phát biểu về sự kiện, như ngày tháng, số liệu hoặc lời trích dẫn.',
   'A claim keeps its time period when the text states one.': 'Nhận định giữ nguyên khoảng thời gian nếu văn bản có nêu.',
-  'Opinions and questions are left out.': 'Ý kiến và câu hỏi sẽ được bỏ qua.',
+  'Opinions, predictions, and questions are left out.': 'Ý kiến, dự đoán và câu hỏi sẽ được bỏ qua.',
+  'At most five claims are kept per check, the most checkable first.':
+    'Mỗi lượt kiểm tra giữ tối đa năm nhận định, ưu tiên những nhận định dễ kiểm chứng nhất.',
   'Check published fact-checks': 'Đối chiếu các bài kiểm chứng đã đăng',
   'Looks each claim up in Google’s Fact Check Tools database.':
     'Tra từng nhận định trong cơ sở dữ liệu Fact Check Tools của Google.',
   'A match shows the fact-checker, its rating, and a link to the original.':
     'Kết quả khớp sẽ hiển thị đơn vị kiểm chứng, đánh giá của họ và liên kết đến bài gốc.',
+  'If it is plainly the same claim with a clear true or false rating, that rating becomes the verdict and the models are skipped.':
+    'Nếu rõ ràng là cùng một nhận định và được đánh giá đúng hoặc sai rõ ràng, đánh giá đó sẽ thành kết luận mà không cần gọi mô hình.',
   'Find evidence': 'Tìm bằng chứng',
-  'Searches trusted news sites for each claim, using Tavily.': 'Dùng Tavily để tìm trên các trang tin đáng tin cậy cho từng nhận định.',
+  'Searches rated sites for each claim, using Tavily. Sources rated unreliable are left out.':
+    'Dùng Tavily để tìm trên các trang đã được xếp hạng cho từng nhận định. Nguồn bị xếp hạng không đáng tin sẽ bị loại.',
+  'Reads at most ten sources per check. An article being checked can’t be its own evidence.':
+    'Đọc tối đa mười nguồn mỗi lượt kiểm tra. Bài viết đang được kiểm tra không thể làm bằng chứng cho chính nó.',
   'Saves the source title, publisher, link, and the exact excerpt used.':
     'Lưu tiêu đề nguồn, đơn vị đăng tải, liên kết và đúng đoạn trích đã dùng.',
-  'Records the publication date and the exact retrieval time.': 'Ghi lại ngày đăng và thời điểm truy xuất chính xác.',
   'Judge with two models': 'Đánh giá bằng hai mô hình',
-  'Two AI models read the same evidence, and each gives a verdict with a confidence score.':
-    'Hai mô hình AI cùng đọc một bộ bằng chứng, mỗi mô hình đưa ra kết luận kèm mức độ tin cậy.',
+  'Two AI models read the same passages, and each gives a verdict with a confidence score.':
+    'Hai mô hình AI cùng đọc những đoạn văn giống nhau, mỗi mô hình đưa ra kết luận kèm độ tin cậy.',
+  'Both models also score and comment on each source.': 'Cả hai mô hình cũng chấm điểm và nhận xét từng nguồn.',
   'When they agree, that verdict is shown. In this demo, the judges and verdicts are simulated.':
     'Khi hai mô hình đồng ý, kết luận đó sẽ được hiển thị. Trong bản demo này, các mô hình và kết luận đều là mô phỏng.',
-  'Break ties': 'Phân xử khi bất đồng',
-  'Runs only when the two models disagree.': 'Chỉ chạy khi hai mô hình bất đồng.',
-  'A third model from another lab decides by majority. If all three differ, the claim is marked Insufficient evidence.':
-    'Mô hình thứ ba từ một phòng lab khác sẽ quyết định theo đa số. Nếu cả ba đều khác nhau, nhận định được đánh dấu Chưa đủ bằng chứng.',
   'Verdicts with citations': 'Kết luận kèm trích dẫn',
-  'Verdicts are Supported, Contradicted, or Insufficient evidence — never a truth score.':
-    'Kết luận gồm Được xác nhận, Bị bác bỏ hoặc Chưa đủ bằng chứng — không bao giờ là điểm số sự thật.',
+  'Verdicts are Supported, Contradicted, Outdated, or Insufficient evidence — never a truth score.':
+    'Kết luận gồm Được xác nhận, Bị bác bỏ, Đã lỗi thời hoặc Chưa đủ bằng chứng — không bao giờ là điểm số sự thật.',
+  'If no readable source is found, the claim is marked Insufficient evidence without calling the models.':
+    'Nếu không tìm được nguồn đọc được, nhận định sẽ được đánh dấu Chưa đủ bằng chứng mà không cần gọi mô hình.',
   'Sources that no longer apply to the claim’s period are tagged Outdated, with a reason.':
     'Nguồn không còn áp dụng cho khoảng thời gian của nhận định sẽ được gắn nhãn Đã lỗi thời, kèm lý do.',
   'If a provider fails, the claim shows Verification unavailable instead of a verdict.':
@@ -186,8 +191,10 @@ const interfaceText: Record<string, string> = {
   // History
   All: 'Tất cả',
   Processing: 'Đang xử lý',
-  'Every check is saved in this browser, with its evidence and revisions.':
-    'Mọi lượt kiểm tra đều được lưu trên trình duyệt này, kèm bằng chứng và các phiên bản.',
+  '{count} in the past year': '{count} trong năm qua',
+  'Checks per day': 'Số lượt kiểm tra mỗi ngày',
+  Less: 'Ít',
+  More: 'Nhiều',
   'Search checks': 'Tìm lượt kiểm tra',
   'Filter by status': 'Lọc theo trạng thái',
   '{count} found': 'Tìm thấy {count}',
@@ -228,7 +235,6 @@ const interfaceText: Record<string, string> = {
     '{supporting} ủng hộ · {contradicting} phản bác · {contextual} bối cảnh',
   'Review assessment': 'Xem xét đánh giá',
   'Reviews from both AI models': 'Đánh giá của hai mô hình AI',
-  'Simulated in this demo': 'Mô phỏng trong bản demo',
   'See analysis': 'Xem phân tích',
   'Hide analysis': 'Ẩn phân tích',
   'See analysis: {title}': 'Xem phân tích: {title}',
@@ -237,7 +243,6 @@ const interfaceText: Record<string, string> = {
   'In the article': 'Trong bài viết',
   'Comments from both AI models': 'Nhận xét của hai mô hình AI',
   'How both AI models rated this source': 'Hai mô hình AI chấm nguồn này thế nào',
-  '(out of 100.)': '(thang điểm 100.)',
   'Article checked': 'Bài được kiểm tra',
   'File checked': 'Tệp được kiểm tra',
   'Files checked': 'Các tệp được kiểm tra',
@@ -248,11 +253,10 @@ const interfaceText: Record<string, string> = {
     'Bản demo không đọc link này. Các nhận định bên dưới là dữ liệu mẫu.',
   'This demo did not read these files. The claims below are sample data.':
     'Bản demo không đọc các tệp này. Các nhận định bên dưới là dữ liệu mẫu.',
-  'When they agree, that verdict is shown. When they disagree, you see both.':
-    'Khi hai mô hình đồng ý, kết luận đó được hiển thị. Khi bất đồng, bạn thấy cả hai.',
+  'When they agree, that verdict is shown. When they disagree, the first model’s is the headline and you see both.':
+    'Khi hai mô hình đồng ý, kết luận đó được hiển thị. Khi bất đồng, kết luận của mô hình đầu tiên được đưa lên đầu và bạn thấy cả hai.',
   'Written by the AI models from this page’s text. They can be wrong, so check the source.':
     'Do các mô hình AI viết dựa trên nội dung trang này. Chúng có thể sai, nên hãy đối chiếu với nguồn.',
-  'Every check is saved with its evidence and revisions.': 'Mọi lượt kiểm tra đều được lưu, kèm bằng chứng và các phiên bản.',
   'Checks you run appear here.': 'Các lượt kiểm tra của bạn sẽ hiện ở đây.',
   'The server is missing its API keys, so it can’t run checks yet.':
     'Máy chủ chưa có API key nên chưa chạy được lượt kiểm tra.',
@@ -275,7 +279,6 @@ const interfaceText: Record<string, string> = {
   'The AI judges could not assess this claim, so there is no verdict.': 'Các mô hình AI không đánh giá được nhận định này nên chưa có kết luận.',
   'No readable source was found for this claim, so it cannot be verified.':
     'Không tìm thấy nguồn đọc được cho nhận định này nên chưa thể xác minh.',
-  'Review archive': 'Kho lưu trữ',
   'Chart type': 'Loại biểu đồ',
   Bars: 'Cột',
   Dumbbell: 'Quả tạ',
@@ -318,15 +321,7 @@ const interfaceText: Record<string, string> = {
   'What this source says': 'Nguồn này nói gì',
   'Saved excerpt:': 'Đoạn trích đã lưu:',
   'Why outdated:': 'Lý do lỗi thời:',
-  Website: 'Trang web',
   Published: 'Ngày đăng',
-  Unknown: 'Không rõ',
-  Updated: 'Ngày cập nhật',
-  Retrieved: 'Ngày truy xuất',
-  'Used in verdict': 'Dùng trong kết luận',
-  Yes: 'Có',
-  No: 'Không',
-  Freshness: 'Độ mới',
   'Evidence snapshots for claim {position}': 'Bản ghi bằng chứng của nhận định {position}',
 
   // Review dialog

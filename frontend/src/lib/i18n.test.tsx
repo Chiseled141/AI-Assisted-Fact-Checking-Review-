@@ -24,8 +24,30 @@ function checkClaimsLanguage(check: { id: string }) {
   return loadDb().checks[check.id].language;
 }
 
+async function chooseLanguage(user: ReturnType<typeof userEvent.setup>, name: string) {
+  await user.click(screen.getByRole('button', { name: /^(Language|Ngôn ngữ):/ }));
+  await user.click(screen.getByRole('menuitemradio', { name }));
+}
+
 describe('language', () => {
   afterEach(() => setLanguage('en'));
+
+  it('closes the language menu with Escape and returns focus to its button', async () => {
+    const user = userEvent.setup();
+    renderApp('/');
+    const button = screen.getByRole('button', { name: /^Language:/ });
+
+    await user.click(button);
+    expect(screen.getByRole('menuitemradio', { name: 'English' })).toHaveFocus();
+    expect(screen.getByRole('menuitemradio', { name: 'English' })).toHaveAttribute('aria-checked', 'true');
+
+    await user.keyboard('{ArrowDown}');
+    expect(screen.getByRole('menuitemradio', { name: 'Tiếng Việt' })).toHaveFocus();
+
+    await user.keyboard('{Escape}');
+    expect(screen.queryByRole('menu')).not.toBeInTheDocument();
+    expect(button).toHaveFocus();
+  });
 
   it('switches the interface from the header, keeps form text, and remembers the choice', async () => {
     const user = userEvent.setup();
@@ -33,14 +55,14 @@ describe('language', () => {
     expect(screen.getByRole('link', { name: 'History' })).toBeInTheDocument();
     await user.type(screen.getByRole('textbox', { name: 'Text to check' }), 'My draft claim');
 
-    await user.click(screen.getByRole('button', { name: 'Tiếng Việt' }));
+    await chooseLanguage(user, 'Tiếng Việt');
 
     expect(screen.getByRole('link', { name: 'Lịch sử' })).toBeInTheDocument();
     expect(screen.getByRole('textbox', { name: 'Văn bản cần kiểm tra' })).toHaveValue('My draft claim');
     expect(document.documentElement.lang).toBe('vi');
     expect(window.localStorage.getItem('claimtrace.language')).toBe('vi');
 
-    await user.click(screen.getByRole('button', { name: 'English' }));
+    await chooseLanguage(user, 'English');
     expect(screen.getByRole('link', { name: 'History' })).toBeInTheDocument();
     expect(getLanguage()).toBe('en');
   });
@@ -62,7 +84,7 @@ describe('language', () => {
     expect(await screen.findByText('Chính thức vận hành thương mại đường sắt Cát Linh - Hà Đông')).toBeInTheDocument();
     expect(screen.queryByText('Hanoi gets country’s 1st metro service')).not.toBeInTheDocument();
 
-    await user.click(screen.getByRole('button', { name: 'English' }));
+    await chooseLanguage(user, 'English');
     expect(await screen.findByText('Hanoi gets country’s 1st metro service')).toBeInTheDocument();
   });
 

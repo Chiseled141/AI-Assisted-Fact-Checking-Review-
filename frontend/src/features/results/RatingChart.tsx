@@ -47,7 +47,7 @@ export function RatingChart({ notes, showChart }: { notes: SourceAnalysis['judge
             type="button"
             aria-pressed={option === kind}
             onClick={() => setKind(option)}
-            className={`-mb-px min-h-8 border-b-2 font-medium transition-colors ${
+            className={`-mb-px min-h-11 min-w-11 border-b-2 font-medium sm:min-h-8 sm:min-w-0 transition-colors ${
               option === kind ? 'border-indigo-700 text-ink' : 'border-transparent text-ink-muted hover:text-ink'
             }`}
           >

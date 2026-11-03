@@ -134,12 +134,6 @@ export function RelationChip({ relation }: { relation: EvidenceRelation }) {
   );
 }
 
-export function FreshnessText({ status }: { status: Freshness }) {
-  if (status === 'outdated') return <span className="font-semibold text-candy">{t('Outdated')}</span>;
-  if (status === 'unknown') return <span className="text-ink-muted">{t('Freshness unknown')}</span>;
-  return <span className="text-ink">{t('Current')}</span>;
-}
-
 const sourceTrustTone: Record<SourceTrust, { dot: string; text: string }> = {
   green: { dot: 'bg-emerald-700', text: 'text-emerald-700' },
   yellow: { dot: 'bg-amber-700', text: 'text-amber-700' },
@@ -160,10 +154,10 @@ export function SourceTrustMark({ trust, onPhoto = false }: { trust: SourceTrust
   if (!trust) {
     return (
       <span
-        className={`inline-flex items-center gap-1.5 text-xs ${onPhoto ? 'text-[#fff]/75' : 'text-ink-muted'}`}
+        className={`inline-flex items-center gap-1.5 text-xs ${onPhoto ? 'text-[#fff]/90' : 'text-ink-muted'}`}
         title={t('This source is not in the rated list.')}
       >
-        <span className={`h-1.5 w-1.5 rounded-full border ${onPhoto ? 'border-[#fff]/75' : 'border-ink-faint'}`} aria-hidden="true" />
+        <span className={`h-1.5 w-1.5 rounded-full border ${onPhoto ? 'border-[#fff]/90' : 'border-ink-faint'}`} aria-hidden="true" />
         {t('Not rated')}
       </span>
     );

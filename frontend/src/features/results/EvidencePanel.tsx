@@ -1,5 +1,4 @@
 import { CalendarDays, CalendarX, CloudOff, Loader2, PencilLine } from 'lucide-react';
-import { demoMode } from '../../services';
 import { config } from '../../config';
 import type { Claim, EvidenceSnapshot } from '../../types/models';
 import { RevisionKindBadge, VerdictHeadline } from '../../components/Badges';
@@ -64,8 +63,8 @@ export function EvidencePanel({
           </div>
         </div>
 
-        {/* Reasoning */}
-        <div className="lg:pt-7">
+        {/* Reasoning. The wide-screen rule sits in the gap, so the columns stay aligned with the sources below. */}
+        <div className="relative border-t border-line-strong pt-6 lg:border-t-0 lg:pt-0 lg:before:absolute lg:before:inset-y-0 lg:before:-left-7 lg:before:w-px lg:before:bg-line-strong">
           {reviews ? (
             <JudgeReviews judges={reviews} />
           ) : (
@@ -85,7 +84,6 @@ export function EvidencePanel({
                 {claim.timeContext}
               </span>
             )}
-            {reviews && demoMode && <span>{t('Simulated in this demo')}</span>}
             {outdatedCount > 0 && (
               <span className="inline-flex items-center gap-1 text-ink-soft">
                 <CalendarX className="h-3.5 w-3.5 text-candy" aria-hidden="true" />

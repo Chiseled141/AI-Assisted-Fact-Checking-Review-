@@ -104,10 +104,10 @@ describe('How it works', () => {
 
     await user.click(step);
     expect(step).toHaveAttribute('aria-expanded', 'true');
-    expect(within(guide).getByText(/exact retrieval time/i)).toBeInTheDocument();
+    expect(within(guide).getByText(/at most ten sources/i)).toBeInTheDocument();
 
     await user.click(step);
     expect(step).toHaveAttribute('aria-expanded', 'false');
-    expect(within(guide).queryByText(/exact retrieval time/i)).not.toBeInTheDocument();
+    expect(within(guide).queryByText(/at most ten sources/i)).not.toBeInTheDocument();
   });
 });

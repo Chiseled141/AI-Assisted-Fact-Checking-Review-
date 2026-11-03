@@ -3,9 +3,10 @@ import { Link, useSearchParams } from 'react-router-dom';
 import { AlignLeft, ChevronLeft, ChevronRight, FileText, Link2, Loader2, Plus, Search } from 'lucide-react';
 import type { Check, ListChecksParams, Page } from '../../types/models';
 import { checkService, demoMode } from '../../services';
-import { formatDate, formatTime, inputTypeLabel, pluralize, statusLabel } from '../../lib/format';
+import { formatDate, formatTime, inputTypeLabel, pluralize } from '../../lib/format';
 import { StatusBadge } from '../../components/Badges';
 import { t, useLanguage } from '../../lib/i18n';
+import { ActivityHeatmap } from './ActivityHeatmap';
 
 type StatusFilter = NonNullable<ListChecksParams['status']>;
 
@@ -19,34 +20,20 @@ const statusOptions: { value: StatusFilter; label: string }[] = [
 type LoadState = { kind: 'loading' } | { kind: 'error' } | { kind: 'ready'; page: Page<Check> };
 
 const actionButton =
-  'press-lift inline-flex h-10 items-center justify-center gap-2 rounded-full bg-indigo-700 px-4 text-sm font-medium text-on-primary transition-colors hover:bg-indigo-800';
+  'press-lift inline-flex h-9 items-center justify-center gap-1.5 rounded-md bg-brand-700 px-3 text-[13px] font-medium text-on-brand transition-colors hover:bg-brand-900';
 const surfacePanel = 'overflow-hidden rounded-xl border border-line bg-white';
 const pageButton =
-  'inline-flex h-10 items-center gap-1.5 rounded-full border border-line bg-white px-4 text-sm text-ink-soft transition-colors hover:border-indigo-200 hover:text-indigo-700 disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:border-line disabled:hover:text-ink-soft';
+  'inline-flex h-10 items-center gap-1.5 rounded-full border border-line bg-white px-4 text-sm text-ink-soft transition-colors hover:border-brand-200 hover:text-brand-700 disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:border-line disabled:hover:text-ink-soft';
 
-/** What was checked, with its own shape and color so a link or a file stands out while scanning. */
-function InputChip({ check }: { check: Check }) {
-  const chip = 'inline-flex items-center gap-1 rounded px-1.5 py-0.5 text-[12px] font-medium';
-  if (check.inputType === 'url') {
-    return (
-      <span className={`${chip} bg-indigo-50 text-indigo-700`}>
-        <Link2 className="h-3.5 w-3.5" aria-hidden="true" />
-        {inputTypeLabel.url}
-      </span>
-    );
-  }
-  if (check.files?.length) {
-    return (
-      <span className={`${chip} bg-orange-50 text-orange-800`}>
-        <FileText className="h-3.5 w-3.5" aria-hidden="true" />
-        {pluralize(check.files.length, 'file')}
-      </span>
-    );
-  }
+/** What was checked, as a quiet icon, so the titles stay the only thing to scan. */
+function InputIcon({ check }: { check: Check }) {
+  const file = !!check.files?.length;
+  const label = check.inputType === 'url' ? inputTypeLabel.url : file ? pluralize(check.files!.length, 'file') : inputTypeLabel.text;
+  const Icon = check.inputType === 'url' ? Link2 : file ? FileText : AlignLeft;
   return (
-    <span className={`${chip} bg-zinc-100 text-ink-soft`}>
-      <AlignLeft className="h-3.5 w-3.5" aria-hidden="true" />
-      {inputTypeLabel.text}
+    <span title={label} className="shrink-0 text-ink-muted">
+      <Icon className="h-4 w-4" aria-hidden="true" />
+      <span className="sr-only">{label}</span>
     </span>
   );
 }
@@ -115,30 +102,15 @@ export function HistoryPage() {
 
   return (
     <div className="mx-auto w-full max-w-[1120px] px-4 pb-24 pt-12 sm:px-6 sm:pt-16">
-      <header className="relative isolate flex flex-wrap items-start justify-between gap-6 overflow-hidden rounded-2xl border border-brand-200/70 bg-gradient-to-br from-brand-50 via-white to-white px-5 py-6 sm:items-end sm:px-7 sm:py-7">
-        <div
-          aria-hidden="true"
-          className="pointer-events-none absolute -right-10 -top-24 -z-10 h-64 w-64 rounded-full bg-brand-200/50 blur-3xl"
-        />
-        <div
-          aria-hidden="true"
-          className="pointer-events-none absolute -bottom-24 left-1/3 -z-10 h-44 w-44 rounded-full bg-emerald-200/35 blur-3xl"
-        />
-        <div className="relative">
-          <p className="eyebrow text-brand-700">{t('Review archive')}</p>
-          <h1 className="mt-3 text-[36px] font-medium leading-[1.05] tracking-[-0.04em] text-ink sm:text-[42px]">
-            {t('History')}
-          </h1>
-          <p className="mt-3 max-w-[31rem] text-[15px] leading-[1.65] text-ink-soft">
-            {demoMode
-              ? t('Every check is saved in this browser, with its evidence and revisions.')
-              : t('Every check is saved with its evidence and revisions.')}
-          </p>
+      <header className="rounded-2xl border border-brand-200/70 bg-gradient-to-br from-brand-50 via-white to-white px-5 py-6 sm:px-7 sm:py-7">
+        <div className="mb-5 flex items-center justify-between gap-4">
+          <h1 className="text-[20px] font-medium tracking-[-0.02em] text-ink">{t('History')}</h1>
+          <Link to="/" className={actionButton}>
+            <Plus className="h-4 w-4" aria-hidden="true" />
+            {t('New check')}
+          </Link>
         </div>
-        <Link to="/" className={`${actionButton} relative`}>
-          <Plus className="h-4 w-4" aria-hidden="true" />
-          {t('New check')}
-        </Link>
+        <ActivityHeatmap />
       </header>
 
       <div className="mt-8 flex flex-col-reverse gap-3 border-b border-line sm:flex-row sm:items-end sm:justify-between">
@@ -151,8 +123,8 @@ export function HistoryPage() {
                 type="button"
                 aria-pressed={selected}
                 onClick={() => updateParams({ status: option.value, page: '1' })}
-                className={`-mb-px min-h-11 shrink-0 border-b-2 text-[15px] font-medium transition-colors focus:outline-none focus-visible:rounded-sm focus-visible:ring-2 focus-visible:ring-indigo-700/40 ${
-                  selected ? 'border-indigo-700 text-ink' : 'border-transparent text-ink-muted hover:border-line-strong hover:text-ink'
+                className={`-mb-px min-h-11 shrink-0 border-b-2 text-[15px] font-medium transition-colors focus:outline-none focus-visible:rounded-sm focus-visible:ring-2 focus-visible:ring-brand-700/40 ${
+                  selected ? 'border-brand-700 text-ink' : 'border-transparent text-ink-muted hover:border-line-strong hover:text-ink'
                 }`}
               >
                 {t(option.label)}
@@ -165,7 +137,7 @@ export function HistoryPage() {
             {t('Search checks')}
           </label>
           <Search
-            className="pointer-events-none absolute left-3.5 top-5 h-4 w-4 -translate-y-1/2 text-ink-muted"
+            className="pointer-events-none absolute left-3 top-[18px] h-3.5 w-3.5 -translate-y-1/2 text-ink-muted"
             aria-hidden="true"
           />
           <input
@@ -174,7 +146,7 @@ export function HistoryPage() {
             value={draftQuery}
             onChange={(e) => setDraftQuery(e.target.value)}
             placeholder={t('Search checks')}
-            className="h-10 w-full rounded-full border border-line bg-white pl-10 pr-4 font-sans text-sm text-ink placeholder:text-ink-muted transition-colors hover:border-line-strong focus:border-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-700/15"
+            className="h-9 w-full rounded-md border border-line bg-white pl-8 pr-3 font-sans text-[13px] text-ink placeholder:text-ink-muted transition-colors hover:border-brand-200 focus:border-brand-600 focus:outline-none focus:ring-2 focus:ring-brand-600/15"
           />
         </div>
       </div>
@@ -242,53 +214,41 @@ export function HistoryPage() {
                 <section
                   key={group.date}
                   aria-labelledby={`date-group-${groupIndex}`}
-                  className="grid gap-1 border-b border-line py-5 last:border-b-0 sm:grid-cols-[132px_minmax(0,1fr)] sm:gap-x-8 sm:py-6"
+                  className="grid gap-1 border-b border-line py-4 last:border-b-0 sm:grid-cols-[132px_minmax(0,1fr)] sm:gap-x-8 sm:py-5"
                 >
-                  <div className="flex items-baseline justify-between sm:block sm:pt-4">
+                  <div className="flex items-baseline justify-between sm:block sm:pt-2.5">
                     <h2
                       id={`date-group-${groupIndex}`}
-                      className="font-sans text-[15px] font-semibold tracking-[-0.01em] text-ink"
+                      className="font-sans text-[14px] font-medium tracking-[-0.01em] text-ink"
                     >
                       {group.date}
                     </h2>
-                    <span className="font-sans text-[13px] tabular-nums text-ink-muted sm:mt-0.5 sm:block">
+                    <span className="font-sans text-[13px] text-ink-muted sm:mt-0.5 sm:block">
                       {pluralize(group.items.length, 'check')}
                     </span>
                   </div>
-                  <ul className="min-w-0">
+                  <ul className="-mx-3 min-w-0">
                     {group.items.map((check) => (
-                      <li key={check.id} className="border-t border-line first:border-t-0">
+                      <li key={check.id}>
                         <Link
                           to={`/checks/${check.id}`}
-                          className="group grid grid-cols-[minmax(0,1fr)_auto] items-start gap-x-4 py-4 focus-visible:relative focus-visible:z-10 sm:grid-cols-[minmax(0,1fr)_112px_16px]"
+                          className="group grid gap-x-6 gap-y-1 rounded-md px-3 py-2.5 transition-colors hover:bg-brand-100/60 focus-visible:relative focus-visible:z-10 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center"
                         >
-                          <span className="min-w-0">
-                            <span className="line-clamp-2 block text-[16px] font-medium leading-[1.4] tracking-[-0.012em] text-ink transition-colors group-hover:text-indigo-700">
-                              {check.title}
-                            </span>
-                            <span className="mt-1.5 flex flex-wrap items-center gap-x-2 gap-y-1 font-sans text-[13px] text-ink-muted">
-                              <InputChip check={check} />
-                              {check.claimCount !== undefined && <span>{pluralize(check.claimCount, 'claim')}</span>}
-                            </span>
+                          <span className="flex min-w-0 items-center gap-2.5">
+                            <InputIcon check={check} />
+                            <span className="truncate text-[15px] font-medium tracking-[-0.01em] text-ink">{check.title}</span>
                           </span>
-                          <span className="flex flex-col items-end gap-1 whitespace-nowrap pt-0.5">
+                          <span className="flex items-center gap-2 whitespace-nowrap pl-[26px] text-[13px] text-ink-muted sm:pl-0">
                             {/* A finished check is the normal case, so only the others ask for attention. */}
-                            {check.status === 'completed' ? (
-                              <span className="text-[13px] text-ink-muted">{statusLabel.completed}</span>
-                            ) : (
-                              <StatusBadge status={check.status} />
+                            {check.status !== 'completed' && <StatusBadge status={check.status} />}
+                            {check.claimCount !== undefined && (
+                              <>
+                                <span>{pluralize(check.claimCount, 'claim')}</span>
+                                <span aria-hidden="true">·</span>
+                              </>
                             )}
-                            <time
-                              dateTime={check.createdAt}
-                              className="font-sans text-[13px] tabular-nums text-ink-muted"
-                            >
-                              {formatTime(check.createdAt)}
-                            </time>
+                            <time dateTime={check.createdAt}>{formatTime(check.createdAt)}</time>
                           </span>
-                          <ChevronRight
-                            className="hidden h-4 w-4 self-center text-ink-muted transition-[transform,color] group-hover:translate-x-0.5 group-hover:text-indigo-700 sm:block"
-                            aria-hidden="true"
-                          />
                         </Link>
                       </li>
                     ))}

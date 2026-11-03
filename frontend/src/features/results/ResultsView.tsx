@@ -152,7 +152,7 @@ export function ResultsView({ check, onReload }: Props) {
               <button
                 type="button"
                 onClick={() => selectClaim(previousClaim)}
-                className="press-lift inline-flex h-10 items-center gap-1.5 rounded-full border border-line bg-white px-4 text-sm font-medium text-ink-soft hover:border-line-strong hover:text-ink"
+                className="press-lift relative inline-flex after:absolute after:inset-x-0 after:-inset-y-0.5 h-10 items-center gap-1.5 rounded-full border border-line bg-white px-4 text-sm font-medium text-ink-soft hover:border-line-strong hover:text-ink"
               >
                 <ArrowLeft className="h-4 w-4" aria-hidden="true" />
                 {t('Previous claim')}
@@ -164,7 +164,7 @@ export function ResultsView({ check, onReload }: Props) {
               <button
                 type="button"
                 onClick={() => selectClaim(nextClaim)}
-                className="press-lift inline-flex h-10 items-center gap-1.5 rounded-full bg-ink px-4 text-sm font-medium text-page hover:opacity-90"
+                className="press-lift relative inline-flex after:absolute after:inset-x-0 after:-inset-y-0.5 h-10 items-center gap-1.5 rounded-full bg-ink px-4 text-sm font-medium text-page hover:opacity-90"
               >
                 {t('Next claim')}
                 <ArrowRight className="h-4 w-4" aria-hidden="true" />

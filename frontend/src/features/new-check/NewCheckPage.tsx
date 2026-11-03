@@ -36,7 +36,8 @@ const steps = [
     points: [
       'Each claim is one factual statement, like a date, figure, or quote.',
       'A claim keeps its time period when the text states one.',
-      'Opinions and questions are left out.',
+      'Opinions, predictions, and questions are left out.',
+      'At most five claims are kept per check, the most checkable first.',
     ],
   },
   {
@@ -44,48 +45,49 @@ const steps = [
     points: [
       'Looks each claim up in Google’s Fact Check Tools database.',
       'A match shows the fact-checker, its rating, and a link to the original.',
+      'If it is plainly the same claim with a clear true or false rating, that rating becomes the verdict and the models are skipped.',
     ],
   },
   {
     title: 'Find evidence',
     points: [
-      'Searches trusted news sites for each claim, using Tavily.',
+      'Searches rated sites for each claim, using Tavily. Sources rated unreliable are left out.',
+      'Reads at most ten sources per check. An article being checked can’t be its own evidence.',
       'Saves the source title, publisher, link, and the exact excerpt used.',
-      'Records the publication date and the exact retrieval time.',
     ],
   },
   {
     title: 'Judge with two models',
     points: [
-      'Two AI models read the same evidence, and each gives a verdict with a confidence score.',
+      'Two AI models read the same passages, and each gives a verdict with a confidence score.',
       demoMode
         ? 'When they agree, that verdict is shown. In this demo, the judges and verdicts are simulated.'
-        : 'When they agree, that verdict is shown. When they disagree, you see both.',
-    ],
-  },
-  {
-    title: 'Break ties',
-    points: [
-      'Runs only when the two models disagree.',
-      'A third model from another lab decides by majority. If all three differ, the claim is marked Insufficient evidence.',
+        : 'When they agree, that verdict is shown. When they disagree, the first model’s is the headline and you see both.',
+      'Both models also score and comment on each source.',
     ],
   },
   {
     title: 'Verdicts with citations',
     points: [
-      'Verdicts are Supported, Contradicted, or Insufficient evidence — never a truth score.',
+      'Verdicts are Supported, Contradicted, Outdated, or Insufficient evidence — never a truth score.',
       'Sources that no longer apply to the claim’s period are tagged Outdated, with a reason.',
+      'If no readable source is found, the claim is marked Insufficient evidence without calling the models.',
       'If a provider fails, the claim shows Verification unavailable instead of a verdict.',
     ],
   },
-  {
-    title: 'Review and correct',
-    points: [
-      'Every correction is a new revision you can compare with earlier ones.',
-      'A correction needs a reason and can only cite evidence already saved for the claim.',
-      'If someone else edited the claim first, the stale correction is rejected instead of overwriting.',
-    ],
-  },
+  // Follows the button: the guide shouldn't describe a step nobody can reach.
+  ...(config.correction.showReviewButton
+    ? [
+        {
+          title: 'Review and correct',
+          points: [
+            'Every correction is a new revision you can compare with earlier ones.',
+            'A correction needs a reason and can only cite evidence already saved for the claim.',
+            'If someone else edited the claim first, the stale correction is rejected instead of overwriting.',
+          ],
+        },
+      ]
+    : []),
 ];
 
 /** The step-by-step explanation, read like a short article and opened one step at a time. */
