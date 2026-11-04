@@ -58,8 +58,6 @@
     /* Warning tone for outdated sources; never used for verdicts. */
     --candy: 180 83 9;
     --flame: 5 150 105;
-    --fire-edge: 228 231 233;
-    --primary-edge: 5 150 105;
   }
 
   body {
@@ -88,9 +86,6 @@
   }
   .btn-ghost {
     @apply btn text-ink-soft hover:bg-zinc-100 hover:text-ink;
-  }
-  .eyebrow {
-    @apply font-sans text-[11px] font-semibold uppercase tracking-[0.1em] text-ink-muted;
   }
 
   .panel {

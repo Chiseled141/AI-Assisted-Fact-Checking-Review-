@@ -10,12 +10,10 @@ export default {
     extend: {
       fontFamily: {
         sans: ['"Schibsted Grotesk"', 'ui-sans-serif', 'system-ui', '-apple-system', 'Segoe UI', 'sans-serif'],
-        display: ['"Schibsted Grotesk"', 'ui-sans-serif', 'system-ui', 'sans-serif'],
         logo: ['"Space Grotesk"', 'ui-sans-serif', 'system-ui', 'sans-serif'],
       },
       // Ground-style weight ladder: book text, strong labels, extrabold headlines.
       fontWeight: {
-        book: '480',
         strong: '680',
       },
       colors: {
@@ -36,7 +34,6 @@ export default {
         amber: shades('amber', [50, 200, 300, 400, 700, 800, 900, 950]),
       },
       boxShadow: {
-        selected: 'inset 3px 0 0 rgb(var(--brand-500))',
         dialog: '0 24px 80px -24px rgba(0,0,0,0.45)',
       },
     },
