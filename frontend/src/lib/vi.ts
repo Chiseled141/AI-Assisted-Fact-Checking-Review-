@@ -1,6 +1,186 @@
 // Vietnamese interface text, keyed by the English wording passed to t().
 
 const interfaceText: Record<string, string> = {
+  'No relevant source was found for this claim, so it cannot be verified.':
+    'Chưa tìm thấy nguồn phù hợp với nhận định này nên chưa thể kiểm chứng.',
+  'Official sports records and athlete information': 'Thành tích thể thao và thông tin vận động viên chính thức',
+  'Official Grammy Award winners and nominees': 'Danh sách nhận giải và đề cử Grammy chính thức',
+  'Official Academy Award winners and nominees': 'Danh sách nhận giải và đề cử Oscar chính thức',
+  'Official music certifications': 'Chứng nhận âm nhạc chính thức',
+  'Published record titles and record-holder profiles': 'Kỷ lục được công bố và hồ sơ người giữ kỷ lục',
+  'Celebrity reporting and published interviews': 'Tin tức người nổi tiếng và các cuộc phỏng vấn đã công bố',
+  'Input assessment': 'Đánh giá nội dung đầu vào',
+  'Subjective opinion': 'Ý kiến chủ quan',
+  'Advice request': 'Xin lời khuyên',
+  'Future prediction': 'Dự đoán tương lai',
+  'Needs clarification': 'Cần làm rõ',
+  'No factual claim identified': 'Chưa tìm thấy thông tin kiểm chứng',
+  'No factual verdict': 'Chưa đưa ra kết luận đúng/sai',
+  'This asks for an opinion or ranking without a measurable criterion. There is no single factual answer to verify.':
+    'Nội dung này hỏi về ý kiến hoặc thứ hạng nhưng chưa có tiêu chí đo lường cụ thể. Chưa thể xác định một đáp án đúng/sai để kiểm chứng.',
+  'This asks for a recommendation. State the factual information behind the decision that you want to check.':
+    'Nội dung này đang xin lời khuyên. Hãy nêu thông tin cụ thể làm cơ sở cho quyết định mà bạn muốn kiểm chứng.',
+  'This concerns an outcome that has not been established yet. You can check an existing forecast or announcement, but not treat the future outcome as a fact.':
+    'Nội dung này nói về một kết quả chưa được xác lập. Có thể kiểm chứng một dự báo hoặc thông báo đã được công bố, nhưng chưa thể coi kết quả tương lai là sự thật.',
+  'The input needs a clearer subject or meaning before evidence can be compared. Specify who or what you mean and the information to verify.':
+    'Cần làm rõ đối tượng hoặc ý nghĩa của nội dung trước khi đối chiếu bằng chứng. Hãy nêu bạn đang nói đến ai hoặc điều gì và thông tin cần kiểm chứng.',
+  'No checkable factual claim was identified in this input. This does not mean the input is false.':
+    'Chưa tìm thấy thông tin thực tế có thể kiểm chứng trong nội dung này. Điều đó không có nghĩa nội dung là sai.',
+  'The model could not finish interpreting this input. Try again; no factual verdict was produced.':
+    'Mô hình chưa xử lý xong ý nghĩa của nội dung này. Hãy thử lại; chưa có kết luận đúng/sai nào được đưa ra.',
+  'How to make this checkable': 'Cách viết để có thể kiểm chứng',
+  'State a specific fact and, when relevant, a date, place or measurable criterion.':
+    'Hãy nêu một thông tin thực tế cụ thể, kèm thời gian, địa điểm hoặc tiêu chí đo lường nếu cần.',
+  'For a “GOAT” question, choose a competition and a record to compare instead of asking who is best.':
+    'Với câu hỏi “GOAT”, hãy chọn một giải đấu và kỷ lục cụ thể để so sánh thay vì hỏi ai giỏi nhất.',
+  'Weather observations, forecasts and climate reports': 'Quan trắc thời tiết, dự báo và báo cáo khí hậu',
+  'Official election administration and results': 'Thông tin quản lý và kết quả bầu cử chính thức',
+  'Published market prices and benchmark data': 'Giá thị trường và dữ liệu giá tham chiếu do nguồn công bố',
+  'Official population and economic statistics': 'Thống kê dân số và kinh tế chính thức',
+  'United Nations statistics and development data': 'Thống kê và dữ liệu phát triển của Liên Hợp Quốc',
+  'Disaster alerts, event reports and impact data': 'Cảnh báo thiên tai, báo cáo sự kiện và dữ liệu tác động',
+  'Humanitarian situation reports and disaster updates': 'Báo cáo tình hình nhân đạo và cập nhật thiên tai',
+  'Finishing visual details': 'Đang hoàn tất chi tiết biểu đồ, bản đồ',
+  // Checking screen
+  'AI models': 'Mô hình AI',
+  'Source search': 'Tìm nguồn',
+  'Chart and map data': 'Dữ liệu biểu đồ và bản đồ',
+  'What failed': 'Phần bị lỗi',
+  'Judging the claim': 'Đang đánh giá nhận định',
+  'Reading seat counts from sources': 'Đọc số ghế từ nguồn',
+  'Reading SJC prices from sources': 'Đọc giá SJC từ nguồn',
+  'Reading map figures from sources': 'Đọc số liệu bản đồ từ nguồn',
+  'Finding SJC price articles': 'Tìm bài báo về giá SJC',
+  'Finding sources with Tavily': 'Tìm nguồn bằng Tavily',
+  'Writing the question as a claim': 'Chuyển câu hỏi thành nhận định',
+  'Written by AI from your question: “{question}”. You did not state this claim.': 'AI viết từ câu hỏi của bạn: “{question}”. Bạn không khẳng định điều này.',
+  'Finding sources for the chart': 'Tìm nguồn riêng cho biểu đồ',
+  "The claim's own words did not fit what this chart needs, so it was not drawn.": 'Nội dung nhận định không khớp với điều kiện của biểu đồ nên không vẽ.',
+  "Climate data doesn't cover these dates yet, or the period is too long to draw.": 'Dữ liệu khí hậu chưa có cho những ngày này, hoặc khoảng thời gian quá dài để vẽ.',
+  'The sources did not cover the whole chart, so it is not shown.': 'Các nguồn không đủ cho toàn bộ biểu đồ nên không hiển thị.',
+  'Searching for the chart': 'Tìm cho biểu đồ',
+  'Election chart data': 'Dữ liệu biểu đồ bầu cử',
+  'The model kept searching and never chose its sources.': 'Mô hình cứ tìm tiếp mà không chọn nguồn.',
+  'Reading state results from sources': 'Đọc kết quả từng bang từ nguồn',
+  'Reading seats and state results from sources': 'Đọc số ghế và kết quả từng bang từ nguồn',
+  'Only pages from before this election were found.': 'Chỉ tìm thấy các trang đăng trước cuộc bầu cử này.',
+  'US election results by state': 'Kết quả bầu cử Mỹ theo bang',
+  'Presidential election': 'Bầu cử tổng thống',
+  'House of Representatives': 'Hạ viện',
+  Senate: 'Thượng viện',
+  '{count} of {total} states verified': 'Đã xác minh {count} trên {total} bang',
+  'Results from the sources': 'Kết quả từ các nguồn',
+  'Each result is copied from the article it links to, retrieved {date}. States that could not be verified in the sources are grey. This map is context and did not decide the verdict.':
+    'Mỗi kết quả được chép nguyên từ bài báo có liên kết, lấy ngày {date}. Các bang chưa xác minh được từ nguồn được tô xám. Bản đồ chỉ để tham khảo và không quyết định kết luận.',
+  '{count} pages read': 'Đã đọc {count} trang',
+  'Reading the pages found': 'Đọc các trang tìm được',
+  'Searching green sources': 'Tìm trong các nguồn xanh',
+  'Reading the submitted page': 'Đang đọc trang đã gửi',
+  'Price chart data': 'Dữ liệu biểu đồ giá',
+  'Heatmap data': 'Dữ liệu bản đồ nhiệt',
+  'Country map data': 'Dữ liệu bản đồ quốc gia',
+  'State map data': 'Dữ liệu bản đồ bang',
+  'Chart data': 'Dữ liệu biểu đồ',
+  'Search {count}': 'Lượt tìm {count}',
+  '{count} of {target} publishers saved': 'Đã lưu {count} trên {target} nhà xuất bản',
+  'The service timed out.': 'Dịch vụ đã hết thời gian chờ.',
+  'The service is rate-limited.': 'Dịch vụ đang giới hạn lượt gọi.',
+  'The service returned an error.': 'Dịch vụ trả về lỗi.',
+  'The service could not be reached.': 'Không kết nối được với dịch vụ.',
+  'The service returned invalid data.': 'Dịch vụ trả về dữ liệu không hợp lệ.',
+  'The model call failed.': 'Gọi mô hình thất bại.',
+  'The model returned no answer.': 'Mô hình không trả về câu trả lời.',
+  "The model's answer was invalid, even after one repair.": 'Câu trả lời của mô hình không hợp lệ, kể cả sau một lần sửa.',
+  'Not enough data to draw this chart.': 'Không đủ dữ liệu để vẽ biểu đồ này.',
+  'Too few figures could be verified in the sources, so nothing was drawn.': 'Quá ít số liệu xác minh được trong nguồn nên không vẽ.',
+  'No candidate page could be read.': 'Không đọc được trang nào trong số tìm được.',
+  'Working…': 'Đang xử lý…',
+  'Claim {position}': 'Nhận định {position}',
+  'Extracted {count} factual claims.': 'Đã tách {count} nhận định có thể kiểm chứng.',
+  'This model could not return a valid assessment.': 'Mô hình này không trả về được đánh giá hợp lệ.',
+  'This model is temporarily rate-limited. Please try again later.': 'Mô hình này tạm thời bị giới hạn lượt gọi. Vui lòng thử lại sau.',
+  'The model timed out. Please try again later.': 'Mô hình đã hết thời gian chờ. Vui lòng thử lại sau.',
+  'Unavailable judges': 'Mô hình đánh giá không khả dụng',
+  '{done} of {total} claims processed': 'Đã xử lý {done} trên {total} nhận định',
+  // Parliament chart
+  'Seats in {body}': 'Số ghế tại {body}',
+  '{count} seats': '{count} ghế',
+  'Seats from the sources': 'Số ghế từ các nguồn',
+  'Final seat counts': 'Số ghế chung cuộc',
+  'Not verified in the sources': 'Chưa xác minh được từ nguồn',
+  'Seats in the chamber': 'Tổng số ghế',
+  'Needed for a majority': 'Cần để chiếm đa số',
+  'Each count is copied from the article it links to, retrieved {date}. Seats that could not be verified in the sources are grey. This chart is context and did not decide the verdict.':
+    'Mỗi số ghế được chép nguyên từ bài báo có liên kết, lấy ngày {date}. Số ghế chưa xác minh được từ nguồn được tô xám. Biểu đồ chỉ để tham khảo và không quyết định kết luận.',
+  // Country map
+  Population: 'Dân số',
+  GDP: 'GDP',
+  'GDP per person': 'GDP bình quân đầu người',
+  'Life expectancy': 'Tuổi thọ trung bình',
+  World: 'Thế giới',
+  'Figures from {source}': 'Số liệu từ {source}',
+  'Rank among states': 'Thứ hạng trong các bang',
+  'Click a state to add it to the comparison. These are 5-year estimates, so they lag the latest yearly figures. This map is context and did not decide the verdict.':
+    'Bấm vào một bang để thêm vào so sánh. Đây là số liệu ước tính theo 5 năm nên chậm hơn số liệu mới nhất theo năm. Bản đồ chỉ để tham khảo và không quyết định kết luận.',
+  'Rank among countries': 'Thứ hạng trong các nước',
+  '{rank} of {count}': '{rank} trên {count}',
+  'Over time': 'Theo thời gian',
+  '{value} years': '{value} tuổi',
+  'Figures for {year}': 'Số liệu năm {year}',
+  'Data from {source}, retrieved {date}.': 'Dữ liệu từ {source}, lấy ngày {date}.',
+  'Click a country to add it to the comparison. National estimates can be revised. This map is context and did not decide the verdict.':
+    'Bấm vào một nước để thêm vào so sánh. Số liệu ước tính của các nước có thể được điều chỉnh. Bản đồ chỉ để tham khảo và không quyết định kết luận.',
+  // Heatmap
+  'Daily high temperature': 'Nhiệt độ cao nhất trong ngày',
+  'Daily rainfall': 'Lượng mưa trong ngày',
+  'Figures from the weather model': 'Số liệu từ mô hình thời tiết',
+  'Across this map': 'Trên bản đồ này',
+  Highest: 'Cao nhất',
+  'Average of the map points': 'Trung bình các điểm trên bản đồ',
+  Lowest: 'Thấp nhất',
+  'Weather model data from {source}, retrieved {date}, with points {step}° apart and colors blended between them.':
+    'Dữ liệu mô hình thời tiết từ {source}, lấy ngày {date}, các điểm cách nhau {step}° và màu được nội suy giữa các điểm.',
+  'It averages {count} days sampled across the period: {days}.': 'Đây là trung bình của {count} ngày lấy mẫu trong kỳ: {days}.',
+  'A model grid reads lower than a single weather station at a hot spot. This map is context and did not decide the verdict.':
+    'Lưới mô hình thường thấp hơn một trạm đo tại điểm nóng. Bản đồ chỉ để tham khảo và không quyết định kết luận.',
+  '{metric} ranged from {low} to {high} across the map.': '{metric} dao động từ {low} đến {high} trên bản đồ.',
+  // Location map
+  'Places in this claim': 'Địa điểm trong nhận định',
+  'Click a highlighted country to see the region the claim names.':
+    'Bấm vào nước được tô màu để xem vùng được nêu trong nhận định.',
+  'Loading map…': 'Đang tải bản đồ…',
+  'All places': 'Tất cả địa điểm',
+  'Figures from the sources': 'Số liệu từ các nguồn',
+  Overall: 'Tổng quan',
+  'Sources differ': 'Các báo đưa khác nhau',
+  'Each figure is copied from the article it links to. Reports can differ, and early counts can change.':
+    'Mỗi số liệu được chép nguyên từ bài báo có liên kết. Các báo có thể đưa khác nhau, và số liệu ban đầu có thể thay đổi.',
+  'Shows the places the claim names. This map is context and did not decide the verdict.':
+    'Bản đồ thể hiện các địa điểm được nêu trong nhận định, chỉ để tham khảo và không quyết định kết luận.',
+  'Province borders are from before the 2025 mergers.': 'Ranh giới tỉnh là ranh giới trước khi sáp nhập năm 2025.',
+  'Hoàng Sa Islands (Vietnam)': 'Quần đảo Hoàng Sa (Việt Nam)',
+  'Trường Sa Islands (Vietnam)': 'Quần đảo Trường Sa (Việt Nam)',
+  // Price chart
+  'Bitcoin price': 'Giá Bitcoin',
+  'Ethereum price': 'Giá Ethereum',
+  'Gold price': 'Giá vàng thế giới',
+  'Silver price': 'Giá bạc thế giới',
+  'Brent crude oil price': 'Giá dầu thô Brent',
+  'Verified SJC selling-price reports per tael, retrieved {date}. These are snapshots, not a full price history. The AI judges also read these prices.':
+    'Giá bán SJC mỗi lượng đã đối chiếu với nguồn, lấy ngày {date}. Đây là các mức giá tại từng thời điểm, không phải lịch sử giá đầy đủ. Các mô hình AI cũng đọc các mức giá này khi chấm.',
+  'View the source behind each price': 'Xem nguồn của từng mức giá',
+  'Published {date}': 'Đăng ngày {date}',
+  'Reported price went from {first} on {start} to {last} on {end}.':
+    'Giá theo báo đi từ {first} ngày {start} đến {last} ngày {end}.',
+  'SJC gold price': 'Giá vàng SJC',
+  'Daily closing price from {source}, retrieved {date}. A peak within a day may not show. The AI judges also read these prices.':
+    'Giá đóng cửa theo ngày từ {source}, lấy ngày {date}. Mức đỉnh trong ngày có thể không hiện trên biểu đồ. Các mô hình AI cũng đọc các mức giá này khi chấm.',
+  'Closing price went from {first} on {start} to {last} on {end}.':
+    'Giá đóng cửa đi từ {first} ngày {start} đến {last} ngày {end}.',
+  '3m': '3 tháng',
+  '6m': '6 tháng',
+  YTD: 'Năm nay',
+  '1y': '1 năm',
   // Header and shared
   'Skip to content': 'Chuyển đến nội dung',
   'ClaimTrace home': 'Trang chủ ClaimTrace',
@@ -35,8 +215,6 @@ const interfaceText: Record<string, string> = {
   'Assessing claims': 'Đang đánh giá nhận định',
   Completed: 'Hoàn tất',
   Failed: 'Thất bại',
-  Text: 'Văn bản',
-  URL: 'URL',
   'Verification unavailable': 'Không thể xác minh',
   'Verification unavailable.': 'Không thể xác minh.',
   Current: 'Còn hiệu lực',
@@ -47,34 +225,16 @@ const interfaceText: Record<string, string> = {
   'Human correction': 'Người sửa',
   'AI assessment': 'Đánh giá của AI',
   'rev {version}': 'bản {version}',
-  'Demo · simulated': 'Bản demo · mô phỏng',
-  'This source is not in the rated list.': 'Nguồn này chưa có trong danh sách xếp hạng.',
-  'Not rated': 'Chưa xếp hạng',
-  'Trusted source': 'Nguồn đáng tin cậy',
-  'Mixed source': 'Nguồn cần thận trọng',
-  'Unreliable source': 'Nguồn không đáng tin',
-  'Official, established, or peer-reviewed. Can be cited as evidence.':
-    'Chính thức, uy tín hoặc đã qua bình duyệt. Có thể trích dẫn làm bằng chứng.',
-  'Reliable for some things, but non-primary, advocacy, or user-generated. Use it to corroborate.':
-    'Đáng tin ở một số mặt, nhưng không phải nguồn gốc, mang tính vận động hoặc do người dùng tạo. Chỉ dùng để đối chiếu.',
-  'Known for fabricated, deceptive, or scam content. Does not count as evidence.':
-    'Từng đăng nội dung bịa đặt, gây hiểu lầm hoặc lừa đảo. Không được tính là bằng chứng.',
 
   // New check page
   'Extract claims': 'Tách nhận định',
   'Each claim is one factual statement, like a date, figure, or quote.':
     'Mỗi nhận định là một phát biểu về sự kiện, như ngày tháng, số liệu hoặc lời trích dẫn.',
   'A claim keeps its time period when the text states one.': 'Nhận định giữ nguyên khoảng thời gian nếu văn bản có nêu.',
-  'Opinions, predictions, and questions are left out.': 'Ý kiến, dự đoán và câu hỏi sẽ được bỏ qua.',
+  'Opinions and predictions are left out. A question is written as the claim it asks about.':
+    'Ý kiến và dự đoán sẽ được bỏ qua. Câu hỏi sẽ được viết thành nhận định mà nó đang hỏi.',
   'At most five claims are kept per check, the most checkable first.':
     'Mỗi lượt kiểm tra giữ tối đa năm nhận định, ưu tiên những nhận định dễ kiểm chứng nhất.',
-  'Check published fact-checks': 'Đối chiếu các bài kiểm chứng đã đăng',
-  'Looks each claim up in Google’s Fact Check Tools database.':
-    'Tra từng nhận định trong cơ sở dữ liệu Fact Check Tools của Google.',
-  'A match shows the fact-checker, its rating, and a link to the original.':
-    'Kết quả khớp sẽ hiển thị đơn vị kiểm chứng, đánh giá của họ và liên kết đến bài gốc.',
-  'If it is plainly the same claim with a clear true or false rating, that rating becomes the verdict and the models are skipped.':
-    'Nếu rõ ràng là cùng một nhận định và được đánh giá đúng hoặc sai rõ ràng, đánh giá đó sẽ thành kết luận mà không cần gọi mô hình.',
   'Find evidence': 'Tìm bằng chứng',
   'Searches rated sites for each claim, using Tavily. Sources rated unreliable are left out.':
     'Dùng Tavily để tìm trên các trang đã được xếp hạng cho từng nhận định. Nguồn bị xếp hạng không đáng tin sẽ bị loại.',
@@ -85,9 +245,6 @@ const interfaceText: Record<string, string> = {
   'Judge with two models': 'Đánh giá bằng hai mô hình',
   'Two AI models read the same passages, and each gives a verdict with a confidence score.':
     'Hai mô hình AI cùng đọc những đoạn văn giống nhau, mỗi mô hình đưa ra kết luận kèm độ tin cậy.',
-  'Both models also score and comment on each source.': 'Cả hai mô hình cũng chấm điểm và nhận xét từng nguồn.',
-  'When they agree, that verdict is shown. In this demo, the judges and verdicts are simulated.':
-    'Khi hai mô hình đồng ý, kết luận đó sẽ được hiển thị. Trong bản demo này, các mô hình và kết luận đều là mô phỏng.',
   'Verdicts with citations': 'Kết luận kèm trích dẫn',
   'Verdicts are Supported, Contradicted, Outdated, or Insufficient evidence — never a truth score.':
     'Kết luận gồm Được xác nhận, Bị bác bỏ, Đã lỗi thời hoặc Chưa đủ bằng chứng — không bao giờ là điểm số sự thật.',
@@ -111,17 +268,13 @@ const interfaceText: Record<string, string> = {
   'Trace claims.': 'Truy vết nhận định.',
   'Examine evidence.': 'Xem xét bằng chứng.',
   'New check': 'Kiểm tra mới',
-  'Text input': 'Nhập văn bản',
-  'URL input': 'Nhập URL',
   'Text to check': 'Văn bản cần kiểm tra',
-  'Paste a claim or paragraph…': 'Dán một nhận định hoặc đoạn văn…',
+  'Paste a claim, a paragraph or a link…': 'Dán nhận định, đoạn văn hoặc đường link…',
+  'This link will be read as an article.': 'Link này sẽ được đọc như một bài báo.',
   'Attached files': 'Tệp đính kèm',
   'Remove {name}': 'Xóa {name}',
-  'Up to {count} .txt or .md files, {size} KB each. Files are read in your browser and not uploaded.':
-    'Tối đa {count} tệp .txt hoặc .md, mỗi tệp {size} KB. Tệp được đọc ngay trên trình duyệt, không tải lên máy chủ.',
-  'Article URL': 'URL bài viết',
-  'Demo only — the page is not fetched.': 'Chỉ là bản demo — trang web sẽ không được tải về.',
-  'Input type': 'Loại dữ liệu nhập',
+  'Up to {count} .txt or .md files, {size} KB each. Their text is sent to the server for checking.':
+    'Tối đa {count} tệp .txt hoặc .md, mỗi tệp {size} KB. Nội dung văn bản được gửi tới máy chủ để kiểm tra.',
   'Add files': 'Thêm tệp',
   'Add .txt or .md files (or drop them here)': 'Thêm tệp .txt hoặc .md (hoặc thả vào đây)',
   characters: 'ký tự',
@@ -134,29 +287,17 @@ const interfaceText: Record<string, string> = {
   Guide: 'Hướng dẫn',
   'How a check runs — and where each verdict comes from.': 'Một lượt kiểm tra diễn ra thế nào — và mỗi kết luận đến từ đâu.',
 
-  // Judge and demo pickers
+  // Judge picker
   'Judges: {label}': 'Mô hình đánh giá: {label}',
   'Judges for the next check. Pick {count}; a new pick replaces the older one.':
     'Mô hình đánh giá cho lượt kiểm tra tiếp theo. Chọn {count}; lựa chọn mới sẽ thay lựa chọn cũ hơn.',
-  'Pick exactly {count} different judges.': 'Hãy chọn đúng {count} mô hình đánh giá khác nhau.',
-  'Demo scenario: {label}': 'Kịch bản demo: {label}',
-  'Demo scenario for the next check': 'Kịch bản demo cho lượt kiểm tra tiếp theo',
-  'Completed check': 'Kiểm tra hoàn tất',
-  'All claims are assessed.': 'Tất cả nhận định đều được đánh giá.',
-  'Partial provider failure': 'Lỗi nhà cung cấp một phần',
-  'One claim shows “Verification unavailable”.': 'Một nhận định hiển thị “Không thể xác minh”.',
-  'Failed check': 'Kiểm tra thất bại',
-  'Evidence retrieval fails during processing.': 'Việc tìm bằng chứng thất bại trong khi xử lý.',
-  'Stale correction conflict': 'Xung đột khi sửa',
-  'Your first correction collides with a simulated concurrent edit.':
-    'Bản sửa đầu tiên của bạn xung đột với một chỉnh sửa đồng thời được mô phỏng.',
 
   // Check states
   'This check could not be loaded. Please try again.': 'Không thể tải lượt kiểm tra này. Vui lòng thử lại.',
   'Loading check…': 'Đang tải lượt kiểm tra…',
   'Check not found': 'Không tìm thấy lượt kiểm tra',
   'Something went wrong': 'Đã xảy ra lỗi',
-  'This check isn’t saved in this browser.': 'Lượt kiểm tra này không được lưu trên trình duyệt này.',
+  'This check was not found on the server.': 'Không tìm thấy lượt kiểm tra này trên máy chủ.',
   'Open history': 'Mở lịch sử',
   'Could not start a new check. Please try again.': 'Không thể bắt đầu lượt kiểm tra mới. Vui lòng thử lại.',
   'Check failed': 'Kiểm tra thất bại',
@@ -171,22 +312,10 @@ const interfaceText: Record<string, string> = {
   'Looking up and saving source snapshots': 'Đang tra cứu và lưu bản ghi nguồn',
   'Comparing each claim with its evidence': 'Đang đối chiếu từng nhận định với bằng chứng',
   'Results ready to review': 'Kết quả đã sẵn sàng để xem',
-  'Live check': 'Đang kiểm tra',
   'Checking claims': 'Đang kiểm tra nhận định',
   'Current stage: {stage}': 'Giai đoạn hiện tại: {stage}',
-  'Check progress': 'Tiến độ kiểm tra',
   'Stage {current} of {total}': 'Giai đoạn {current} trên {total}',
-  'Processing stages': 'Các giai đoạn xử lý',
-  ' — done': ' — xong',
-  ' — in progress': ' — đang chạy',
-  ' — pending': ' — đang chờ',
   'Up next · {stage}': 'Tiếp theo · {stage}',
-  'Simulated processing. No AI model, search, or URL fetch is called.':
-    'Xử lý mô phỏng. Không gọi mô hình AI, tìm kiếm hay tải URL nào.',
-  'The evidence provider timed out for this claim (simulated). No verdict was produced.':
-    'Nhà cung cấp bằng chứng hết thời gian chờ với nhận định này (mô phỏng). Chưa có kết luận nào.',
-  'Evidence retrieval failed because the search provider was unreachable (simulated outage). No claims were assessed.':
-    'Không tìm được bằng chứng vì không kết nối được nhà cung cấp tìm kiếm (sự cố mô phỏng). Chưa nhận định nào được đánh giá.',
 
   // History
   All: 'Tất cả',
@@ -203,8 +332,6 @@ const interfaceText: Record<string, string> = {
   'No matching checks': 'Không có lượt kiểm tra phù hợp',
   'No checks yet': 'Chưa có lượt kiểm tra nào',
   'Try a different search term or status.': 'Hãy thử từ khóa hoặc trạng thái khác.',
-  'Checks you run in demo mode are saved in this browser and appear here.':
-    'Các lượt kiểm tra bạn chạy ở chế độ demo được lưu trên trình duyệt này và hiển thị tại đây.',
   'Clear filters': 'Xóa bộ lọc',
   Pagination: 'Phân trang',
   Previous: 'Trước',
@@ -216,7 +343,10 @@ const interfaceText: Record<string, string> = {
   'Correction published as revision {version}. Claim {position} is now {verdict}.':
     'Đã lưu bản sửa thành phiên bản {version}. Nhận định {position} hiện là {verdict}.',
   'No claims found': 'Không tìm thấy nhận định',
-  'No checkable factual claims were extracted from this input.': 'Không tách được nhận định nào có thể kiểm chứng từ dữ liệu này.',
+  'Opinions and requests for advice can’t be checked. Try writing it as a statement, such as: “The Hanoi metro opened in November 2021.”':
+    'Ý kiến và yêu cầu tư vấn không thể kiểm chứng. Hãy viết lại thành một câu khẳng định, ví dụ: “Metro Hà Nội khai trương vào tháng 11/2021.”',
+  'No checkable factual claims were extracted from this input.':
+    'Không tách được nhận định nào có thể kiểm chứng từ dữ liệu này.',
   Claims: 'Nhận định',
   'Move between claims': 'Chuyển giữa các nhận định',
   'Previous claim': 'Nhận định trước',
@@ -234,32 +364,18 @@ const interfaceText: Record<string, string> = {
   '{supporting} supporting · {contradicting} contradicting · {contextual} context':
     '{supporting} ủng hộ · {contradicting} phản bác · {contextual} bối cảnh',
   'Review assessment': 'Xem xét đánh giá',
-  'Reviews from both AI models': 'Đánh giá của hai mô hình AI',
-  'See analysis': 'Xem phân tích',
-  'Hide analysis': 'Ẩn phân tích',
-  'See analysis: {title}': 'Xem phân tích: {title}',
-  'Hide analysis: {title}': 'Ẩn phân tích: {title}',
-  'Analysis': 'Phân tích',
-  'In the article': 'Trong bài viết',
-  'Comments from both AI models': 'Nhận xét của hai mô hình AI',
-  'How both AI models rated this source': 'Hai mô hình AI chấm nguồn này thế nào',
-  'Article checked': 'Bài được kiểm tra',
+  'AI model reviews': 'Đánh giá của các mô hình AI',
+  'View model reasoning': 'Xem lập luận của các mô hình',
+  Retrieved: 'Truy cập',
+  'US government weather service': 'Cơ quan thời tiết của chính phủ Mỹ',
   'File checked': 'Tệp được kiểm tra',
   'Files checked': 'Các tệp được kiểm tra',
-  'Open article': 'Mở bài gốc',
-  'Read in your browser, not uploaded': 'Đọc ngay trên trình duyệt, không tải lên',
+  'Text sent to the server for checking': 'Nội dung văn bản đã được gửi tới máy chủ để kiểm tra',
   'File contents': 'Nội dung tệp',
-  'This demo did not read this link. The claims below are sample data.':
-    'Bản demo không đọc link này. Các nhận định bên dưới là dữ liệu mẫu.',
-  'This demo did not read these files. The claims below are sample data.':
-    'Bản demo không đọc các tệp này. Các nhận định bên dưới là dữ liệu mẫu.',
   'When they agree, that verdict is shown. When they disagree, the first model’s is the headline and you see both.':
     'Khi hai mô hình đồng ý, kết luận đó được hiển thị. Khi bất đồng, kết luận của mô hình đầu tiên được đưa lên đầu và bạn thấy cả hai.',
-  'Written by the AI models from this page’s text. They can be wrong, so check the source.':
-    'Do các mô hình AI viết dựa trên nội dung trang này. Chúng có thể sai, nên hãy đối chiếu với nguồn.',
   'Checks you run appear here.': 'Các lượt kiểm tra của bạn sẽ hiện ở đây.',
-  'The server is missing its API keys, so it can’t run checks yet.':
-    'Máy chủ chưa có API key nên chưa chạy được lượt kiểm tra.',
+  'The server is missing its API keys, so it can’t run checks yet.': 'Máy chủ chưa có API key nên chưa chạy được lượt kiểm tra.',
   'Too many checks. Please try again later.': 'Bạn đã chạy quá nhiều lượt kiểm tra. Hãy thử lại sau.',
   'Enter a valid link.': 'Hãy nhập một đường link hợp lệ.',
   'Enter some text or attach a file.': 'Hãy nhập văn bản hoặc đính kèm tệp.',
@@ -276,50 +392,30 @@ const interfaceText: Record<string, string> = {
   'Something went wrong while running this check.': 'Đã có lỗi khi chạy lượt kiểm tra này.',
   'The server restarted while this check was running.': 'Máy chủ đã khởi động lại khi lượt kiểm tra đang chạy.',
   'Evidence could not be retrieved, so there is no verdict.': 'Không lấy được bằng chứng nên chưa có kết luận.',
-  'The AI judges could not assess this claim, so there is no verdict.': 'Các mô hình AI không đánh giá được nhận định này nên chưa có kết luận.',
+  'The AI judges could not assess this claim, so there is no verdict.':
+    'Các mô hình AI không đánh giá được nhận định này nên chưa có kết luận.',
   'No readable source was found for this claim, so it cannot be verified.':
     'Không tìm thấy nguồn đọc được cho nhận định này nên chưa thể xác minh.',
-  'Chart type': 'Loại biểu đồ',
   Bars: 'Cột',
-  Dumbbell: 'Quả tạ',
-  Radar: 'Radar',
   Criterion: 'Tiêu chí',
-  'Matches the claim': 'Khớp với nhận định',
-  'Direct evidence': 'Bằng chứng trực tiếp',
-  Timing: 'Đúng thời điểm',
-  Detail: 'Độ chi tiết',
-  'How closely the source agrees with the claim. A low score can mean it contradicts the claim.':
-    'Nguồn đồng ý với nhận định đến mức nào. Điểm thấp có thể nghĩa là nguồn phản bác nhận định.',
-  'Whether the source shows the fact itself, or only background or a plan.':
-    'Nguồn cho thấy chính sự việc, hay chỉ là bối cảnh hoặc kế hoạch.',
-  'How close the source is to the time the claim refers to.': 'Nguồn gần với thời điểm mà nhận định nói đến đến mức nào.',
-  'How many concrete facts, figures and dates the source gives.': 'Nguồn đưa ra bao nhiêu sự kiện, số liệu và ngày tháng cụ thể.',
-  'Demo: the analysis, scores and comments are simulated, not produced by a real AI model.':
-    'Bản demo: phần phân tích, điểm số và nhận xét là mô phỏng, chưa do mô hình AI thật tạo ra.',
   'AI judges disagree': 'Hai mô hình AI bất đồng',
   shown: 'đang hiển thị',
   '{percent}% confidence': 'Độ tin cậy {percent}%',
-  'Matched published fact-check:': 'Khớp với bài kiểm chứng đã đăng:',
-  'rated it “{rating}”.': 'đánh giá là “{rating}”.',
-  'Read the fact-check': 'Đọc bài kiểm chứng',
   '(opens in a new tab)': '(mở trong thẻ mới)',
 
   // Source cards
-  'Hide page capture of {title}': 'Ẩn ảnh chụp trang của {title}',
-  'Show page capture of {title}': 'Hiện ảnh chụp trang của {title}',
-  'Hide page capture': 'Ẩn ảnh chụp trang',
-  'Page capture': 'Ảnh chụp trang',
-  'Page capture of {title}': 'Ảnh chụp trang của {title}',
   'Visit source: {title} (opens in a new tab)': 'Mở nguồn: {title} (mở trong thẻ mới)',
   'Visit source': 'Mở nguồn',
   'Show source: {title}': 'Xem nguồn: {title}',
   'This source supports the claim.': 'Nguồn này ủng hộ nhận định.',
   'This source contradicts the claim.': 'Nguồn này phản bác nhận định.',
-  'This source gives background but does not settle the claim.': 'Nguồn này cung cấp bối cảnh nhưng chưa đủ để kết luận về nhận định.',
+  'This source gives background but does not settle the claim.':
+    'Nguồn này cung cấp bối cảnh nhưng chưa đủ để kết luận về nhận định.',
   'This source is rated unreliable, so it should not be treated as evidence.':
     'Nguồn này được xếp hạng không đáng tin nên không nên xem là bằng chứng.',
   'What this source says': 'Nguồn này nói gì',
   'Saved excerpt:': 'Đoạn trích đã lưu:',
+  'Translation:': 'Bản dịch:',
   'Why outdated:': 'Lý do lỗi thời:',
   Published: 'Ngày đăng',
   'Evidence snapshots for claim {position}': 'Bản ghi bằng chứng của nhận định {position}',
@@ -346,7 +442,6 @@ const interfaceText: Record<string, string> = {
     'Phiên bản {version} được đăng sau khi bạn mở biểu mẫu này. Bản sửa của bạn chưa được lưu và không có gì bị ghi đè. Hãy tải lại để xem phiên bản mới nhất.',
   'Reloading…': 'Đang tải lại…',
   'Reload latest version': 'Tải lại phiên bản mới nhất',
-  'Demo simulation: a concurrent edit is injected on first publish.': 'Mô phỏng demo: một chỉnh sửa đồng thời được thêm vào ở lần đăng đầu tiên.',
   'Current assessment': 'Đánh giá hiện tại',
   'Proposed verdict': 'Kết luận đề xuất',
   current: 'hiện tại',
@@ -356,10 +451,10 @@ const interfaceText: Record<string, string> = {
   unknown: 'không rõ',
   Screenshots: 'Ảnh chụp màn hình',
   'add screenshots': 'thêm ảnh chụp màn hình',
-  'PNG, JPG, WebP, or GIF · stays in your browser': 'PNG, JPG, WebP hoặc GIF · chỉ lưu trên trình duyệt của bạn',
+  'PNG, JPG, WebP, or GIF · sent with your correction': 'PNG, JPG, WebP hoặc GIF · gửi kèm bản sửa của bạn',
   to: 'sang',
   'Sending…': 'Đang gửi…',
-  'Send': 'Gửi',
+  Send: 'Gửi',
 
   // Revision history
   'None cited': 'Chưa trích dẫn',
@@ -395,7 +490,8 @@ const interfaceText: Record<string, string> = {
 
   // Validation
   'Enter some text to check.': 'Hãy nhập văn bản cần kiểm tra.',
-  'Enter at least {count} characters so there is a claim to check.': 'Hãy nhập ít nhất {count} ký tự để có nhận định cần kiểm tra.',
+  'Enter at least {count} characters so there is a claim to check.':
+    'Hãy nhập ít nhất {count} ký tự để có nhận định cần kiểm tra.',
   'Text is too long. Shorten it to {count} characters or fewer.': 'Văn bản quá dài. Hãy rút gọn còn tối đa {count} ký tự.',
   'Enter a URL to check.': 'Hãy nhập URL cần kiểm tra.',
   'URL is too long. Use {count} characters or fewer.': 'URL quá dài. Hãy dùng tối đa {count} ký tự.',
@@ -409,25 +505,21 @@ const interfaceText: Record<string, string> = {
   'Add at least {count} characters of text or file content so there is a claim to check.':
     'Hãy thêm ít nhất {count} ký tự văn bản hoặc nội dung tệp để có nhận định cần kiểm tra.',
   'You can add up to {count} files.': 'Bạn có thể thêm tối đa {count} tệp.',
-  '“{name}” is not supported. Add a plain-text file ({types}).': '“{name}” không được hỗ trợ. Hãy thêm tệp văn bản thuần ({types}).',
+  '“{name}” is not supported. Add a plain-text file ({types}).':
+    '“{name}” không được hỗ trợ. Hãy thêm tệp văn bản thuần ({types}).',
   '“{name}” is too large. Files can be up to {size} KB.': '“{name}” quá lớn. Tệp tối đa {size} KB.',
   '“{name}” is already added.': '“{name}” đã được thêm.',
   '“{name}” does not look like a text file.': '“{name}” có vẻ không phải tệp văn bản.',
   '“{name}” is empty.': '“{name}” đang trống.',
-  '“{name}” has too much text. Files can contain up to {count} characters.': '“{name}” có quá nhiều chữ. Tệp chứa tối đa {count} ký tự.',
+  '“{name}” has too much text. Files can contain up to {count} characters.':
+    '“{name}” có quá nhiều chữ. Tệp chứa tối đa {count} ký tự.',
   '“{name}” could not be read.': 'Không đọc được “{name}”.',
   'You can attach up to {count} screenshots.': 'Bạn có thể đính kèm tối đa {count} ảnh chụp màn hình.',
-  '“{name}” is not a supported image. Use PNG, JPG, WebP, or GIF.': '“{name}” không phải ảnh được hỗ trợ. Hãy dùng PNG, JPG, WebP hoặc GIF.',
+  '“{name}” is not a supported image. Use PNG, JPG, WebP, or GIF.':
+    '“{name}” không phải ảnh được hỗ trợ. Hãy dùng PNG, JPG, WebP hoặc GIF.',
   '“{name}” is too large. Images can be up to {size} MB.': '“{name}” quá lớn. Ảnh tối đa {size} MB.',
   '“{name}” could not be read as an image.': 'Không đọc được “{name}” dưới dạng ảnh.',
   '“{name}” is still too large after resizing. Try cropping it.': '“{name}” vẫn quá lớn sau khi thu nhỏ. Hãy thử cắt bớt ảnh.',
-  'This claim has no assessment to correct because verification was unavailable.':
-    'Nhận định này chưa có đánh giá để sửa vì không thể xác minh.',
-  'Explain the correction in at least {count} characters.': 'Hãy giải thích bản sửa bằng ít nhất {count} ký tự.',
-  'Corrections can only cite evidence already attached to this claim.': 'Bản sửa chỉ được trích dẫn bằng chứng đã gắn với nhận định này.',
-  'Screenshots must be PNG, JPG, WebP, or GIF images.': 'Ảnh chụp màn hình phải là ảnh PNG, JPG, WebP hoặc GIF.',
-  'Freshness can only be set for evidence cited in this correction.': 'Chỉ có thể đặt độ mới cho bằng chứng được trích dẫn trong bản sửa này.',
-  'Explain why each outdated source no longer applies.': 'Hãy giải thích vì sao từng nguồn lỗi thời không còn áp dụng.',
 };
 
 const sourceDescriptions: Record<string, string> = {
@@ -458,7 +550,6 @@ const sourceDescriptions: Record<string, string> = {
   'Free legal reference from Cornell University': 'Tài liệu pháp luật miễn phí của Đại học Cornell',
   'General encyclopaedia': 'Bách khoa toàn thư tổng hợp',
   'Germany’s international broadcaster': 'Đài truyền thông quốc tế của Đức',
-  'Google tool that searches published fact-checks': 'Công cụ của Google để tìm các bài kiểm chứng đã đăng',
   'Government Inspectorate of Vietnam': 'Thanh tra Chính phủ Việt Nam',
   'Hanoi Stock Exchange': 'Sở Giao dịch Chứng khoán Hà Nội',
   'Ho Chi Minh City Stock Exchange': 'Sở Giao dịch Chứng khoán TP. Hồ Chí Minh',
@@ -472,7 +563,8 @@ const sourceDescriptions: Record<string, string> = {
   'International development bank': 'Ngân hàng phát triển quốc tế',
   'International human rights organisation': 'Tổ chức nhân quyền quốc tế',
   'International news agency': 'Hãng thông tấn quốc tế',
-  'International news and culture site; check the specific article': 'Trang tin tức và văn hóa quốc tế; hãy kiểm tra từng bài cụ thể',
+  'International news and culture site; check the specific article':
+    'Trang tin tức và văn hóa quốc tế; hãy kiểm tra từng bài cụ thể',
   'International news magazine': 'Tạp chí tin tức quốc tế',
   'International news network based in Qatar': 'Mạng lưới tin tức quốc tế có trụ sở tại Qatar',
   'International news outlet': 'Cơ quan tin tức quốc tế',
@@ -511,7 +603,8 @@ const sourceDescriptions: Record<string, string> = {
   'Press freedom organisation': 'Tổ chức về tự do báo chí',
   'Public security newspaper in Vietnam': 'Báo ngành công an tại Việt Nam',
   'Question-and-answer platform; posts come from its users': 'Nền tảng hỏi đáp; bài đăng do người dùng tạo',
-  'Rated unreliable in ClaimTrace’s draft source list': 'Được xếp hạng không đáng tin trong danh sách nguồn dự thảo của ClaimTrace',
+  'Rated unreliable in ClaimTrace’s draft source list':
+    'Được xếp hạng không đáng tin trong danh sách nguồn dự thảo của ClaimTrace',
   'Research and data publication': 'Ấn phẩm nghiên cứu và dữ liệu',
   'Russian international news outlet': 'Cơ quan tin tức quốc tế của Nga',
   'Signatories of the International Fact-Checking Network': 'Các đơn vị đã ký kết với Mạng lưới Kiểm chứng Quốc tế',
@@ -557,7 +650,8 @@ const sourceDescriptions: Record<string, string> = {
   'United Nations agency for labour': 'Cơ quan của Liên Hợp Quốc về lao động',
   'United Nations panel on climate science': 'Ủy ban của Liên Hợp Quốc về khoa học khí hậu',
   'United Nations statistics': 'Số liệu thống kê của Liên Hợp Quốc',
-  'User-edited encyclopaedia; use it as a lead to primary sources': 'Bách khoa toàn thư do người dùng biên soạn; chỉ dùng để tìm đến nguồn gốc',
+  'User-edited encyclopaedia; use it as a lead to primary sources':
+    'Bách khoa toàn thư do người dùng biên soạn; chỉ dùng để tìm đến nguồn gốc',
   'Vietnam Academy of Science and Technology': 'Viện Hàn lâm Khoa học và Công nghệ Việt Nam',
   'Vietnam Academy of Social Sciences': 'Viện Hàn lâm Khoa học xã hội Việt Nam',
   'Vietnam Chamber of Commerce and Industry': 'Liên đoàn Thương mại và Công nghiệp Việt Nam',

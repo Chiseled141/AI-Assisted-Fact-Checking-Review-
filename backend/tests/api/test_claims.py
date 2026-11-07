@@ -19,7 +19,9 @@ class TestCorrections:
             json=self.correction(
                 evidenceIds=[evidence],
                 citationFreshness={evidence: {"status": "outdated", "reason": "Replaced."}},
-                attachments=[{"id": "a", "name": "p.png", "type": "image/png", "size": 3, "dataUrl": "data:image/png;base64,AAA"}],
+                attachments=[
+                    {"id": "a", "name": "p.png", "type": "image/png", "size": 3, "dataUrl": "data:image/png;base64,AAA"}
+                ],
             ),
         )
         assert response.status_code == 201, response.text

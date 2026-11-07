@@ -1,7 +1,0 @@
-.env
-.git
-node_modules
-dist
-.venv
-__pycache__
-*.db

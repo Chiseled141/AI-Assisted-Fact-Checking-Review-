@@ -23,6 +23,8 @@ def check_out(check: models.Check, session: Session) -> schemas.CheckOut:
         claim_count=count if check.status == "completed" else None,
         error_message=check.error_message,
         judge_ids=check.judge_ids,
+        input_category=next((event["inputCategory"] for event in reversed(check.progress or [])
+                             if event.get("inputCategory")), None) if check.status == "completed" and not count else None,
     )
 
 
@@ -58,5 +60,11 @@ def claim_out(claim: models.Claim) -> schemas.ClaimOut:
         current_version=latest.version if latest else 0,
         current=revision_out(latest) if latest else None,
         unavailable_reason=claim.unavailable_reason,
-        fact_check=claim.fact_check,
+        price_chart=claim.price_chart,
+        location_map=claim.location_map,
+        heat_map=claim.heat_map,
+        country_map=claim.country_map,
+        seat_chart=claim.seat_chart,
+        election_map=claim.election_map,
+        rephrased_from=claim.rephrased_from,
     )

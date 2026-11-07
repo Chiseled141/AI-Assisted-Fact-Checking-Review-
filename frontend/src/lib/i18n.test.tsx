@@ -1,12 +1,12 @@
 import { readdirSync, readFileSync, statSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 import { afterEach, describe, expect, it } from 'vitest';
-import { screen } from '@testing-library/react';
+import { act, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { renderApp } from '../test/renderApp';
 import { sourceRegistry } from '../data/sourceRegistry';
-import { checkService } from '../services';
-import { loadDb } from '../services/mock/demoDb';
+import { makeCheck, makeEvidence } from '../test/fixtures';
+import { interceptRequests, jsonResponse } from '../test/http';
 import { formatCalendarDate } from './format';
 import { getLanguage, setLanguage, t } from './i18n';
 import { isVietnameseSource } from './sources';
@@ -20,8 +20,12 @@ function sourceFiles(dir: string): string[] {
   });
 }
 
-function checkClaimsLanguage(check: { id: string }) {
-  return loadDb().checks[check.id].language;
+function serveCheck() {
+  return interceptRequests((url) => {
+    if (url.pathname === '/api/check/chk_test') return jsonResponse(makeCheck());
+    if (url.pathname === '/api/claims/clm_test/evidence') return jsonResponse([makeEvidence()]);
+    throw new Error(`Unexpected request: ${url}`);
+  });
 }
 
 async function chooseLanguage(user: ReturnType<typeof userEvent.setup>, name: string) {
@@ -30,7 +34,7 @@ async function chooseLanguage(user: ReturnType<typeof userEvent.setup>, name: st
 }
 
 describe('language', () => {
-  afterEach(() => setLanguage('en'));
+  afterEach(async () => { await act(async () => setLanguage('en')); });
 
   it('closes the language menu with Escape and returns focus to its button', async () => {
     const user = userEvent.setup();
@@ -68,37 +72,32 @@ describe('language', () => {
   });
 
   it('translates the result page and dates', async () => {
+    serveCheck();
     setLanguage('vi');
-    renderApp('/checks/chk_demo_real');
-    expect(await screen.findByText('Nhận định 1 trên 2')).toBeInTheDocument();
-    expect(screen.getAllByText('Nguồn đáng tin cậy').length).toBeGreaterThan(0);
+    renderApp('/checks/chk_test');
+    expect(await screen.findByText('Nhận định 1 trên 1')).toBeInTheDocument();
+    expect(screen.queryByText('Nguồn đáng tin cậy')).not.toBeInTheDocument();
     expect(formatCalendarDate('2021-11-06')).toMatch(/2021/);
     expect(formatCalendarDate('2021-11-06')).not.toMatch(/November/);
   });
 
-  it('swaps the real example for its Vietnamese version, built on Vietnamese newspapers', async () => {
+  it('changes interface language without replacing the saved claim or check ID', async () => {
+    const fetchMock = serveCheck();
     const user = userEvent.setup();
     setLanguage('vi');
-    renderApp('/checks/chk_demo_real');
-    expect(await screen.findByRole('heading', { level: 1 })).toHaveTextContent(/Cát Linh - Hà Đông chính thức vận hành/);
-    expect(await screen.findByText('Chính thức vận hành thương mại đường sắt Cát Linh - Hà Đông')).toBeInTheDocument();
-    expect(screen.queryByText('Hanoi gets country’s 1st metro service')).not.toBeInTheDocument();
+    renderApp('/checks/chk_test');
+    expect(await screen.findByRole('heading', { level: 1 })).toHaveTextContent('The route opened in March 2024.');
 
     await chooseLanguage(user, 'English');
-    expect(await screen.findByText('Hanoi gets country’s 1st metro service')).toBeInTheDocument();
+    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('The route opened in March 2024.');
+    expect(fetchMock.mock.calls.filter(([url]) => new URL(String(url), 'http://localhost').pathname === '/api/check/chk_test')).toHaveLength(1);
   });
 
-  it('lists only the example in the current language in history', async () => {
+  it('keeps saved history in every interface language', async () => {
+    interceptRequests(() => jsonResponse({ items: [makeCheck()], page: 1, pageSize: 20, total: 1, totalPages: 1 }));
     setLanguage('vi');
     renderApp('/history');
-    expect(await screen.findByText(/^Tuyến đường sắt đô thị Cát Linh/)).toBeInTheDocument();
-    expect(screen.queryByText(/^Hanoi’s Cát Linh/)).not.toBeInTheDocument();
-  });
-
-  it('uses Vietnamese sources for a new check started in Vietnamese', async () => {
-    setLanguage('vi');
-    const check = await checkService.createCheck({ inputType: 'text', text: 'Một nhận định đủ dài để kiểm tra.', scenario: 'completed' });
-    expect(checkClaimsLanguage(check)).toBe('vi');
+    expect(await screen.findByText('A saved check')).toBeInTheDocument();
   });
 
   it('puts Vietnamese newspapers first in Vietnamese', () => {

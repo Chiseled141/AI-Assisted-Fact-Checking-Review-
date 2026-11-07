@@ -1,0 +1,76 @@
+{
+  "_about": "Domains and pages election and SJC charts may search. Every domain must be green in source_ratings.json.",
+  "elections": [
+    "fec.gov",
+    "eac.gov",
+    "ipu.org",
+    "parliament.uk",
+    "aec.gov.au",
+    "eci.gov.in",
+    "elections.ca",
+    "elections.nz",
+    "electoralcommission.org.uk",
+    "apnews.com",
+    "reuters.com",
+    "bbc.com",
+    "nytimes.com",
+    "washingtonpost.com",
+    "wsj.com",
+    "npr.org",
+    "cnn.com",
+    "pbs.org",
+    "theguardian.com",
+    "aljazeera.com",
+    "ft.com",
+    "france24.com",
+    "afp.com",
+    "dw.com",
+    "abc.net.au"
+  ],
+  "sjc": {
+    "domains": ["sjc.com.vn", "vnexpress.net", "vietnamplus.vn", "chinhphu.vn", "baochinhphu.vn", "vov.vn", "vtv.vn", "tuoitre.vn", "thanhnien.vn", "reuters.com"],
+    "official_pages": ["https://sjc.com.vn/bieu-do-gia-vang"],
+    "unit": "VND/tael",
+    "price_type": "selling"
+  },
+  "countries": {
+    "US": {
+      "aliases": ["United States", "USA", "US", "U.S.", "American", "Hoa Kỳ", "Mỹ"],
+      "domains": ["fec.gov", "eac.gov", "apnews.com", "reuters.com", "nytimes.com", "cnn.com", "pbs.org", "npr.org", "bbc.com"],
+      "results": {
+        "president-2024": ["https://www.nytimes.com/interactive/2024/11/05/us/elections/results-president.html"]
+      }
+    },
+    "IN": {
+      "aliases": ["India", "Indian", "Ấn Độ", "Lok Sabha"],
+      "domains": ["eci.gov.in", "ipu.org", "reuters.com", "apnews.com", "bbc.com", "aljazeera.com"],
+      "results": {
+        "lower-2024": ["https://data.ipu.org/parliament/IN/IN-LC01/election/IN-LC01-E20240419/"]
+      },
+      "lower_house": ["Lok Sabha", "House of the People"]
+    },
+    "GB": {
+      "aliases": ["United Kingdom", "UK", "U.K.", "Britain", "British", "Vương quốc Anh", "Anh"],
+      "domains": ["parliament.uk", "electoralcommission.org.uk", "bbc.com", "reuters.com", "apnews.com", "theguardian.com"],
+      "results": {
+        "lower-2024": ["https://commonslibrary.parliament.uk/research-briefings/cbp-10009/"]
+      },
+      "lower_house": ["House of Commons", "Hạ viện", "Commons"]
+    },
+    "CA": {
+      "aliases": ["Canada", "Canadian"],
+      "domains": ["elections.ca", "ipu.org", "reuters.com", "apnews.com", "bbc.com"],
+      "results": {}
+    },
+    "AU": {
+      "aliases": ["Australia", "Australian", "Úc"],
+      "domains": ["aec.gov.au", "abc.net.au", "ipu.org", "reuters.com", "apnews.com"],
+      "results": {}
+    },
+    "NZ": {
+      "aliases": ["New Zealand", "New Zealand's"],
+      "domains": ["elections.nz", "ipu.org", "reuters.com", "apnews.com", "bbc.com"],
+      "results": {}
+    }
+  }
+}

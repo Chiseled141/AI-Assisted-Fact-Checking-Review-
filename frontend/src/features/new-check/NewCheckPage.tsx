@@ -1,34 +1,17 @@
-import { type DragEvent, type FormEvent, type KeyboardEvent, useId, useLayoutEffect, useRef, useState } from 'react';
+import { type DragEvent, type FormEvent, useId, useLayoutEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import {
-  ArrowUp,
-  ArrowUpRight,
-  ChevronDown,
-  FileText,
-  Info,
-  Link2,
-  Loader2,
-  Paperclip,
-  X,
-} from 'lucide-react';
+import { ArrowUp, ArrowUpRight, ChevronDown, FileText, Info, Link2, Loader2, Paperclip, X } from 'lucide-react';
 import { config } from '../../config';
 import { exampleInputs } from '../../data/examples';
-import { validateTextSubmission, validateUrl } from '../../lib/validation';
+import { urlInInput, validateTextSubmission, validateUrl } from '../../lib/validation';
 import { readTextFiles } from '../../lib/files';
 import { formatBytes } from '../../lib/format';
-import { checkService, ValidationError, demoMode } from '../../services';
-import type { DemoScenario, InputType, SubmittedFile } from '../../types/models';
+import { checkService, ValidationError } from '../../services';
+import type { SubmittedFile } from '../../types/models';
 import { WorldEvidenceMap } from '../../components/WorldEvidenceMap';
 import { useReveal } from '../../lib/useReveal';
-import { DemoScenarioPicker } from '../demo/DemoScenarioPicker';
-import { getPreferredScenario, setPreferredScenario } from '../demo/demoSettings';
 import { JudgePicker } from './JudgePicker';
 import { getLanguage, t } from '../../lib/i18n';
-
-const tabs: { value: InputType; label: string; Icon: typeof FileText }[] = [
-  { value: 'text', label: 'Text', Icon: FileText },
-  { value: 'url', label: 'URL', Icon: Link2 },
-];
 
 const steps = [
   {
@@ -36,16 +19,8 @@ const steps = [
     points: [
       'Each claim is one factual statement, like a date, figure, or quote.',
       'A claim keeps its time period when the text states one.',
-      'Opinions, predictions, and questions are left out.',
+      'Opinions and predictions are left out. A question is written as the claim it asks about.',
       'At most five claims are kept per check, the most checkable first.',
-    ],
-  },
-  {
-    title: 'Check published fact-checks',
-    points: [
-      'Looks each claim up in Google’s Fact Check Tools database.',
-      'A match shows the fact-checker, its rating, and a link to the original.',
-      'If it is plainly the same claim with a clear true or false rating, that rating becomes the verdict and the models are skipped.',
     ],
   },
   {
@@ -60,10 +35,7 @@ const steps = [
     title: 'Judge with two models',
     points: [
       'Two AI models read the same passages, and each gives a verdict with a confidence score.',
-      demoMode
-        ? 'When they agree, that verdict is shown. In this demo, the judges and verdicts are simulated.'
-        : 'When they agree, that verdict is shown. When they disagree, the first model’s is the headline and you see both.',
-      'Both models also score and comment on each source.',
+      'When they agree, that verdict is shown. When they disagree, the first model’s is the headline and you see both.',
     ],
   },
   {
@@ -150,25 +122,18 @@ function HowItWorksSteps() {
 export function NewCheckPage() {
   const navigate = useNavigate();
   const ids = {
-    panel: useId(),
     error: useId(),
     count: useId(),
-    urlNote: useId(),
     fileHint: useId(),
     fileError: useId(),
   };
-  const tabRefs = useRef<Record<InputType, HTMLButtonElement | null>>({ text: null, url: null });
   const textRef = useRef<HTMLTextAreaElement>(null);
-  const urlRef = useRef<HTMLInputElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const [mode, setMode] = useState<InputType>('text');
   const [text, setText] = useState('');
-  const [url, setUrl] = useState('');
   const [attempted, setAttempted] = useState(false);
   const [serverError, setServerError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
-  const [scenario, setScenario] = useState<DemoScenario>(getPreferredScenario);
   const [judgeIds, setJudgeIds] = useState<string[]>([...config.judges.defaultIds]);
   const [files, setFiles] = useState<SubmittedFile[]>([]);
   const [fileErrors, setFileErrors] = useState<string[]>([]);
@@ -181,40 +146,26 @@ export function NewCheckPage() {
     if (!el) return;
     el.style.height = 'auto';
     el.style.height = `${el.scrollHeight}px`;
-  }, [text, mode]);
+  }, [text]);
 
-  const clientError = mode === 'text' ? validateTextSubmission(text, files) : validateUrl(url);
+  // One box takes both. A link on its own is read as an article, unless files are attached, which only go with text.
+  const url = files.length === 0 ? urlInInput(text) : null;
+  const clientError = url ? validateUrl(url) : validateTextSubmission(text, files);
   const error = serverError ?? (attempted ? clientError : null);
   const overLimit = text.length > config.text.maxLength;
-
-  function selectMode(next: InputType, focusTab = false) {
-    setMode(next);
-    setAttempted(false);
-    setServerError(null);
-    if (focusTab) tabRefs.current[next]?.focus();
-  }
-
-  function onTabKeyDown(event: KeyboardEvent<HTMLButtonElement>) {
-    if (!['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)) return;
-    event.preventDefault();
-    const next = event.key === 'Home' ? 'text' : event.key === 'End' ? 'url' : mode === 'text' ? 'url' : 'text';
-    selectMode(next, true);
-  }
 
   async function onSubmit(event?: FormEvent) {
     event?.preventDefault();
     setAttempted(true);
     setServerError(null);
     if (clientError) {
-      (mode === 'text' ? textRef : urlRef).current?.focus();
+      textRef.current?.focus();
       return;
     }
     setSubmitting(true);
     try {
       const check = await checkService.createCheck(
-        mode === 'text'
-          ? { inputType: 'text', text, files, scenario, judgeIds }
-          : { inputType: 'url', url, scenario, judgeIds },
+        url ? { inputType: 'url', url, judgeIds } : { inputType: 'text', text, files, judgeIds },
       );
       navigate(`/checks/${check.id}`);
     } catch (err) {
@@ -241,13 +192,12 @@ export function NewCheckPage() {
   }
 
   function onDragOver(event: DragEvent<HTMLDivElement>) {
-    if (mode !== 'text' || !event.dataTransfer.types.includes('Files')) return;
+    if (!event.dataTransfer.types.includes('Files')) return;
     event.preventDefault();
     setDragging(true);
   }
 
   function onDrop(event: DragEvent<HTMLDivElement>) {
-    if (mode !== 'text') return;
     event.preventDefault();
     setDragging(false);
     void addFiles(Array.from(event.dataTransfer.files));
@@ -256,25 +206,13 @@ export function NewCheckPage() {
   function applyExample(id: string) {
     const example = exampleInputs.find((item) => item.id === id);
     if (!example) return;
-    setMode(example.inputType);
     setAttempted(false);
     setServerError(null);
-    const value = getLanguage() === 'vi' ? example.valueVi : example.value;
-    if (example.inputType === 'text') {
-      setText(value);
-      requestAnimationFrame(() => textRef.current?.focus());
-    } else {
-      setUrl(value);
-      requestAnimationFrame(() => urlRef.current?.focus());
-    }
+    setText(getLanguage() === 'vi' ? example.valueVi : example.value);
+    requestAnimationFrame(() => textRef.current?.focus());
   }
 
-  function changeScenario(next: DemoScenario) {
-    setScenario(next);
-    setPreferredScenario(next);
-  }
-
-  const describedBy = [error ? ids.error : null, mode === 'text' ? ids.count : ids.urlNote].filter(Boolean).join(' ');
+  const describedBy = [error ? ids.error : null, url ? null : ids.count].filter(Boolean).join(' ');
   const atFileLimit = files.length >= config.files.maxFiles;
 
   return (
@@ -304,8 +242,7 @@ export function NewCheckPage() {
                   dragging ? 'border-brand-200 ring-4 ring-brand-500/10' : ''
                 }`}
               >
-                <div id={ids.panel} role="tabpanel" aria-label={mode === 'text' ? t('Text input') : t('URL input')}>
-                  {mode === 'text' ? (
+                <div>
                     <>
                       <label htmlFor="check-text" className="sr-only">
                         {t('Text to check')}
@@ -319,10 +256,14 @@ export function NewCheckPage() {
                           setServerError(null);
                         }}
                         onKeyDown={(e) => {
-                          if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) void onSubmit();
+                          // A link is one line, so Enter sends it. Text keeps Enter for new lines.
+                          if (e.key === 'Enter' && (e.metaKey || e.ctrlKey || (url && !e.shiftKey))) {
+                            e.preventDefault();
+                            void onSubmit();
+                          }
                         }}
                         rows={1}
-                        placeholder={t('Paste a claim or paragraph…')}
+                        placeholder={t('Paste a claim, a paragraph or a link…')}
                         aria-invalid={Boolean(error)}
                         aria-describedby={describedBy}
                         className="block max-h-80 min-h-[3.5rem] w-full resize-none overflow-y-auto bg-transparent px-1.5 py-1 text-base leading-relaxed text-ink placeholder:text-ink-faint focus:outline-none sm:min-h-[4.5rem] sm:text-lg"
@@ -357,7 +298,7 @@ export function NewCheckPage() {
                         </ul>
                       )}
                       <p id={ids.fileHint} className="sr-only">
-                        {t('Up to {count} .txt or .md files, {size} KB each. Files are read in your browser and not uploaded.', {
+                        {t('Up to {count} .txt or .md files, {size} KB each. Their text is sent to the server for checking.', {
                           count: config.files.maxFiles,
                           size: Math.round(config.files.maxBytes / 1024),
                         })}
@@ -366,33 +307,11 @@ export function NewCheckPage() {
                         {fileStatus}
                       </p>
                     </>
-                  ) : (
-                    <div className="px-1.5 py-1">
-                      <label htmlFor="check-url" className="sr-only">
-                        {t('Article URL')}
-                      </label>
-                      <input
-                        id="check-url"
-                        ref={urlRef}
-                        type="url"
-                        inputMode="url"
-                        autoComplete="url"
-                        value={url}
-                        onChange={(e) => {
-                          setUrl(e.target.value);
-                          setServerError(null);
-                        }}
-                        placeholder="https://example.org/article"
-                        aria-invalid={Boolean(error)}
-                        aria-describedby={describedBy}
-                        className="block w-full bg-transparent py-1 text-base text-ink placeholder:text-ink-faint focus:outline-none sm:text-lg"
-                      />
-                      {demoMode && (
-                        <p id={ids.urlNote} className="mt-1 text-xs text-ink-muted">
-                          {t('Demo only — the page is not fetched.')}
-                        </p>
-                      )}
-                    </div>
+                  {url && !clientError && (
+                    <p className="flex items-center gap-1.5 px-1.5 pt-2 text-[13px] text-ink-muted">
+                      <Link2 className="h-3.5 w-3.5" aria-hidden="true" />
+                      {t('This link will be read as an article.')}
+                    </p>
                   )}
                   {error && (
                     <p id={ids.error} role="alert" className="px-1.5 pt-2 text-sm text-rose-700">
@@ -402,36 +321,6 @@ export function NewCheckPage() {
                 </div>
 
                 <div className="relative mt-2 flex items-center gap-1.5">
-                  <div role="tablist" aria-label={t('Input type')} className="flex gap-1">
-                    {tabs.map(({ value, label, Icon }) => {
-                      const selected = mode === value;
-                      return (
-                        <button
-                          key={value}
-                          ref={(el) => {
-                            tabRefs.current[value] = el;
-                          }}
-                          type="button"
-                          role="tab"
-                          aria-selected={selected}
-                          aria-controls={ids.panel}
-                          tabIndex={selected ? 0 : -1}
-                          onClick={() => selectMode(value)}
-                          onKeyDown={onTabKeyDown}
-                          className={`inline-flex items-center gap-1.5 whitespace-nowrap rounded-full border px-3 py-1.5 text-sm transition-colors ${
-                            selected
-                              ? 'border-brand-200 bg-brand-50 font-semibold text-brand-700'
-                              : 'border-transparent text-ink-muted hover:bg-white/70 hover:text-ink'
-                          }`}
-                        >
-                          <Icon className="h-4 w-4" aria-hidden="true" />
-                          {/* Icon only on narrow phones, so the send button stays inside the box. */}
-                          <span className="sr-only min-[420px]:not-sr-only">{t(label)}</span>
-                        </button>
-                      );
-                    })}
-                  </div>
-                  {mode === 'text' && (
                     <>
                       <input
                         ref={fileInputRef}
@@ -459,11 +348,9 @@ export function NewCheckPage() {
                         <Paperclip className="h-4 w-4" aria-hidden="true" />
                       </button>
                     </>
-                  )}
                   <div className="ml-auto flex items-center gap-2.5">
                     <JudgePicker value={judgeIds} onChange={setJudgeIds} />
-                    {demoMode && <DemoScenarioPicker value={scenario} onChange={changeScenario} />}
-                    {mode === 'text' && text.length > 0 && (
+                    {!url && text.length > 0 && (
                       <span
                         id={ids.count}
                         className={`hidden font-sans text-xs tabular-nums sm:inline ${overLimit ? 'text-rose-700' : 'text-ink-faint'}`}
@@ -538,7 +425,7 @@ export function NewCheckPage() {
             <a
               href="#check-composer"
               onClick={() => {
-                requestAnimationFrame(() => (mode === 'text' ? textRef : urlRef).current?.focus({ preventScroll: true }));
+                requestAnimationFrame(() => textRef.current?.focus({ preventScroll: true }));
               }}
               className="mt-5 inline-flex items-center gap-1.5 rounded-full bg-ink py-2.5 pl-4 pr-3.5 text-sm font-medium text-page transition-opacity hover:opacity-90"
             >

@@ -31,9 +31,6 @@ export interface FreshnessJudgment {
   reason?: string;
 }
 
-/** Demo-only: which preset fixture scenario a check plays back. */
-export type DemoScenario = 'completed' | 'partial_failure' | 'failed' | 'stale_conflict';
-
 /** A text file attached to a text check. Contents are read in the browser. */
 export interface SubmittedFile {
   name: string;
@@ -57,21 +54,18 @@ export interface Check {
   inputUrl?: string;
   /** Text checks only. */
   files?: SubmittedFile[];
-  /** What is known about the article at `inputUrl`, when the demo has it. */
+  /** Metadata read from the submitted article at `inputUrl`. */
   article?: CheckedArticle;
-  /** Demo-only: the claims really come from this input, rather than being sample data. */
-  claimsMatchInput?: boolean;
   status: CheckStatus;
   createdAt: string;
   updatedAt: string;
   /** Set once claims have been extracted. */
   claimCount?: number;
+  inputCategory?: 'subjective' | 'advice' | 'prediction' | 'unclear' | 'no_factual_claim' | null;
   /** Human-readable failure reason when `status === 'failed'`. */
   errorMessage?: string;
   /** Ids of the two judges this check was started with (see `config.judges`). */
   judgeIds?: string[];
-  /** Demo-only metadata; a real backend would not return this. */
-  scenario: DemoScenario;
 }
 
 /** Editorial rating of a source: good, mixed, or bad. Separate from verdicts and freshness. */
@@ -87,15 +81,6 @@ export interface SourceEntry {
   logo?: string;
 }
 
-/** Screenshot of the source page taken when the evidence was retrieved. */
-export interface PageCapture {
-  /** Image URL (same-origin path or https). */
-  url: string;
-  capturedAt: string;
-  width: number;
-  height: number;
-}
-
 export interface EvidenceSnapshot {
   id: string;
   claimId: string;
@@ -104,29 +89,16 @@ export interface EvidenceSnapshot {
   url: string;
   /** Saved text captured at retrieval time — not a live preview. */
   excerpt: string;
+  /** The quote translated by the judge who chose it. Only the languages it isn't already in. */
+  translations?: ModelTranslations | null;
   /** Publication date of the source, when known (YYYY-MM-DD). Unknown stays unknown. */
   publishedAt?: string;
   /** Last update date stated by the source, when known (YYYY-MM-DD). */
   updatedAt?: string;
   retrievedAt: string;
-  /** The article's own lead image (its og:image), shown from the publisher's server, never copied. */
+  /** Article preview from page metadata or a source-specific Tavily image; loaded by URL, never copied. */
   imageUrl?: string;
-  capture?: PageCapture;
   relation: EvidenceRelation;
-  analysis?: SourceAnalysis;
-}
-
-/** What each judge scores a source on, in chart order. */
-export const ratingCriteria = ['match', 'directness', 'timing', 'detail'] as const;
-export type RatingCriterion = (typeof ratingCriteria)[number];
-
-/** What an article says, and how the AI judges read it. The assessment, notes and ratings are simulated in this demo. */
-export interface SourceAnalysis {
-  summary: string;
-  keyPoints: string[];
-  assessment: string;
-  /** `ratings` are scores out of 100, in `ratingCriteria` order. */
-  judgeNotes: { judge: string; note: string; ratings: number[] }[];
 }
 
 /**
@@ -141,18 +113,13 @@ export interface JudgeVerdict {
   confidence: number;
   /** The judge's overall reasoning for its verdict. */
   review: string;
+  /** The review in each language, written by the judge itself. */
+  translations?: ModelTranslations | null;
   primary: boolean;
+  model?: string | null;
 }
 
-/** A published fact-check that the known-fake lookup matched to a claim (fast path). */
-export interface FactCheckMatch {
-  publisher: string;
-  /** The publisher's own rating wording, shown as written. */
-  rating: string;
-  url: string;
-}
-
-/** An image attached by a reviewer, stored as a base64 data URL in demo mode. */
+/** An image attached by a reviewer, sent to the backend as a base64 data URL. */
 export interface Attachment {
   id: string;
   name: string;
@@ -161,6 +128,149 @@ export interface Attachment {
   /** Approximate stored size in bytes. */
   size: number;
   dataUrl: string;
+}
+
+/** Assets a price chart can show. Must match `MarketAsset` in the backend. */
+export type MarketAsset = 'bitcoin' | 'ethereum' | 'gold' | 'silver' | 'oil' | 'sjc_gold';
+
+/** A date worth marking on a price chart, taken from the checked text. */
+export interface PriceEvent {
+  /** YYYY-MM-DD */
+  date: string;
+  title: string;
+  text: string;
+}
+
+/** The news article behind one price on an SJC chart. */
+export interface PriceReport {
+  /** YYYY-MM-DD */
+  date: string;
+  publisher: string;
+  title: string;
+  url: string;
+  /** Exact source wording retained for checking the reported price. Older saved charts may lack it. */
+  quote?: string;
+  publishedAt?: string | null;
+}
+
+/** Prices saved when the claim was checked. Set only for a claim about the price of a tracked asset. */
+export interface PriceChartData {
+  asset: MarketAsset;
+  currency: string;
+  /** Who supplied the prices. `news` means a model read them from articles, and each was checked against its article. */
+  source: string;
+  unit?: 'VND/tael';
+  priceType?: 'selling';
+  retrievedAt: string;
+  /** [UTC midnight in ms, closing price], oldest first. */
+  prices: [number, number][];
+  events: PriceEvent[];
+  /** One for each price, in the same order, when `source` is `news`. */
+  reports?: PriceReport[];
+}
+
+/** Weather over an area on certain days, from a weather model, saved when the claim was checked. */
+export interface HeatMapData {
+  metric: 'temperature' | 'rainfall';
+  /** `world`, or a country's two-letter code. */
+  area: string;
+  /** How the claim writes the area. */
+  areaName: string;
+  /** YYYY-MM-DD */
+  start: string;
+  end: string;
+  /** The days averaged. A long period is sampled, so these can be fewer than the period has. */
+  days: string[];
+  /** Grid spacing in degrees. */
+  step: number;
+  source: string;
+  retrievedAt: string;
+  /** [longitude, latitude, value] */
+  points: [number, number, number][];
+}
+
+/** A national statistic for every country over the years, saved when the claim was checked. */
+export interface CountryMapData {
+  /** `us-states` draws the same panel with US states in place of countries. */
+  scope?: 'us-states';
+  indicator: 'population' | 'gdp' | 'gdp_per_capita' | 'life_expectancy';
+  source: string;
+  retrievedAt: string;
+  /** The year the map opens on. */
+  year: number;
+  years: number[];
+  /** By the map's country code, plus `world`. One value for each of `years`, null where there is none. */
+  values: Record<string, (number | null)[]>;
+  /** The countries the claim names. Empty for a claim about the whole world. */
+  selected: { code: string; name: string; named: string }[];
+}
+
+/** Seats won in an election, as read from the claim's sources and found word for word in them. */
+export interface ElectionMapData {
+  office: 'president' | 'house' | 'senate';
+  year: number;
+  retrievedAt: string;
+  /** Only states with a verified result. Every other state is drawn as not verified. */
+  states: {
+    /** The map's code, such as us-oh. */
+    code: string;
+    name: string;
+    winner: string;
+    /** Only when the source states it. */
+    party?: 'republican' | 'democratic' | null;
+    detail?: string | null;
+    publisher: string;
+    url: string;
+    /** Other winners that sources give for this state. */
+    others: { winner: string; publisher: string; url: string }[];
+  }[];
+}
+
+export interface SeatChartData {
+  /** The chamber, as the claim writes it. */
+  body: string;
+  year?: number | null;
+  /** The chamber's size. Seats beyond the parties listed are drawn as not listed. */
+  total: number;
+  totalSource: { publisher: string; url: string };
+  retrievedAt: string;
+  /** Biggest first. */
+  parties: {
+    name: string;
+    seats: number;
+    publisher: string;
+    url: string;
+    /** Other final counts that sources give for this party. */
+    others: { seats: number; publisher: string; url: string }[];
+  }[];
+}
+
+/** A figure from one of the claim's sources, found word for word in that source. */
+export interface MapDetail {
+  /** The `code` of the place it applies to. Missing means the whole event. */
+  place?: string | null;
+  label: string;
+  value: string;
+  publisher: string;
+  url: string;
+}
+
+/** The places a claim names. The shapes they are drawn with live in public/maps. */
+export interface LocationMapData {
+  map: 'vietnam' | 'world' | 'us';
+  places: {
+    /** The place's `hc-key` on the map. */
+    code: string;
+    /** The map's name for it. */
+    name: string;
+    /** How the claim writes it. */
+    named: string;
+    /** Places inside it that the claim names, which readers can drill down to. `code` is set where it is known. */
+    regions?: { name: string; code?: string }[];
+  }[];
+  details?: MapDetail[];
+  /** How close the map opens, as the extraction model chose. Without it, `region`. */
+  zoom?: 'close' | 'region' | 'wide';
 }
 
 export interface AssessmentRevision {
@@ -202,12 +312,57 @@ export interface Claim {
   current: AssessmentRevision | null;
   /** Provider error shown when `status === 'unavailable'`. */
   unavailableReason?: string;
-  /** Set when the known-fake lookup found a published fact-check for this claim. */
-  factCheck?: FactCheckMatch;
+  priceChart?: PriceChartData;
+  locationMap?: LocationMapData;
+  heatMap?: HeatMapData;
+  countryMap?: CountryMapData;
+  seatChart?: SeatChartData;
+  electionMap?: ElectionMapData;
+  /** The question this claim was written from by the research model. The reader never stated the claim. */
+  rephrasedFrom?: string | null;
+}
+
+export type ModelTranslations = Partial<Record<'en' | 'vi', string>>;
+
+/**
+ * One call the check has really made, with its status and finished public explanation.
+ * Never contains a model's private thinking stream. Written in backend/app/pipeline/progress.py.
+ */
+export interface TaskProgress {
+  id: string;
+  /** Who is doing the work: an AI model, Tavily, or a chart data service. */
+  kind: 'ai' | 'search' | 'data';
+  task:
+    | 'extracting' | 'judging' | 'reading_seats' | 'reading_prices' | 'reading_figures' | 'reading_states' | 'reading_election' | 'rephrasing' | 'researching' | 'researching_chart'
+    | 'searching' | 'chart_sources' | 'chart_data';
+  status: 'running' | 'completed' | 'failed';
+  /** AI tasks. `modelName` and `requestedModel` are what was asked for; `actualModel` is what the provider says answered. */
+  modelName?: string | null;
+  requestedModel?: string | null;
+  actualModel?: string | null;
+  actualModelName?: string | null;
+  /** Tavily and chart data tasks. */
+  service?: string | null;
+  chart?: string | null;
+  phase?: 'searching' | 'reading' | null;
+  searchCount?: number | null;
+  sourceCount?: number | null;
+  sourceTarget?: number | null;
+  /** How many states an election map has verified so far. */
+  stateCount?: number | null;
+  startedAt: string;
+  finishedAt?: string | null;
+  claimPosition?: number | null;
+  claimCount?: number | null;
+  summary?: string | null;
+  /** The summary in other languages, written by the model itself. */
+  translations?: ModelTranslations | null;
+  verdict?: Verdict | null;
 }
 
 export interface CheckDetail extends Check {
   claims: Claim[];
+  progress?: TaskProgress[];
 }
 
 export interface CorrectionRequest {
@@ -229,7 +384,6 @@ export interface CreateCheckInput {
   url?: string;
   /** Text checks only; may stand in for typed text. */
   files?: SubmittedFile[];
-  scenario?: DemoScenario;
   /** Two judge ids from `config.judges`; defaults to `config.judges.defaultIds`. */
   judgeIds?: string[];
 }

@@ -138,7 +138,11 @@ export function Layout() {
             press ? 'max-w-[1240px] sm:px-8' : 'max-w-6xl sm:px-6'
           }`}
         >
-          <Link to="/" className="flex min-h-11 min-w-8 items-center gap-2 min-[360px]:min-w-11 rounded-md text-ink sm:min-h-0 sm:min-w-0" aria-label={t('ClaimTrace home')}>
+          <Link
+            to="/"
+            className="flex min-h-11 min-w-8 items-center gap-2 min-[360px]:min-w-11 rounded-md text-ink sm:min-h-0 sm:min-w-0"
+            aria-label={t('ClaimTrace home')}
+          >
             <ScanSearch className="h-5 w-5 text-brand-600" strokeWidth={2} aria-hidden="true" />
             <span className="hidden font-logo text-[17px] font-medium tracking-[-0.02em] min-[440px]:inline">
               claimtrace<span className="text-brand-600">.</span>

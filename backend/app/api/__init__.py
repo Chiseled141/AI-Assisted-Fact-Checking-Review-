@@ -1,4 +1,4 @@
-"""The REST API, listed in AGENT.md."""
+"""The REST API. Interactive docs are at /docs when the server runs."""
 
 from fastapi import APIRouter
 

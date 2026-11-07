@@ -5,3 +5,4 @@ from typing import Literal
 Verdict = Literal["supported", "contradicted", "insufficient_evidence", "outdated"]
 Relation = Literal["supporting", "contradicting", "contextual"]
 Freshness = Literal["current", "outdated", "unknown"]
+InputCategory = Literal["subjective", "advice", "prediction", "unclear", "no_factual_claim"]

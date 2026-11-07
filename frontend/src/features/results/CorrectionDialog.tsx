@@ -1,16 +1,20 @@
 import { type ClipboardEvent, type FormEvent, useEffect, useId, useRef, useState } from 'react';
-import { ArrowRight, ArrowUp, CalendarX, CircleCheck, CircleHelp, CircleX, ImagePlus, Loader2, RefreshCw, TriangleAlert } from 'lucide-react';
-import type {
-  AssessmentRevision,
-  Attachment,
-  Claim,
-  EvidenceSnapshot,
-  Freshness,
-  Verdict,
-} from '../../types/models';
+import {
+  ArrowRight,
+  ArrowUp,
+  CalendarX,
+  CircleCheck,
+  CircleHelp,
+  CircleX,
+  ImagePlus,
+  Loader2,
+  RefreshCw,
+  TriangleAlert,
+} from 'lucide-react';
+import type { AssessmentRevision, Attachment, Claim, EvidenceSnapshot, Freshness, Verdict } from '../../types/models';
 import { config } from '../../config';
 import { verdictLabel } from '../../lib/format';
-import { checkService, ValidationError, VersionConflictError, demoMode } from '../../services';
+import { checkService, ValidationError, VersionConflictError } from '../../services';
 import { RevisionKindBadge, VerdictBadge } from '../../components/Badges';
 import { Dialog } from '../../components/Dialog';
 import { ScreenshotThumbs } from '../../components/ScreenshotThumbs';
@@ -98,14 +102,7 @@ type Phase =
   | { kind: 'conflict'; currentVersion: number; reloading: boolean; reloaded: boolean }
   | { kind: 'success'; revision: AssessmentRevision; previousVerdict: Verdict | null };
 
-function CorrectionForm({
-  claim,
-  evidence,
-  onClose,
-  onPublished,
-  onReloadLatest,
-  onShowHistory,
-}: Omit<Props, 'open'>) {
+function CorrectionForm({ claim, evidence, onClose, onPublished, onReloadLatest, onShowHistory }: Omit<Props, 'open'>) {
   const ids = { reason: useId(), reasonError: useId(), shotHint: useId() };
   const current = claim.current;
 
@@ -127,7 +124,13 @@ function CorrectionForm({
 
   // Move focus to the next action when the form's phase changes, so it is never lost on a disabled button.
   const focusTarget =
-    phase.kind === 'success' ? doneButtonRef : phase.kind === 'conflict' ? (phase.reloaded ? publishButtonRef : reloadButtonRef) : null;
+    phase.kind === 'success'
+      ? doneButtonRef
+      : phase.kind === 'conflict'
+        ? phase.reloaded
+          ? publishButtonRef
+          : reloadButtonRef
+        : null;
   useEffect(() => {
     focusTarget?.current?.focus();
   }, [focusTarget]);
@@ -215,7 +218,9 @@ function CorrectionForm({
       <div role="status" className="text-sm">
         <div className="flex flex-col items-center px-2 py-4 text-center">
           <CircleCheck className="h-10 w-10 text-emerald-700" aria-hidden="true" />
-          <p className="mt-3 text-base font-semibold text-ink">{t('Correction published as revision {version}.', { version: phase.revision.version })}</p>
+          <p className="mt-3 text-base font-semibold text-ink">
+            {t('Correction published as revision {version}.', { version: phase.revision.version })}
+          </p>
           <p className="mt-3 flex flex-wrap items-center justify-center gap-2">
             {phase.previousVerdict && phase.previousVerdict !== phase.revision.verdict ? (
               <>
@@ -300,11 +305,6 @@ function CorrectionForm({
               </button>
             </>
           )}
-          {demoMode && (
-            <p className="mt-3 text-xs opacity-80">
-              {t('Demo simulation: a concurrent edit is injected on first publish.')}
-            </p>
-          )}
         </div>
       )}
 
@@ -356,7 +356,8 @@ function CorrectionForm({
             className={`home-composer rounded-[24px] p-3.5 transition-colors sm:p-4 ${
               shotDragging
                 ? '!border-brand-500 !bg-brand-50'
-                : verdictOptions.find((option) => option.value === verdict)?.composerClass ?? '!border-line focus-within:!border-brand-200'
+                : (verdictOptions.find((option) => option.value === verdict)?.composerClass ??
+                  '!border-line focus-within:!border-brand-200')
             }`}
           >
             {attachments.length > 0 && (
@@ -400,13 +401,13 @@ function CorrectionForm({
                 disabled={attachments.length >= maxShots}
                 aria-label={t('add screenshots')}
                 aria-describedby={ids.shotHint}
-                title={t('PNG, JPG, WebP, or GIF · stays in your browser')}
+                title={t('PNG, JPG, WebP, or GIF · sent with your correction')}
                 className="-ml-[3px] inline-flex h-9 w-9 items-center justify-center rounded-full text-ink-muted transition-colors hover:bg-zinc-100 hover:text-ink disabled:cursor-not-allowed disabled:opacity-40"
               >
                 <ImagePlus className="h-[18px] w-[18px]" aria-hidden="true" />
               </button>
               <span id={ids.shotHint} className="sr-only">
-                {t('PNG, JPG, WebP, or GIF · stays in your browser')}
+                {t('PNG, JPG, WebP, or GIF · sent with your correction')}
               </span>
               <button
                 type="submit"

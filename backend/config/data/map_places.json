@@ -1,0 +1,1402 @@
+{
+"_about": "Place names and codes for the maps. Province names fix wrong ones in the Highcharts collection.",
+"provinces": {
+"vn-299": "Kon Tum",
+"vn-300": "Quảng Nam",
+"vn-307": "Bắc Kạn",
+"vn-311": "Sơn La",
+"vn-317": "Hưng Yên",
+"vn-318": "Hà Nội",
+"vn-328": "Hà Tĩnh",
+"vn-331": "Đồng Nai",
+"vn-333": "Cần Thơ",
+"vn-337": "Hậu Giang",
+"vn-3623": "Hải Phòng",
+"vn-6365": "Đắk Nông",
+"vn-723": "Đắk Lắk",
+"vn-724": "Gia Lai",
+"vn-ag": "An Giang",
+"vn-bd": "Bình Định",
+"vn-bg": "Bắc Giang",
+"vn-bi": "Bình Dương",
+"vn-bl": "Bạc Liêu",
+"vn-bn": "Bắc Ninh",
+"vn-bp": "Bình Phước",
+"vn-br": "Bến Tre",
+"vn-bu": "Bình Thuận",
+"vn-bv": "Bà Rịa - Vũng Tàu",
+"vn-cb": "Cao Bằng",
+"vn-cm": "Cà Mau",
+"vn-da": "Đà Nẵng",
+"vn-db": "Điện Biên",
+"vn-dt": "Đồng Tháp",
+"vn-hc": "Hồ Chí Minh",
+"vn-hd": "Hải Dương",
+"vn-hg": "Hà Giang",
+"vn-hm": "Hà Nam",
+"vn-ho": "Hòa Bình",
+"vn-kg": "Kiên Giang",
+"vn-kh": "Khánh Hòa",
+"vn-la": "Long An",
+"vn-ld": "Lâm Đồng",
+"vn-li": "Lai Châu",
+"vn-lo": "Lào Cai",
+"vn-ls": "Lạng Sơn",
+"vn-na": "Nghệ An",
+"vn-nb": "Ninh Bình",
+"vn-nd": "Nam Định",
+"vn-nt": "Ninh Thuận",
+"vn-pt": "Phú Thọ",
+"vn-py": "Phú Yên",
+"vn-qb": "Quảng Bình",
+"vn-qg": "Quảng Ngãi",
+"vn-qn": "Quảng Ninh",
+"vn-qt": "Quảng Trị",
+"vn-st": "Sóc Trăng",
+"vn-tb": "Thái Bình",
+"vn-tg": "Tiền Giang",
+"vn-th": "Thanh Hóa",
+"vn-tn": "Tây Ninh",
+"vn-tq": "Tuyên Quang",
+"vn-tt": "Thừa Thiên Huế",
+"vn-tv": "Trà Vinh",
+"vn-ty": "Thái Nguyên",
+"vn-vc": "Vĩnh Phúc",
+"vn-vl": "Vĩnh Long",
+"vn-yb": "Yên Bái"
+},
+"countries": {
+"ad": "Andorra",
+"ae": "United Arab Emirates",
+"af": "Afghanistan",
+"ag": "Antigua and Barbuda",
+"al": "Albania",
+"am": "Armenia",
+"ao": "Angola",
+"ar": "Argentina",
+"as": "American Samoa",
+"at": "Austria",
+"au": "Australia",
+"az": "Azerbaijan",
+"ba": "Bosnia and Herzegovina",
+"bb": "Barbados",
+"bd": "Bangladesh",
+"be": "Belgium",
+"bf": "Burkina Faso",
+"bg": "Bulgaria",
+"bh": "Bahrain",
+"bi": "Burundi",
+"bj": "Benin",
+"bn": "Brunei",
+"bo": "Bolivia",
+"br": "Brazil",
+"bs": "The Bahamas",
+"bt": "Bhutan",
+"bu": "Bajo Nuevo Bank (Petrel Is.)",
+"bw": "Botswana",
+"by": "Belarus",
+"bz": "Belize",
+"ca": "Canada",
+"cd": "Democratic Republic of the Congo",
+"cf": "Central African Republic",
+"cg": "Republic of Congo",
+"ch": "Switzerland",
+"ci": "Ivory Coast",
+"cl": "Chile",
+"cm": "Cameroon",
+"cn": "China",
+"cnm": "Cyprus No Mans Area",
+"co": "Colombia",
+"cr": "Costa Rica",
+"cu": "Cuba",
+"cv": "Cape Verde",
+"cy": "Cyprus",
+"cz": "Czech Republic",
+"de": "Germany",
+"dj": "Djibouti",
+"dk": "Denmark",
+"dm": "Dominica",
+"do": "Dominican Republic",
+"dz": "Algeria",
+"ec": "Ecuador",
+"ee": "Estonia",
+"eg": "Egypt",
+"eh": "Western Sahara",
+"er": "Eritrea",
+"es": "Spain",
+"et": "Ethiopia",
+"fi": "Finland",
+"fj": "Fiji",
+"fm": "Federated States of Micronesia",
+"fo": "Faroe Islands",
+"fr": "France",
+"ga": "Gabon",
+"gb": "United Kingdom",
+"gd": "Grenada",
+"ge": "Georgia",
+"gh": "Ghana",
+"gl": "Greenland",
+"gm": "Gambia",
+"gn": "Guinea",
+"gq": "Equatorial Guinea",
+"gr": "Greece",
+"gt": "Guatemala",
+"gu": "Guam",
+"gw": "Guinea Bissau",
+"gy": "Guyana",
+"gz": "Gaza Strip",
+"hn": "Honduras",
+"hr": "Croatia",
+"ht": "Haiti",
+"hu": "Hungary",
+"id": "Indonesia",
+"ie": "Ireland",
+"il": "Israel",
+"in": "India",
+"iq": "Iraq",
+"ir": "Iran",
+"is": "Iceland",
+"it": "Italy",
+"jk": "Siachen Glacier",
+"jm": "Jamaica",
+"jo": "Jordan",
+"jp": "Japan",
+"ke": "Kenya",
+"kg": "Kyrgyzstan",
+"kh": "Cambodia",
+"ki": "Kiribati",
+"km": "Comoros",
+"kn": "Saint Kitts and Nevis",
+"kp": "North Korea",
+"kr": "South Korea",
+"kv": "Kosovo",
+"kw": "Kuwait",
+"kz": "Kazakhstan",
+"la": "Laos",
+"lb": "Lebanon",
+"lc": "Saint Lucia",
+"li": "Liechtenstein",
+"lk": "Sri Lanka",
+"lr": "Liberia",
+"ls": "Lesotho",
+"lt": "Lithuania",
+"lu": "Luxembourg",
+"lv": "Latvia",
+"ly": "Libya",
+"ma": "Morocco",
+"mc": "Monaco",
+"md": "Moldova",
+"me": "Montenegro",
+"mg": "Madagascar",
+"mh": "Marshall Islands",
+"mk": "North Macedonia",
+"ml": "Mali",
+"mm": "Myanmar",
+"mn": "Mongolia",
+"mp": "Northern Mariana Islands",
+"mr": "Mauritania",
+"mt": "Malta",
+"mu": "Mauritius",
+"mv": "Maldives",
+"mw": "Malawi",
+"mx": "Mexico",
+"my": "Malaysia",
+"mz": "Mozambique",
+"na": "Namibia",
+"nc": "Northern Cyprus",
+"ne": "Niger",
+"ng": "Nigeria",
+"ni": "Nicaragua",
+"nl": "Netherlands",
+"no": "Norway",
+"np": "Nepal",
+"nr": "Nauru",
+"nz": "New Zealand",
+"om": "Oman",
+"pa": "Panama",
+"pe": "Peru",
+"pg": "Papua New Guinea",
+"ph": "Philippines",
+"pk": "Pakistan",
+"pl": "Poland",
+"pr": "Puerto Rico",
+"pt": "Portugal",
+"pw": "Palau",
+"py": "Paraguay",
+"qa": "Qatar",
+"ro": "Romania",
+"rs": "Republic of Serbia",
+"ru": "Russia",
+"rw": "Rwanda",
+"sa": "Saudi Arabia",
+"sb": "Solomon Islands",
+"sc": "Seychelles",
+"sd": "Sudan",
+"se": "Sweden",
+"sg": "Singapore",
+"sh": "Scarborough Reef",
+"si": "Slovenia",
+"sk": "Slovakia",
+"sl": "Sierra Leone",
+"sm": "San Marino",
+"sn": "Senegal",
+"so": "Somalia",
+"sp": "Spratly Islands",
+"sr": "Suriname",
+"ss": "South Sudan",
+"st": "Sao Tome and Principe",
+"sv": "El Salvador",
+"sw": "Serranilla Bank",
+"sx": "Somaliland",
+"sy": "Syria",
+"sz": "Eswatini",
+"td": "Chad",
+"tg": "Togo",
+"th": "Thailand",
+"tj": "Tajikistan",
+"tl": "East Timor",
+"tm": "Turkmenistan",
+"tn": "Tunisia",
+"to": "Tonga",
+"tr": "Turkey",
+"tt": "Trinidad and Tobago",
+"tv": "Tuvalu",
+"tz": "United Republic of Tanzania",
+"ua": "Ukraine",
+"ug": "Uganda",
+"um": "United States Minor Outlying Islands",
+"us": "United States of America",
+"uy": "Uruguay",
+"uz": "Uzbekistan",
+"va": "Vatican",
+"vc": "Saint Vincent and the Grenadines",
+"ve": "Venezuela",
+"vi": "United States Virgin Islands",
+"vn": "Vietnam",
+"vu": "Vanuatu",
+"we": "West Bank",
+"ws": "Samoa",
+"ye": "Yemen",
+"za": "South Africa",
+"zm": "Zambia",
+"zw": "Zimbabwe"
+},
+"centers": {
+"ad": [
+1.597,
+42.508
+],
+"ae": [
+54.351,
+23.831
+],
+"af": [
+65.883,
+33.671
+],
+"ag": [
+-61.716,
+17.053
+],
+"al": [
+19.96,
+41.172
+],
+"am": [
+43.695,
+40.969
+],
+"ao": [
+17.857,
+-13.573
+],
+"ar": [
+-64.542,
+-31.657
+],
+"as": [
+-170.52,
+-14.31
+],
+"at": [
+13.387,
+47.363
+],
+"au": [
+134.372,
+-24.683
+],
+"az": [
+49.013,
+41.027
+],
+"ba": [
+17.917,
+44.393
+],
+"bb": [
+-59.518,
+13.168
+],
+"bd": [
+88.531,
+23.587
+],
+"be": [
+4.478,
+50.721
+],
+"bf": [
+-0.442,
+12.778
+],
+"bg": [
+27.062,
+42.672
+],
+"bh": [
+50.485,
+25.994
+],
+"bi": [
+29.994,
+-3.28
+],
+"bj": [
+2.516,
+9.308
+],
+"bn": [
+114.319,
+4.616
+],
+"bo": [
+-63.653,
+-17.504
+],
+"br": [
+-52.77,
+-8.873
+],
+"bs": [
+-77.899,
+24.787
+],
+"bt": [
+90.342,
+27.518
+],
+"bu": [
+-79.901,
+15.777
+],
+"bw": [
+24.532,
+-23.277
+],
+"by": [
+28.012,
+53.725
+],
+"bz": [
+-88.614,
+17.173
+],
+"ca": [
+-116.115,
+60.32
+],
+"cd": [
+23.247,
+-2.393
+],
+"cf": [
+20.482,
+6.977
+],
+"cg": [
+12.218,
+-3.102
+],
+"ch": [
+8.247,
+46.669
+],
+"ci": [
+-5.569,
+7.418
+],
+"cl": [
+-71.912,
+-53.577
+],
+"cm": [
+10.63,
+5.495
+],
+"cn": [
+99.194,
+35.295
+],
+"cnm": [
+33.12,
+35.144
+],
+"co": [
+-72.776,
+3.472
+],
+"cr": [
+-85.276,
+10.9
+],
+"cu": [
+-79.17,
+21.513
+],
+"cv": [
+-23.638,
+15.07
+],
+"cy": [
+32.96,
+34.874
+],
+"cz": [
+15.467,
+49.587
+],
+"de": [
+10.552,
+52.357
+],
+"dj": [
+42.602,
+11.718
+],
+"dk": [
+9.398,
+56.376
+],
+"dm": [
+-61.34,
+15.381
+],
+"do": [
+-70.169,
+18.944
+],
+"dz": [
+2.689,
+28.061
+],
+"ec": [
+-79.214,
+0.331
+],
+"ee": [
+24.052,
+58.723
+],
+"eg": [
+30.749,
+25.314
+],
+"eh": [
+-13.62,
+22.759
+],
+"er": [
+37.066,
+16.657
+],
+"es": [
+-1.658,
+39.59
+],
+"et": [
+39.722,
+8.254
+],
+"fi": [
+26.875,
+65.757
+],
+"fj": [
+177.65,
+-18.066
+],
+"fm": [
+158.09,
+6.862
+],
+"fo": [
+-6.941,
+62.073
+],
+"fr": [
+1.328,
+47.658
+],
+"ga": [
+10.768,
+-1.696
+],
+"gb": [
+-2.257,
+52.847
+],
+"gd": [
+-61.6,
+12.109
+],
+"ge": [
+41.605,
+42.375
+],
+"gh": [
+-2.684,
+6.146
+],
+"gl": [
+-39.018,
+75.573
+],
+"gm": [
+-15.323,
+13.459
+],
+"gn": [
+-13.139,
+9.825
+],
+"gq": [
+10.385,
+1.599
+],
+"gr": [
+22.179,
+37.246
+],
+"gt": [
+-90.251,
+15.883
+],
+"gu": [
+144.585,
+13.458
+],
+"gw": [
+-15.055,
+11.824
+],
+"gy": [
+-60.039,
+8.038
+],
+"gz": [
+34.318,
+31.366
+],
+"hn": [
+-84.832,
+15.707
+],
+"hr": [
+15.477,
+44.062
+],
+"ht": [
+-73.848,
+18.154
+],
+"hu": [
+17.908,
+46.863
+],
+"id": [
+112.468,
+-0.918
+],
+"ie": [
+-8.529,
+53.324
+],
+"il": [
+35.399,
+32.956
+],
+"in": [
+78.306,
+23.842
+],
+"iq": [
+43.217,
+33.739
+],
+"ir": [
+55.154,
+32.381
+],
+"is": [
+-17.421,
+64.94
+],
+"it": [
+12.073,
+42.323
+],
+"jk": [
+77.109,
+35.275
+],
+"jm": [
+-77.187,
+18.076
+],
+"jo": [
+35.199,
+30.086
+],
+"jp": [
+139.858,
+38.088
+],
+"ke": [
+40.802,
+-1.775
+],
+"kg": [
+74.465,
+41.48
+],
+"kh": [
+106.631,
+12.633
+],
+"ki": [
+-157.203,
+1.831
+],
+"km": [
+43.292,
+-11.639
+],
+"kn": [
+-62.647,
+17.286
+],
+"kp": [
+126.314,
+39.308
+],
+"kr": [
+127.64,
+35.952
+],
+"kv": [
+20.876,
+42.505
+],
+"kw": [
+47.404,
+29.216
+],
+"kz": [
+69.684,
+48.885
+],
+"la": [
+106.632,
+16.06
+],
+"lb": [
+35.88,
+33.742
+],
+"lc": [
+-60.921,
+13.897
+],
+"li": [
+9.543,
+47.112
+],
+"lk": [
+81.064,
+6.434
+],
+"lr": [
+-7.637,
+5.394
+],
+"ls": [
+28.228,
+-29.523
+],
+"lt": [
+22.478,
+56.213
+],
+"lu": [
+6.085,
+49.66
+],
+"lv": [
+23.014,
+57.041
+],
+"ly": [
+17.212,
+27.937
+],
+"ma": [
+-7.435,
+32.948
+],
+"mc": [
+7.391,
+43.691
+],
+"md": [
+28.403,
+47.198
+],
+"me": [
+19.215,
+42.696
+],
+"mg": [
+46.45,
+-18.564
+],
+"mh": [
+170.98,
+7.079
+],
+"mk": [
+21.657,
+41.614
+],
+"ml": [
+-2.524,
+19.43
+],
+"mm": [
+93.772,
+19.587
+],
+"mn": [
+103.42,
+46.788
+],
+"mp": [
+145.574,
+15.144
+],
+"mr": [
+-9.464,
+19.453
+],
+"mt": [
+14.409,
+35.876
+],
+"mu": [
+57.519,
+-20.273
+],
+"mv": [
+73.378,
+1.93
+],
+"mw": [
+35.118,
+-16.355
+],
+"mx": [
+-102.407,
+23.996
+],
+"my": [
+116.986,
+5.344
+],
+"mz": [
+35.286,
+-23.805
+],
+"na": [
+16.212,
+-21.435
+],
+"nc": [
+33.666,
+35.168
+],
+"ne": [
+10.419,
+17.298
+],
+"ng": [
+8.663,
+10.743
+],
+"ni": [
+-83.744,
+12.893
+],
+"nl": [
+6.485,
+53.201
+],
+"no": [
+8.369,
+60.735
+],
+"np": [
+84.238,
+28.121
+],
+"nr": [
+166.759,
+-0.518
+],
+"nz": [
+169.319,
+-44.896
+],
+"om": [
+58.802,
+22.113
+],
+"pa": [
+-81.614,
+8.427
+],
+"pe": [
+-76.386,
+-8.373
+],
+"pg": [
+142.613,
+-6.152
+],
+"ph": [
+121.134,
+16.498
+],
+"pk": [
+65.483,
+27.32
+],
+"pl": [
+19.212,
+53.25
+],
+"pr": [
+-66.163,
+18.104
+],
+"pt": [
+-7.972,
+39.472
+],
+"pw": [
+134.403,
+7.471
+],
+"py": [
+-58.475,
+-23.406
+],
+"qa": [
+51.104,
+25.339
+],
+"ro": [
+26.511,
+45.927
+],
+"rs": [
+20.642,
+44.143
+],
+"ru": [
+118.481,
+62.615
+],
+"rw": [
+29.777,
+-2.023
+],
+"sa": [
+43.615,
+24.535
+],
+"sb": [
+161.534,
+-10.372
+],
+"sc": [
+55.411,
+-4.66
+],
+"sd": [
+30.24,
+16.986
+],
+"se": [
+19.971,
+66.619
+],
+"sg": [
+103.71,
+1.329
+],
+"sh": [
+117.616,
+15.144
+],
+"si": [
+14.985,
+46.036
+],
+"sk": [
+18.019,
+48.495
+],
+"sl": [
+-11.837,
+8.505
+],
+"sm": [
+12.427,
+43.897
+],
+"sn": [
+-15.895,
+14.459
+],
+"so": [
+44.953,
+1.89
+],
+"sp": [
+115.682,
+10.711
+],
+"sr": [
+-54.314,
+5.583
+],
+"ss": [
+29.885,
+7.152
+],
+"st": [
+6.609,
+0.233
+],
+"sv": [
+-88.806,
+13.76
+],
+"sw": [
+-78.544,
+15.844
+],
+"sx": [
+47.376,
+9.644
+],
+"sy": [
+37.364,
+34.604
+],
+"sz": [
+31.438,
+-26.467
+],
+"td": [
+18.373,
+13.458
+],
+"tg": [
+1.192,
+7.056
+],
+"th": [
+99.413,
+13.25
+],
+"tj": [
+70.961,
+38.834
+],
+"tl": [
+125.966,
+-8.665
+],
+"tm": [
+57.74,
+39.664
+],
+"tn": [
+9.183,
+36.656
+],
+"to": [
+-174.963,
+-21.192
+],
+"tr": [
+32.014,
+39.071
+],
+"tt": [
+-61.049,
+10.523
+],
+"tv": [
+179.006,
+-8.489
+],
+"tz": [
+36.601,
+-7.545
+],
+"ua": [
+34.701,
+48.73
+],
+"ug": [
+30.379,
+1.149
+],
+"um": [
+-161.883,
+5.879
+],
+"us": [
+-100.192,
+38.961
+],
+"uy": [
+-54.144,
+-33.202
+],
+"uz": [
+63.786,
+41.163
+],
+"va": [
+12.446,
+41.854
+],
+"vc": [
+-61.138,
+13.203
+],
+"ve": [
+-67.329,
+9.351
+],
+"vi": [
+-64.651,
+17.719
+],
+"vn": [
+105.308,
+9.214
+],
+"vu": [
+166.967,
+-15.426
+],
+"we": [
+35.21,
+31.917
+],
+"ws": [
+-172.298,
+-13.643
+],
+"ye": [
+46.273,
+15.555
+],
+"za": [
+22.382,
+-31.104
+],
+"zm": [
+24.871,
+-14.787
+],
+"zw": [
+32.306,
+-19.894
+]
+},
+"iso3": {
+"ad": "AND",
+"ae": "ARE",
+"af": "AFG",
+"ag": "ATG",
+"al": "ALB",
+"am": "ARM",
+"ao": "AGO",
+"ar": "ARG",
+"as": "ASM",
+"at": "AUT",
+"au": "AUS",
+"az": "AZE",
+"ba": "BIH",
+"bb": "BRB",
+"bd": "BGD",
+"be": "BEL",
+"bf": "BFA",
+"bg": "BGR",
+"bh": "BHR",
+"bi": "BDI",
+"bj": "BEN",
+"bn": "BRN",
+"bo": "BOL",
+"br": "BRA",
+"bs": "BHS",
+"bt": "BTN",
+"bw": "BWA",
+"by": "BLR",
+"bz": "BLZ",
+"ca": "CAN",
+"cd": "COD",
+"cf": "CAF",
+"cg": "COG",
+"ch": "CHE",
+"ci": "CIV",
+"cl": "CHL",
+"cm": "CMR",
+"cn": "CHN",
+"co": "COL",
+"cr": "CRI",
+"cu": "CUB",
+"cv": "CPV",
+"cy": "CYP",
+"cz": "CZE",
+"de": "DEU",
+"dj": "DJI",
+"dk": "DNK",
+"dm": "DMA",
+"do": "DOM",
+"dz": "DZA",
+"ec": "ECU",
+"ee": "EST",
+"eg": "EGY",
+"eh": "ESH",
+"er": "ERI",
+"es": "ESP",
+"et": "ETH",
+"fi": "FIN",
+"fj": "FJI",
+"fm": "FSM",
+"fo": "FRO",
+"fr": "FRA",
+"ga": "GAB",
+"gb": "GBR",
+"gd": "GRD",
+"ge": "GEO",
+"gh": "GHA",
+"gl": "GRL",
+"gm": "GMB",
+"gn": "GIN",
+"gq": "GNQ",
+"gr": "GRC",
+"gt": "GTM",
+"gu": "GUM",
+"gw": "GNB",
+"gy": "GUY",
+"gz": "PSE",
+"hn": "HND",
+"hr": "HRV",
+"ht": "HTI",
+"hu": "HUN",
+"id": "IDN",
+"ie": "IRL",
+"il": "ISR",
+"in": "IND",
+"iq": "IRQ",
+"ir": "IRN",
+"is": "ISL",
+"it": "ITA",
+"jm": "JAM",
+"jo": "JOR",
+"jp": "JPN",
+"ke": "KEN",
+"kg": "KGZ",
+"kh": "KHM",
+"ki": "KIR",
+"km": "COM",
+"kn": "KNA",
+"kp": "PRK",
+"kr": "KOR",
+"kw": "KWT",
+"kz": "KAZ",
+"la": "LAO",
+"lb": "LBN",
+"lc": "LCA",
+"li": "LIE",
+"lk": "LKA",
+"lr": "LBR",
+"ls": "LSO",
+"lt": "LTU",
+"lu": "LUX",
+"lv": "LVA",
+"ly": "LBY",
+"ma": "MAR",
+"mc": "MCO",
+"md": "MDA",
+"me": "MNE",
+"mg": "MDG",
+"mh": "MHL",
+"mk": "MKD",
+"ml": "MLI",
+"mm": "MMR",
+"mn": "MNG",
+"mp": "MNP",
+"mr": "MRT",
+"mt": "MLT",
+"mu": "MUS",
+"mv": "MDV",
+"mw": "MWI",
+"mx": "MEX",
+"my": "MYS",
+"mz": "MOZ",
+"na": "NAM",
+"ne": "NER",
+"ng": "NGA",
+"ni": "NIC",
+"nl": "NLD",
+"no": "NOR",
+"np": "NPL",
+"nr": "NRU",
+"nz": "NZL",
+"om": "OMN",
+"pa": "PAN",
+"pe": "PER",
+"pg": "PNG",
+"ph": "PHL",
+"pk": "PAK",
+"pl": "POL",
+"pr": "PRI",
+"pt": "PRT",
+"pw": "PLW",
+"py": "PRY",
+"qa": "QAT",
+"ro": "ROU",
+"rs": "SRB",
+"ru": "RUS",
+"rw": "RWA",
+"sa": "SAU",
+"sb": "SLB",
+"sc": "SYC",
+"sd": "SDN",
+"se": "SWE",
+"sg": "SGP",
+"si": "SVN",
+"sk": "SVK",
+"sl": "SLE",
+"sm": "SMR",
+"sn": "SEN",
+"so": "SOM",
+"sr": "SUR",
+"ss": "SSD",
+"st": "STP",
+"sv": "SLV",
+"sy": "SYR",
+"sz": "SWZ",
+"td": "TCD",
+"tg": "TGO",
+"th": "THA",
+"tj": "TJK",
+"tl": "TLS",
+"tm": "TKM",
+"tn": "TUN",
+"to": "TON",
+"tr": "TUR",
+"tt": "TTO",
+"tv": "TUV",
+"tz": "TZA",
+"ua": "UKR",
+"ug": "UGA",
+"um": "UMI",
+"us": "USA",
+"uy": "URY",
+"uz": "UZB",
+"va": "VAT",
+"vc": "VCT",
+"ve": "VEN",
+"vi": "VIR",
+"vn": "VNM",
+"vu": "VUT",
+"we": "PSE",
+"ws": "WSM",
+"ye": "YEM",
+"za": "ZAF",
+"zm": "ZMB",
+"zw": "ZWE"
+},
+"us_states": {
+"us-ak": "Alaska",
+"us-al": "Alabama",
+"us-ar": "Arkansas",
+"us-az": "Arizona",
+"us-ca": "California",
+"us-co": "Colorado",
+"us-ct": "Connecticut",
+"us-dc": "District of Columbia",
+"us-de": "Delaware",
+"us-fl": "Florida",
+"us-ga": "Georgia",
+"us-hi": "Hawaii",
+"us-ia": "Iowa",
+"us-id": "Idaho",
+"us-il": "Illinois",
+"us-in": "Indiana",
+"us-ks": "Kansas",
+"us-ky": "Kentucky",
+"us-la": "Louisiana",
+"us-ma": "Massachusetts",
+"us-md": "Maryland",
+"us-me": "Maine",
+"us-mi": "Michigan",
+"us-mn": "Minnesota",
+"us-mo": "Missouri",
+"us-ms": "Mississippi",
+"us-mt": "Montana",
+"us-nc": "North Carolina",
+"us-nd": "North Dakota",
+"us-ne": "Nebraska",
+"us-nh": "New Hampshire",
+"us-nj": "New Jersey",
+"us-nm": "New Mexico",
+"us-nv": "Nevada",
+"us-ny": "New York",
+"us-oh": "Ohio",
+"us-ok": "Oklahoma",
+"us-or": "Oregon",
+"us-pa": "Pennsylvania",
+"us-ri": "Rhode Island",
+"us-sc": "South Carolina",
+"us-sd": "South Dakota",
+"us-tn": "Tennessee",
+"us-tx": "Texas",
+"us-ut": "Utah",
+"us-va": "Virginia",
+"us-vt": "Vermont",
+"us-wa": "Washington",
+"us-wi": "Wisconsin",
+"us-wv": "West Virginia",
+"us-wy": "Wyoming"
+}
+}

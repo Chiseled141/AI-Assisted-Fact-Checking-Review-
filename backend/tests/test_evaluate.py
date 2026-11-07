@@ -35,7 +35,7 @@ def test_evaluation_scores_each_judge_and_stays_out_of_history(client, fakes):
         {"claim": "The line opened on 6 November 2021.", "label": "Supported"},
         {"claim": "The line closed in 2020.", "label": "Refuted"},
     ]
-    providers = Providers(llm=fakes.llm, search=fakes.search, fact_checks=fakes.fact_checks, fetch=fakes.fetch)
+    providers = Providers(llm=fakes.llm, search=fakes.search, fetch=fakes.fetch)
     report = evaluate(rows, ["gpt-luna", "claude-haiku"], providers, get_settings())
     assert report["claims"] == 2
     assert report["unavailable"] == 0
@@ -49,7 +49,7 @@ def test_evaluation_scores_each_judge_and_stays_out_of_history(client, fakes):
 
 def test_evaluation_counts_failures_instead_of_scoring_them(client, fakes):
     fakes.search.fails = True
-    providers = Providers(llm=fakes.llm, search=fakes.search, fact_checks=fakes.fact_checks, fetch=fakes.fetch)
+    providers = Providers(llm=fakes.llm, search=fakes.search, fetch=fakes.fetch)
     report = evaluate([{"claim": "A claim.", "label": "supported"}], ["gpt-luna", "claude-haiku"], providers, get_settings())
     assert report["unavailable"] == 1
     assert report["judges"]["GPT Luna"]["answered"] == 0

@@ -50,8 +50,7 @@ export function RevisionDrawer({ open, claim, evidence, onClose }: Props) {
         {ids.map((id) => (
           <li key={id}>
             <span className="font-sans text-xs text-brand-700">[{citationNumber(claim, id)}]</span>{' '}
-            {titleFor(id) ?? t('Evidence snapshot')}{' '}
-            <FreshnessBadge status={freshness?.[id]?.status ?? 'unknown'} />
+            {titleFor(id) ?? t('Evidence snapshot')} <FreshnessBadge status={freshness?.[id]?.status ?? 'unknown'} />
             {freshness?.[id]?.reason && <span className="mt-0.5 block text-xs text-ink-muted">{freshness[id].reason}</span>}
           </li>
         ))}
@@ -107,7 +106,9 @@ export function RevisionDrawer({ open, claim, evidence, onClose }: Props) {
                 >
                   {items.slice(0, -1).map((r) => (
                     <option key={r.version} value={r.version}>
-                      {t(r.kind === 'ai_assessment' ? 'Revision {version} (AI)' : 'Revision {version} (human)', { version: r.version })}
+                      {t(r.kind === 'ai_assessment' ? 'Revision {version} (AI)' : 'Revision {version} (human)', {
+                        version: r.version,
+                      })}
                     </option>
                   ))}
                 </select>
@@ -115,7 +116,10 @@ export function RevisionDrawer({ open, claim, evidence, onClose }: Props) {
 
               <table className="mt-4 w-full table-fixed border-collapse text-left text-xs sm:text-sm">
                 <caption className="sr-only">
-                  {t('Revision {compared} compared with current revision {current}', { compared: compared.version, current: current.version })}
+                  {t('Revision {compared} compared with current revision {current}', {
+                    compared: compared.version,
+                    current: current.version,
+                  })}
                 </caption>
                 <thead>
                   <tr className="text-ink-muted">
@@ -145,7 +149,8 @@ export function RevisionDrawer({ open, claim, evidence, onClose }: Props) {
                       b: <RevisionKindBadge kind={current.kind} />,
                     },
                     {
-                      label: compared.kind === current.kind && current.kind === 'ai_assessment' ? t('Explanation') : t('Rationale'),
+                      label:
+                        compared.kind === current.kind && current.kind === 'ai_assessment' ? t('Explanation') : t('Rationale'),
                       changed: compared.rationale !== current.rationale,
                       a: <span className="text-ink-soft">{compared.rationale}</span>,
                       b: <span className="text-ink-soft">{current.rationale}</span>,
@@ -207,9 +212,7 @@ export function RevisionDrawer({ open, claim, evidence, onClose }: Props) {
                     </div>
                     <div>
                       <dt className="text-xs text-ink-muted">{t('Cited evidence')}</dt>
-                      <dd className="text-ink">
-                        {renderCitations(revision.citedEvidenceIds, revision.citationFreshness)}
-                      </dd>
+                      <dd className="text-ink">{renderCitations(revision.citedEvidenceIds, revision.citationFreshness)}</dd>
                     </div>
                     {revision.attachments && revision.attachments.length > 0 && (
                       <div>
@@ -226,7 +229,10 @@ export function RevisionDrawer({ open, claim, evidence, onClose }: Props) {
                       {revision.model && (
                         <div>
                           <dd className="inline font-sans">
-                            {t('Model {name} · prompt {version}', { name: revision.model.name, version: revision.model.promptVersion })}
+                            {t('Model {name} · prompt {version}', {
+                              name: revision.model.name,
+                              version: revision.model.promptVersion,
+                            })}
                           </dd>
                         </div>
                       )}

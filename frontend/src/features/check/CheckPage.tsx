@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
-import { Link, Navigate, useLocation, useParams } from 'react-router-dom';
+import { Link, useParams } from 'react-router-dom';
 import { Loader2, SearchX } from 'lucide-react';
 import { checkService, NotFoundError } from '../../services';
 import type { CheckDetail } from '../../types/models';
@@ -7,28 +7,22 @@ import { isTerminal } from '../../types/models';
 import { ProcessingView } from './ProcessingView';
 import { FailedView } from './FailedView';
 import { ResultsView } from '../results/ResultsView';
-import { t, useLanguage } from '../../lib/i18n';
-import { localizedCheckId } from '../demo/demoSettings';
+import { t } from '../../lib/i18n';
 
 const POLL_INTERVAL_MS = 600;
 
 type LoadState =
-  | { kind: 'loading' }
-  | { kind: 'not-found' }
-  | { kind: 'error'; message: string }
-  | { kind: 'ready'; check: CheckDetail };
+  { kind: 'loading' } | { kind: 'not-found' } | { kind: 'error'; message: string } | { kind: 'ready'; check: CheckDetail };
 
 /** Routes a check to its processing, failed, or results view and polls while it runs. */
 export function CheckPage() {
   const { checkId = '' } = useParams();
-  const { search } = useLocation();
-  const localizedId = localizedCheckId(checkId, useLanguage());
-  if (localizedId) return <Navigate to={{ pathname: `/checks/${localizedId}`, search }} replace />;
   return <CheckView key={checkId} checkId={checkId} />;
 }
 
 function CheckView({ checkId }: { checkId: string }) {
   const [state, setState] = useState<LoadState>({ kind: 'loading' });
+  const [attempt, setAttempt] = useState(0);
 
   const load = useCallback(async () => {
     try {
@@ -61,7 +55,7 @@ function CheckView({ checkId }: { checkId: string }) {
       cancelled = true;
       clearTimeout(timer);
     };
-  }, [load]);
+  }, [load, attempt]);
 
   if (state.kind === 'loading') {
     return (
@@ -80,13 +74,11 @@ function CheckView({ checkId }: { checkId: string }) {
           {state.kind === 'not-found' ? t('Check not found') : t('Something went wrong')}
         </h1>
         <p className="mt-2 text-ink-soft">
-          {state.kind === 'not-found'
-            ? t('This check isn’t saved in this browser.')
-            : state.message}
+          {state.kind === 'not-found' ? t('This check was not found on the server.') : state.message}
         </p>
         <div className="mt-6 flex justify-center gap-3">
           {state.kind === 'error' && (
-            <button type="button" className="btn-secondary" onClick={() => void load()}>
+            <button type="button" className="btn-secondary" onClick={() => setAttempt((current) => current + 1)}>
               {t('Try again')}
             </button>
           )}

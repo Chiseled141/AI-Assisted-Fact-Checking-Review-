@@ -7,13 +7,11 @@ import {
   CircleHelp,
   CircleX,
   CloudOff,
-  FlaskConical,
   UserCheck,
 } from 'lucide-react';
-import type { CheckStatus, EvidenceRelation, Freshness, RevisionKind, SourceTrust, Verdict } from '../types/models';
+import type { CheckStatus, EvidenceRelation, Freshness, RevisionKind, Verdict } from '../types/models';
 import { isTerminal } from '../types/models';
 import { relationLabel, statusLabel, verdictLabel } from '../lib/format';
-import { sourceTrustDescription, sourceTrustLabel } from '../lib/sources';
 import { t } from '../lib/i18n';
 
 const verdictStyle: Record<Verdict, { className: string; Icon: typeof CircleCheck }> = {
@@ -38,7 +36,11 @@ export function VerdictBadge({ verdict }: { verdict: Verdict }) {
 const freshnessStyle: Record<Freshness, { label: string; className: string; Icon: typeof CalendarCheck }> = {
   current: { label: 'Current', className: 'border-line bg-white text-ink-soft', Icon: CalendarCheck },
   outdated: { label: 'Outdated', className: 'border-candy/50 bg-candy/10 text-ink', Icon: CalendarX },
-  unknown: { label: 'Freshness unknown', className: 'border-dashed border-line-strong bg-white text-ink-muted', Icon: CalendarSearch },
+  unknown: {
+    label: 'Freshness unknown',
+    className: 'border-dashed border-line-strong bg-white text-ink-muted',
+    Icon: CalendarSearch,
+  },
 };
 
 /** Squared tag (not a pill) so freshness is never mistaken for a verdict. */
@@ -82,17 +84,6 @@ export function StatusBadge({ status }: { status: CheckStatus }) {
   );
 }
 
-export function DemoModeLabel({ className = '' }: { className?: string }) {
-  return (
-    <span
-      className={`inline-flex items-center gap-1.5 rounded-full border border-dashed border-line-strong bg-white px-2.5 py-0.5 text-xs text-ink-soft ${className}`}
-    >
-      <FlaskConical className="h-3.5 w-3.5" aria-hidden="true" />
-      {t('Demo · simulated')}
-    </span>
-  );
-}
-
 /* Minimal text markers: a colored dot or word instead of a pill. Used on the results page. */
 
 const verdictTone: Record<Verdict, { dot: string; text: string }> = {
@@ -128,45 +119,10 @@ const relationChip: Record<EvidenceRelation, string> = {
 /** Sits on a source's photo, so it is a solid chip rather than plain text. */
 export function RelationChip({ relation }: { relation: EvidenceRelation }) {
   return (
-    <span className={`inline-block max-w-full truncate rounded-md px-2 py-1 align-top text-[13px] font-semibold ${relationChip[relation]}`}>
+    <span
+      className={`inline-block max-w-full truncate rounded-md px-2 py-1 align-top text-[13px] font-semibold ${relationChip[relation]}`}
+    >
       {relationLabel[relation]}
-    </span>
-  );
-}
-
-const sourceTrustTone: Record<SourceTrust, { dot: string; text: string }> = {
-  green: { dot: 'bg-emerald-700', text: 'text-emerald-700' },
-  yellow: { dot: 'bg-amber-700', text: 'text-amber-700' },
-  red: { dot: 'bg-rose-600', text: 'text-rose-600' },
-};
-
-const sourceTrustOnPhoto: Record<SourceTrust, { dot: string; text: string }> = {
-  green: { dot: 'bg-[#6ee7b7]', text: 'text-[#6ee7b7]' },
-  yellow: { dot: 'bg-[#fcd34d]', text: 'text-[#fcd34d]' },
-  red: { dot: 'bg-[#fca5a5]', text: 'text-[#fca5a5]' },
-};
-
-/**
- * Worded "… source" so a rating is never mistaken for a verdict. `null` means not in the list.
- * `onPhoto` uses lighter colors for text sitting on a photo or dark block.
- */
-export function SourceTrustMark({ trust, onPhoto = false }: { trust: SourceTrust | null; onPhoto?: boolean }) {
-  if (!trust) {
-    return (
-      <span
-        className={`inline-flex items-center gap-1.5 text-xs ${onPhoto ? 'text-[#fff]/90' : 'text-ink-muted'}`}
-        title={t('This source is not in the rated list.')}
-      >
-        <span className={`h-1.5 w-1.5 rounded-full border ${onPhoto ? 'border-[#fff]/90' : 'border-ink-faint'}`} aria-hidden="true" />
-        {t('Not rated')}
-      </span>
-    );
-  }
-  const tone = onPhoto ? sourceTrustOnPhoto[trust] : sourceTrustTone[trust];
-  return (
-    <span className={`inline-flex items-center gap-1.5 text-xs font-semibold ${tone.text}`} title={sourceTrustDescription[trust]}>
-      <span className={`h-1.5 w-1.5 rounded-full ${tone.dot}`} aria-hidden="true" />
-      {sourceTrustLabel[trust]}
     </span>
   );
 }

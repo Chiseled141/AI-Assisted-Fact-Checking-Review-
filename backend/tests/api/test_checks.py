@@ -1,10 +1,59 @@
-"""Whole checks through the API, with fake providers in place of the outside services.
-"""
+"""Whole checks through the API, with fake providers in place of the outside services."""
 
+import pytest
+from fastapi.testclient import TestClient
+
+from app.core.config import get_settings
+from app.pipeline.run import _distinct_titles
+from app.search.fetcher import Page
 from tests.helpers import TEXT, run
 
 
-def test_text_check_returns_claims_both_judges_and_saved_evidence(client):
+@pytest.mark.parametrize("category", ["subjective", "advice", "prediction", "unclear", "no_factual_claim"])
+def test_nonfactual_inputs_return_a_saved_category_without_searching_or_judging(client, fakes, category):
+    from app.pipeline.prompts import ExtractedClaims
+
+    calls = []
+
+    def complete(model, system, user, schema, check=None):
+        calls.append(schema)
+        assert schema is ExtractedClaims
+        return ExtractedClaims(claims=[], input_category=category), model
+
+    fakes.llm.complete = complete
+    check = run(client, {"inputType": "text", "text": "Ronaldo có phải là GOAT?"})
+    assert check["status"] == "completed"
+    assert check["claims"] == []
+    assert check["inputCategory"] == category
+    assert calls == [ExtractedClaims]
+    assert fakes.fetch.fetched == []
+    saved = client.get(f"/api/check/{check['id']}").json()
+    assert saved["inputCategory"] == category
+    assert saved["progress"][0]["inputCategory"] == category
+    history = client.get("/api/checks").json()["items"]
+    assert next(item for item in history if item["id"] == check["id"])["inputCategory"] == category
+
+
+def test_an_input_category_cannot_hide_real_extracted_claims(client, fakes):
+    from app.pipeline.prompts import ExtractedClaim, ExtractedClaims
+
+    complete = fakes.llm.complete
+
+    def answer(model, system, user, schema, check=None):
+        if schema is ExtractedClaims:
+            return ExtractedClaims(
+                claims=[ExtractedClaim(text="The line opened on 6 November 2021.", checkworthiness=0.9)],
+                input_category="subjective",
+            ), model
+        return complete(model, system, user, schema, check)
+
+    fakes.llm.complete = answer
+    check = run(client)
+    assert check["claims"][0]["current"]["verdict"] == "supported"
+    assert check["inputCategory"] is None
+
+
+def test_text_check_returns_claims_both_judges_and_saved_evidence(client, fakes):
     check = run(client)
     assert check["status"] == "completed"
     assert check["claimCount"] == 1
@@ -16,7 +65,7 @@ def test_text_check_returns_claims_both_judges_and_saved_evidence(client):
     current = claim["current"]
     assert current["verdict"] == "supported"
     assert current["kind"] == "ai_assessment"
-    assert current["model"] == {"name": "openai/gpt-6-luna", "promptVersion": "v1"}
+    assert current["model"] == {"name": "openai/gpt-6-luna", "promptVersion": get_settings().prompt_version}
     assert [judge["judge"] for judge in current["judges"]] == ["GPT Luna", "Claude Haiku 5.5"]
     assert [judge["primary"] for judge in current["judges"]] == [True, False]
 
@@ -30,20 +79,39 @@ def test_text_check_returns_claims_both_judges_and_saved_evidence(client):
     assert current["citationFreshness"][first["id"]]["status"] == "current"
     assert evidence[1]["relation"] == "contextual"
 
-    analysis = first["analysis"]
-    assert analysis["keyPoints"] == ["It opened in November."]
-    assert [note["judge"] for note in analysis["judgeNotes"]] == ["GPT Luna", "Claude Haiku 5.5"]
-    assert analysis["judgeNotes"][0]["ratings"] == [90, 80, 70, 60]
+    assert "analysis" not in first
+    assert len(fakes.llm.calls) == 3  # Extraction and the two claim judges only.
+
+
+def test_a_quote_split_over_lines_in_the_page_is_still_shown(client, fakes):
+    fakes.fetch.text = "The line opened\n   to passengers on 6 November 2021 after a handover that morning. " * 8
+    created = run(client)
+    evidence = client.get(f"/api/claims/{created['claims'][0]['id']}/evidence").json()
+    assert evidence[0]["excerpt"] == "opened to passengers"
+
+
+def test_sources_with_one_title_are_told_apart_by_their_own_words():
+    report = "Daily report\nIssued by {office}\nThe temperature was measured at the airport."
+    pages = {
+        url: Page(url=url, title="National Weather Service", text=report.format(office=office))
+        for url, office in (("https://weather.gov/a", "Office A"), ("https://weather.gov/b", "Office B"))
+    }
+    pages["https://bbc.com/c"] = Page(url="https://bbc.com/c", title="Another title", text="Daily report")
+    assert _distinct_titles(pages) == {
+        "https://weather.gov/a": "National Weather Service: Issued by Office A",
+        "https://weather.gov/b": "National Weather Service: Issued by Office B",
+        "https://bbc.com/c": "Another title",
+    }
 
 
 def test_models_are_told_the_dates_they_need(client, fakes):
     from app.db.models import utcnow
-    from app.pipeline.prompts import ExtractedClaims, JudgeAnswer, SourceAnswer
+    from app.pipeline.prompts import ExtractedClaims, JudgeAnswer
 
     run(client, {"inputType": "url", "url": "https://reuters.com/a"})
     today = f"Today's date: {utcnow().date().isoformat()}"
     by_schema = {schema: user for schema, _, user in fakes.llm.prompts}
-    for schema in (ExtractedClaims, JudgeAnswer, SourceAnswer):
+    for schema in (ExtractedClaims, JudgeAnswer):
         assert today in by_schema[schema]
     assert "Article date: 2021-11-06" in by_schema[ExtractedClaims]
 
@@ -56,15 +124,14 @@ def test_a_text_check_has_no_article_date(client, fakes):
     assert "Article date" not in extract
 
 
-def test_a_source_is_judged_once_even_when_two_claims_use_it(client, fakes):
-    from app.pipeline.prompts import SourceAnswer
+def test_sources_are_fetched_once_without_extra_source_reviews(client, fakes):
 
     fakes.llm.claims = ["The line opened in 2021.", "The line has 12 stations."]
     fakes.search.results = ["https://reuters.com/a"]
     check = run(client)
     assert check["claimCount"] == 2
     assert fakes.fetch.fetched == ["https://reuters.com/a"]
-    assert sum(schema is SourceAnswer for _, schema in fakes.llm.calls) == 2  # One per judge.
+    assert len(fakes.llm.calls) == 5  # Extraction and two judges for each claim.
 
 
 def test_disagreement_keeps_both_verdicts_and_shows_the_first(client, fakes):
@@ -74,13 +141,13 @@ def test_disagreement_keeps_both_verdicts_and_shows_the_first(client, fakes):
     assert run(client)["claims"][0]["current"]["verdict"] == "supported"
 
 
-def test_one_failed_judge_still_gives_a_verdict_but_no_side_by_side_analysis(client, fakes):
+def test_one_failed_judge_still_gives_a_verdict(client, fakes):
     fakes.llm.failing = {"openai/gpt-6-luna"}
     claim = run(client)["claims"][0]
     assert claim["status"] == "assessed"
     assert [judge["judge"] for judge in claim["current"]["judges"]] == ["Claude Haiku 5.5"]
     assert claim["current"]["judges"][0]["primary"] is True
-    assert client.get(f"/api/claims/{claim['id']}/evidence").json()[0]["analysis"] is None
+    assert "analysis" not in client.get(f"/api/claims/{claim['id']}/evidence").json()[0]
 
 
 def test_both_judges_failing_is_unavailable_not_a_verdict(client, fakes):
@@ -101,13 +168,13 @@ def test_search_failure_is_unavailable_not_insufficient_evidence(client, fakes):
     assert claim["current"] is None
 
 
-def test_no_readable_source_says_not_enough_evidence_without_asking_a_judge(client, fakes):
+def test_all_source_reads_failing_is_unavailable_without_asking_a_judge(client, fakes):
     from app.pipeline.prompts import JudgeAnswer
 
     fakes.fetch.unreadable = {"https://reuters.com/a", "https://bbc.com/b"}
     claim = run(client)["claims"][0]
-    assert claim["current"]["verdict"] == "insufficient_evidence"
-    assert claim["current"]["citedEvidenceIds"] == []
+    assert claim["status"] == "unavailable"
+    assert claim["current"] is None
     assert not any(schema is JudgeAnswer for _, schema in fakes.llm.calls)
 
 
@@ -124,7 +191,8 @@ def test_sources_are_capped_per_check(client, fakes):
     fakes.fetch.fetched.clear()
     fakes.search.__class__ = ByClaim
     assert run(client)["status"] == "completed"
-    assert len(fakes.fetch.fetched) == 10
+    # One readable publisher per claim; further URLs from the same publisher are not fetched to fill slots.
+    assert len(fakes.fetch.fetched) == 5
 
 
 def test_url_check_shows_its_article_and_never_uses_it_as_evidence(client, fakes):
@@ -156,42 +224,6 @@ def test_file_check_reads_the_files(client):
     assert check["title"] == "a.txt"
     assert check["files"][0]["name"] == "a.txt"
     assert check["status"] == "completed"
-
-
-def test_fact_check_match_is_shown_on_the_claim(client, fakes):
-    fakes.fact_checks.match = {"publisher": "Africa Check", "rating": "False", "url": "https://africacheck.org/x"}
-    assert run(client)["claims"][0]["factCheck"]["publisher"] == "Africa Check"
-
-
-def test_plain_fact_check_gives_an_instant_verdict_without_search_or_judges(client, fakes):
-    from app.pipeline.prompts import JudgeAnswer
-
-    fakes.fact_checks.match = {
-        "publisher": "Africa Check",
-        "rating": "False",
-        "url": "https://africacheck.org/x",
-        "claim_reviewed": "The line opened on 6 November 2021.",
-    }
-    fakes.search.fails = True  # Proves search was never needed.
-    claim = run(client)["claims"][0]
-    assert claim["status"] == "assessed"
-    assert claim["current"]["verdict"] == "contradicted"
-    assert claim["current"]["author"] == "Africa Check"
-    assert claim["current"]["judges"] is None
-    assert set(claim["factCheck"]) == {"publisher", "rating", "url"}
-    assert not any(schema is JudgeAnswer for _, schema in fakes.llm.calls)
-
-
-def test_unclear_fact_check_is_shown_but_the_judges_still_decide(client, fakes):
-    fakes.fact_checks.match = {
-        "publisher": "Africa Check",
-        "rating": "Misleading",
-        "url": "https://africacheck.org/x",
-        "claim_reviewed": "The line opened on 6 November 2021.",
-    }
-    claim = run(client)["claims"][0]
-    assert claim["factCheck"]["rating"] == "Misleading"
-    assert len(claim["current"]["judges"]) == 2
 
 
 def test_too_many_checks_from_one_address_are_refused(client):
@@ -263,3 +295,98 @@ def test_stats_and_feedback(client):
     assert stats["checks"] == 1
     assert stats["labelDistribution"] == {"supported": 1}
     assert stats["averageSeconds"] >= 0
+
+
+def test_source_specific_search_image_fills_only_missing_article_preview(client, fakes):
+    from dataclasses import replace
+
+    from app.search.tavily import SearchHit
+
+    def hits(query, **_):
+        return [SearchHit('https://reuters.com/a', 'https://images.example/search.jpg'),
+                SearchHit('https://bbc.com/b', 'https://images.example/other-search.jpg')]
+
+    fakes.search.search_hits = hits
+    original_fetch = fakes.fetch
+    # Keep the real article preview when there is one; use source-specific search metadata only for the other page.
+    def fetch(url):
+        page = original_fetch(url)
+        return replace(page, image_url='https://images.example/article.jpg') if 'bbc.com' in url else page
+
+    from app.core.config import get_settings
+    from app.db.session import SessionLocal
+    from app.pipeline.run import Providers, run_check
+    providers = Providers(llm=fakes.llm, search=fakes.search, fetch=fetch)
+    client.app.state.start_check = lambda check_id: run_check(check_id, SessionLocal, providers, get_settings())
+    result = run(client)
+    evidence = client.get(f"/api/claims/{result['claims'][0]['id']}/evidence").json()
+    assert [item['imageUrl'] for item in evidence] == ['https://images.example/search.jpg', 'https://images.example/article.jpg']
+
+
+def test_search_image_does_not_turn_an_unreadable_page_into_evidence(client, fakes):
+    from app.search.tavily import SearchHit
+
+    fakes.search.search_hits = lambda query, **_: [SearchHit('https://reuters.com/a', 'https://images.example/search.jpg')]
+    fakes.fetch.unreadable = {'https://reuters.com/a'}
+    result = run(client)
+    claim = result['claims'][0]
+    assert claim['status'] == 'unavailable'
+    assert claim['current'] is None
+    assert client.get(f"/api/claims/{claim['id']}/evidence").json() == []
+
+
+def test_a_restart_closes_running_tasks_so_none_looks_alive():
+    from app.db.models import Check
+    from app.db.session import SessionLocal
+    from app.main import RESTARTED, app
+
+    with SessionLocal() as session:
+        check = Check(title="Check", input_type="text", input_text="Text", judge_ids=[], status="assessing", progress=[
+            {"id": "done", "kind": "ai", "task": "extracting", "status": "completed", "startedAt": "2026-11-05T01:00:00"},
+            {"id": "running", "kind": "ai", "task": "judging", "status": "running", "startedAt": "2026-11-05T01:00:00"},
+        ])
+        session.add(check)
+        session.commit()
+        check_id = check.id
+    with TestClient(app):
+        pass
+    with SessionLocal() as session:
+        check = session.get(Check, check_id)
+        assert check.status == "failed"
+        assert check.error_message == RESTARTED
+        assert [event["status"] for event in check.progress] == ["completed", "failed"]
+        assert check.progress[1]["summary"] == RESTARTED
+
+
+def test_a_quote_cleaned_on_reading_loses_its_translation(client, fakes):
+    from app.db.models import Evidence
+    from app.db.session import SessionLocal
+
+    claim_id = run(client)["claims"][0]["id"]
+    with SessionLocal() as session:
+        item = session.query(Evidence).filter_by(claim_id=claim_id).first()
+        item.translations = {"vi": "Bản dịch."}
+        session.commit()
+    first = client.get(f"/api/claims/{claim_id}/evidence").json()[0]
+    assert first["translations"] == {"vi": "Bản dịch."}
+    with SessionLocal() as session:
+        session.query(Evidence).filter_by(claim_id=claim_id).first().excerpt = "![chart](https://x/y.png)"
+        session.commit()
+    assert client.get(f"/api/claims/{claim_id}/evidence").json()[0]["translations"] is None
+
+
+def test_a_check_saved_with_task_names_from_an_older_version_still_opens(client):
+    from app.db.models import Check
+    from app.db.session import SessionLocal
+
+    with SessionLocal() as session:
+        check = Check(title="Old", input_type="text", input_text="Text", judge_ids=[], status="completed", progress=[
+            {"id": "a", "kind": "search", "task": "chart_sources", "chart": "seats", "status": "completed", "startedAt": "2026-11-05T01:00:00"},
+            {"id": "b", "kind": "ai", "task": "a_task_since_renamed", "status": "completed", "startedAt": "2026-11-05T01:00:00"},
+        ])
+        session.add(check)
+        session.commit()
+        check_id = check.id
+    response = client.get(f"/api/check/{check_id}")
+    assert response.status_code == 200
+    assert response.json()["progress"][0]["chart"] == "seats"

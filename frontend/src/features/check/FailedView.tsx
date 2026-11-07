@@ -1,13 +1,14 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { RotateCcw, TriangleAlert } from 'lucide-react';
-import type { Check } from '../../types/models';
-import { checkService, demoMode } from '../../services';
+import type { CheckDetail } from '../../types/models';
+import { checkService } from '../../services';
 import { formatDateTime } from '../../lib/format';
-import { DemoModeLabel } from '../../components/Badges';
 import { t } from '../../lib/i18n';
+import { TaskRows } from './TaskList';
 
-export function FailedView({ check }: { check: Check }) {
+export function FailedView({ check }: { check: CheckDetail }) {
+  const failedTasks = (check.progress ?? []).filter((task) => task.status === 'failed');
   const navigate = useNavigate();
   const [retrying, setRetrying] = useState(false);
   const [retryError, setRetryError] = useState<string | null>(null);
@@ -18,8 +19,8 @@ export function FailedView({ check }: { check: Check }) {
     try {
       const next = await checkService.createCheck(
         check.inputType === 'text'
-          ? { inputType: 'text', text: check.inputText, files: check.files, scenario: 'completed' }
-          : { inputType: 'url', url: check.inputUrl, scenario: 'completed' },
+          ? { inputType: 'text', text: check.inputText, files: check.files, judgeIds: check.judgeIds }
+          : { inputType: 'url', url: check.inputUrl, judgeIds: check.judgeIds },
       );
       navigate(`/checks/${next.id}`);
     } catch {
@@ -36,12 +37,17 @@ export function FailedView({ check }: { check: Check }) {
             <TriangleAlert className="h-6 w-6 text-rose-600" aria-hidden="true" />
             {t('Check failed')}
           </h1>
-          {demoMode && <DemoModeLabel />}
         </div>
         <p className="mt-2 break-words text-sm text-ink-soft">{check.title}</p>
         <div role="alert" className="mt-6 border border-rose-200 bg-rose-50 p-4 text-sm text-rose-900">
           {t(check.errorMessage ?? 'The check could not be completed.')}
         </div>
+        {failedTasks.length > 0 && (
+          <section aria-label={t('What failed')} className="mt-4">
+            <h2 className="text-sm font-semibold text-ink">{t('What failed')}</h2>
+            <TaskRows tasks={failedTasks} />
+          </section>
+        )}
         <p className="mt-4 text-sm text-ink-soft">{t('No verdicts were produced.')}</p>
         <p className="mt-2 text-xs text-ink-muted">
           {t('Started')} <time dateTime={check.createdAt}>{formatDateTime(check.createdAt)}</time>

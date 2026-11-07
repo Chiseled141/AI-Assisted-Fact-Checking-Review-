@@ -1,19 +1,5 @@
-import type { SourceEntry, SourceTrust } from '../types/models';
+import type { SourceEntry } from '../types/models';
 import { sourceRegistry } from '../data/sourceRegistry';
-import { translated } from './i18n';
-
-export const sourceTrustLabel = translated<SourceTrust>({
-  green: 'Trusted source',
-  yellow: 'Mixed source',
-  red: 'Unreliable source',
-});
-
-export const sourceTrustDescription = translated<SourceTrust>({
-  green: 'Official, established, or peer-reviewed. Can be cited as evidence.',
-  yellow: 'Reliable for some things, but non-primary, advocacy, or user-generated. Use it to corroborate.',
-  red: 'Known for fabricated, deceptive, or scam content. Does not count as evidence.',
-});
-
 const byDomain = new Map(sourceRegistry.map((entry) => [entry.domain, entry]));
 
 /** Vietnamese-language pages on Vietnamese news and government sites. English editions don't count. */

@@ -79,23 +79,7 @@ export function safeHref(url: string): string | null {
   }
 }
 
-export function deriveTitle(inputType: InputType, value: string): string {
-  if (inputType === 'url') {
-    try {
-      const parsed = new URL(value.trim());
-      const path = parsed.pathname === '/' ? '' : parsed.pathname;
-      return truncate(`${parsed.hostname}${path}`, 72);
-    } catch {
-      return truncate(value.trim(), 72);
-    }
-  }
-  const firstSentence = value.trim().split(/(?<=[.!?])\s+/)[0] ?? '';
-  return truncate(firstSentence.replace(/\s+/g, ' '), 72);
-}
 
-function truncate(value: string, max: number): string {
-  return value.length <= max ? value : `${value.slice(0, max - 1).trimEnd()}…`;
-}
 
 export function pluralize(count: number, singular: string, plural = `${singular}s`): string {
   // Vietnamese nouns don't change with the count.

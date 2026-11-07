@@ -1,5 +1,4 @@
-// Frontend service contract. The mock implementation satisfies it today;
-// httpCheckService calls the FastAPI backend with the same shapes.
+// Frontend contract for the FastAPI backend.
 
 import type {
   AssessmentRevision,
@@ -19,9 +18,9 @@ export interface PublishCorrectionResult {
 }
 
 export interface CheckService {
-  /** POST /api/check → 202 Check + status location (multipart when files are attached) */
+  /** POST /api/check → 202 Check. File contents are included as text in the JSON body. */
   createCheck(input: CreateCheckInput): Promise<Check>;
-  /** GET /api/check/{id} → CheckDetail (claims empty until completed) */
+  /** GET /api/check/{id} → CheckDetail, including claims saved so far. */
   getCheck(id: string): Promise<CheckDetail>;
   /** GET /api/checks?query=&status=&page= → Page<Check> */
   listChecks(params?: ListChecksParams): Promise<Page<Check>>;

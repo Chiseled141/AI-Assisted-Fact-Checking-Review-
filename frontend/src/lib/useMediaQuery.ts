@@ -2,9 +2,7 @@ import { useEffect, useState } from 'react';
 
 /** Tracks a media query. False where matchMedia is unavailable (old browsers, tests). */
 export function useMediaQuery(query: string): boolean {
-  const [matches, setMatches] = useState(
-    () => typeof window.matchMedia === 'function' && window.matchMedia(query).matches,
-  );
+  const [matches, setMatches] = useState(() => typeof window.matchMedia === 'function' && window.matchMedia(query).matches);
 
   useEffect(() => {
     if (typeof window.matchMedia !== 'function') return;

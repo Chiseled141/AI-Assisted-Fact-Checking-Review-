@@ -2,18 +2,21 @@ from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from sqlalchemy import update
+from sqlalchemy import select
 
 from .api import router
+from .charts.data_sources import DataUsa, OpenMeteoClimate, WorldBankData, YahooMarketData
 from .core.config import Settings, get_settings
 from .db.migrate import run_migrations
 from .db.models import Check
 from .db.session import SessionLocal, engine
+from .pipeline.progress import closed_tasks
 from .pipeline.run import Providers, run_check
-from .providers.cache import CachedFactChecks, make_cache
-from .providers.fetcher import fetch_page
 from .providers.llm import OpenRouterLLM
-from .providers.search import GoogleFactChecks, TavilySearch
+from .search.fetcher import fetch_page
+from .search.tavily import TavilySearch
+
+RESTARTED = "The server restarted while this check was running."
 
 
 def make_providers(settings: Settings) -> Providers | None:
@@ -22,8 +25,11 @@ def make_providers(settings: Settings) -> Providers | None:
     return Providers(
         llm=OpenRouterLLM(settings),
         search=TavilySearch(settings),
-        fact_checks=CachedFactChecks(GoogleFactChecks(settings), make_cache(settings), settings.fact_check_cache_seconds),
         fetch=lambda url: fetch_page(url, settings),
+        market=YahooMarketData(settings),
+        climate=OpenMeteoClimate(settings),
+        country_data=WorldBankData(settings),
+        state_data=DataUsa(settings),
     )
 
 
@@ -41,11 +47,10 @@ async def lifespan(_: FastAPI):
     run_migrations(engine)
     # Checks run inside this process, so any still running died with the last one.
     with SessionLocal() as session:
-        session.execute(
-            update(Check)
-            .where(Check.status.not_in(["completed", "failed"]))
-            .values(status="failed", error_message="The server restarted while this check was running.")
-        )
+        for check in session.scalars(select(Check).where(Check.status.not_in(["completed", "failed"]))):
+            check.status = "failed"
+            check.error_message = RESTARTED
+            check.progress = closed_tasks(check.progress, RESTARTED)
         session.commit()
     yield
 

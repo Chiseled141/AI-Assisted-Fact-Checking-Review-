@@ -13,18 +13,11 @@ interface Props {
 
 /** The lab's logo. */
 function JudgeLogo({ option, className }: { option: JudgeOption; className: string }) {
-  return (
-    <img
-      src={option.logo}
-      alt=""
-      className={`shrink-0 ${className}`}
-      draggable={false}
-    />
-  );
+  return <img src={option.logo} alt="" className={`shrink-0 ${className}`} draggable={false} />;
 }
 
 /**
- * Chooses the two LLM judges for the next check, as a small popover like the demo scenario picker.
+ * Chooses the two LLM judges for the next check in a small popover.
  * Picking a third judge swaps out the older choice, so there is always exactly the configured number.
  */
 export function JudgePicker({ value, onChange }: Props) {
@@ -89,7 +82,7 @@ export function JudgePicker({ value, onChange }: Props) {
         <div
           ref={menuRef}
           id={menuId}
-          className="absolute bottom-full right-0 z-40 mb-2 w-[20rem] max-w-[calc(100vw-2.5rem)] rounded-2xl border border-line bg-white p-1.5 text-left shadow-[0_24px_60px_-24px_rgb(18_56_41_/_0.35)]"
+          className="absolute bottom-full right-0 z-40 mb-2 max-h-[min(24rem,50dvh)] w-[20rem] max-w-[calc(100vw-2.5rem)] overflow-y-auto rounded-2xl border border-line bg-white p-1.5 text-left shadow-[0_24px_60px_-24px_rgb(18_56_41_/_0.35)]"
         >
           <fieldset>
             <legend className="px-3 pb-1 pt-2 font-sans text-xs text-ink-muted">
@@ -102,17 +95,13 @@ export function JudgePicker({ value, onChange }: Props) {
                   <label
                     key={option.id}
                     className={`flex cursor-pointer items-center gap-3 rounded-xl px-3 py-3 font-sans text-sm transition-colors has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-brand-500/40 ${
-                      selected
-                        ? 'bg-zinc-100/70 text-ink'
-                        : 'text-ink-soft hover:bg-zinc-100/70'
+                      selected ? 'bg-zinc-100/70 text-ink' : 'text-ink-soft hover:bg-zinc-100/70'
                     }`}
                   >
                     <span
                       aria-hidden="true"
                       className={`flex h-4 w-4 shrink-0 items-center justify-center rounded border transition-colors ${
-                        selected
-                          ? 'border-brand-600 bg-brand-600 text-on-primary'
-                          : 'border-line-strong bg-white'
+                        selected ? 'border-brand-600 bg-brand-600 text-on-primary' : 'border-line-strong bg-white'
                       }`}
                     >
                       {selected && <Check className="h-3 w-3" strokeWidth={3} aria-hidden="true" />}

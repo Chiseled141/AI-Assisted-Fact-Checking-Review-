@@ -1,6 +1,6 @@
 import { type CSSProperties, useCallback, useEffect, useRef, useState } from 'react';
-import { Link, useSearchParams } from 'react-router-dom';
-import { ArrowLeft, ArrowRight, ArrowUpRight } from 'lucide-react';
+import { useSearchParams } from 'react-router-dom';
+import { ArrowLeft, ArrowRight } from 'lucide-react';
 import type { AssessmentRevision, CheckDetail, Claim } from '../../types/models';
 import { checkService } from '../../services';
 import { verdictLabel } from '../../lib/format';
@@ -10,6 +10,7 @@ import { EvidencePanel, type EvidenceState } from './EvidencePanel';
 import { CorrectionDialog } from './CorrectionDialog';
 import { RevisionDrawer } from './RevisionDrawer';
 import { t } from '../../lib/i18n';
+import { UncheckableResult } from './UncheckableResult';
 
 interface Props {
   check: CheckDetail;
@@ -39,6 +40,9 @@ export function ResultsView({ check, onReload }: Props) {
 
   const selected = check.claims.find((claim) => claim.id === selectedId) ?? check.claims[0] ?? null;
   const selectedEvidence = selected ? evidenceByClaim[selected.id] : undefined;
+  const failedJudges = (check.progress ?? []).filter((event) =>
+    event.task === 'judging' && event.status === 'failed' && event.claimPosition === selected?.position,
+  );
 
   const loadEvidence = useCallback(async (claimId: string) => {
     setEvidenceByClaim((prev) => ({ ...prev, [claimId]: { kind: 'loading' } }));
@@ -86,23 +90,7 @@ export function ResultsView({ check, onReload }: Props) {
     return detail?.claims.find((claim) => claim.id === selected?.id) ?? null;
   }
 
-  if (check.claims.length === 0) {
-    return (
-      <div className="mx-auto w-full max-w-[1040px] px-4 pb-24 pt-8 sm:px-6 sm:pt-10">
-        <div className="rounded-2xl border border-line bg-white px-6 py-16 text-center">
-          <h1 className="text-[20px] leading-[1.3] tracking-[-0.015em] text-ink">{t('No claims found')}</h1>
-          <p className="mt-2 text-sm text-ink-muted">{t('No checkable factual claims were extracted from this input.')}</p>
-          <Link
-            to="/"
-            className="mt-6 inline-flex items-center gap-1.5 rounded-full bg-ink py-2 pl-4 pr-3.5 text-sm font-medium text-page transition-opacity hover:opacity-90"
-          >
-            {t('Start a new check')}
-            <ArrowUpRight className="h-4 w-4" aria-hidden="true" />
-          </Link>
-        </div>
-      </div>
-    );
-  }
+  if (check.claims.length === 0) return <UncheckableResult check={check} />;
 
   const evidenceItems = selectedEvidence?.kind === 'ready' ? selectedEvidence.items : null;
 
@@ -136,6 +124,16 @@ export function ResultsView({ check, onReload }: Props) {
 
         {selected && (
           <div key={selected.id} className="press-rise mt-10">
+            {failedJudges.length > 0 && (
+              <ul aria-label={t('Unavailable judges')} className="mb-4 space-y-1 rounded-xl border border-line bg-white p-4 text-sm text-ink-soft">
+                {failedJudges.map((event) => (
+                  <li key={event.id}>
+                    <strong className="font-semibold">{event.modelName}: </strong>
+                    {t(event.summary ?? 'This model could not return a valid assessment.')}
+                  </li>
+                ))}
+              </ul>
+            )}
             <EvidencePanel
               claim={selected}
               claimCount={check.claims.length}
@@ -147,7 +145,10 @@ export function ResultsView({ check, onReload }: Props) {
         )}
 
         {(previousClaim || nextClaim) && (
-          <nav aria-label={t('Move between claims')} className="mt-10 flex flex-wrap items-center justify-between gap-3 border-t border-line pt-6">
+          <nav
+            aria-label={t('Move between claims')}
+            className="mt-10 flex flex-wrap items-center justify-between gap-3 border-t border-line pt-6"
+          >
             {previousClaim ? (
               <button
                 type="button"
@@ -185,12 +186,7 @@ export function ResultsView({ check, onReload }: Props) {
             onReloadLatest={reloadLatest}
             onShowHistory={() => setDialog('history')}
           />
-          <RevisionDrawer
-            open={dialog === 'history'}
-            claim={selected}
-            evidence={evidenceItems}
-            onClose={() => setDialog(null)}
-          />
+          <RevisionDrawer open={dialog === 'history'} claim={selected} evidence={evidenceItems} onClose={() => setDialog(null)} />
         </>
       )}
     </div>

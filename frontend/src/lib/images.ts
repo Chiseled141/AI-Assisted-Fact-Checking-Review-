@@ -23,7 +23,7 @@ function loadImage(src: string): Promise<HTMLImageElement> {
   });
 }
 
-/** Downscales large images to JPEG so they fit in demo storage. Small images are kept as-is. */
+/** Downscales large images to JPEG before submission. Small images are kept as-is. */
 async function shrink(dataUrl: string, file: File): Promise<{ dataUrl: string; type: string }> {
   if (file.size <= limits.maxStoredBytes / 2 || file.type === 'image/gif') return { dataUrl, type: file.type };
   const img = await loadImage(dataUrl);
@@ -47,13 +47,10 @@ function newAttachmentId(): string {
 }
 
 /**
- * Validates, reads, and (if needed) shrinks images in the browser. Nothing is uploaded.
+ * Validates, reads, and (if needed) shrinks images before they are attached to a correction request.
  * Returns accepted attachments plus one message per rejected file.
  */
-export async function readScreenshots(
-  picked: File[],
-  existingCount: number,
-): Promise<{ added: Attachment[]; errors: string[] }> {
+export async function readScreenshots(picked: File[], existingCount: number): Promise<{ added: Attachment[]; errors: string[] }> {
   const added: Attachment[] = [];
   const errors: string[] = [];
 
@@ -68,7 +65,8 @@ export async function readScreenshots(
       const { dataUrl, type } = await shrink(await readDataUrl(file), file);
       const size = Math.round((dataUrl.length - dataUrl.indexOf(',') - 1) * 0.75);
       if (!isSafeImageDataUrl(dataUrl)) errors.push(t('“{name}” could not be read as an image.', { name }));
-      else if (size > limits.maxStoredBytes) errors.push(t('“{name}” is still too large after resizing. Try cropping it.', { name }));
+      else if (size > limits.maxStoredBytes)
+        errors.push(t('“{name}” is still too large after resizing. Try cropping it.', { name }));
       else added.push({ id: newAttachmentId(), name, type, size, dataUrl });
     } catch {
       errors.push(t('“{name}” could not be read as an image.', { name }));

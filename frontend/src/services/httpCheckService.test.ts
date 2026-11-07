@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
-vi.mock('./mode', () => ({ apiUrl: 'http://api.test', demoMode: false }));
+vi.mock('./api', () => ({ apiUrl: 'http://api.test' }));
 
 import { httpCheckService } from './httpCheckService';
 import { NotFoundError, ValidationError, VersionConflictError } from './errors';
@@ -14,11 +14,11 @@ function reply(status: number, body: unknown) {
 afterEach(() => vi.unstubAllGlobals());
 
 describe('httpCheckService', () => {
-  it('posts a new check without the demo scenario', async () => {
+  it('posts a new check with the selected model IDs', async () => {
     const fetchMock = reply(202, { id: 'chk_1', status: 'queued' });
-    const check = await httpCheckService.createCheck({ inputType: 'url', url: 'https://a.org/b', scenario: 'failed' });
+    const check = await httpCheckService.createCheck({ inputType: 'url', url: 'https://a.org/b', judgeIds: ['gpt-luna', 'gemma-4-31b'] });
     expect(fetchMock.mock.calls[0][0]).toBe('http://api.test/api/check');
-    expect(JSON.parse(fetchMock.mock.calls[0][1].body)).toEqual({ inputType: 'url', url: 'https://a.org/b' });
+    expect(JSON.parse(fetchMock.mock.calls[0][1].body)).toEqual({ inputType: 'url', url: 'https://a.org/b', judgeIds: ['gpt-luna', 'gemma-4-31b'] });
     expect(check.id).toBe('chk_1');
   });
 

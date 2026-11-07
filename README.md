@@ -7,6 +7,6 @@ An AI-assisted fact-checking web app. It extracts claims from text, a link or a 
 | `frontend/` | React, TypeScript, Vite | `npm install && npm run dev` |
 | `backend/` | FastAPI pipeline and API | `uv sync && uv run uvicorn app.main:app --port 8000` |
 
-The frontend runs on its own in demo mode, with sample data. To use the real backend, follow [`AGENT.md`](AGENT.md).
+The frontend always uses the backend, and there is no demo mode.
 
 Architecture, a guide to the files, and project rules are in [`AGENT.md`](AGENT.md).

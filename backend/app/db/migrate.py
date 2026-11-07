@@ -4,12 +4,12 @@ from alembic import command
 from alembic.config import Config
 from sqlalchemy.engine import Engine
 
-BACKEND = Path(__file__).parent.parent.parent
+DB_DIR = Path(__file__).parent
 
 
 def alembic_config() -> Config:
-    config = Config(BACKEND / "alembic.ini")
-    config.set_main_option("script_location", str(BACKEND / "migrations"))
+    config = Config(DB_DIR / "alembic.ini")
+    config.set_main_option("script_location", str(DB_DIR / "migrations"))
     return config
 
 

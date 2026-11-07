@@ -31,5 +31,4 @@ def health(request: Request, settings: Settings = Depends(get_settings)):
     return {
         "ok": True,
         "canRunChecks": request.app.state.start_check is not None,
-        "factCheckLookup": bool(settings.google_factcheck_api_key),
     }

@@ -19,10 +19,22 @@ export function validateText(value: string, limits: TextLimits = config.text): s
   return null;
 }
 
+/**
+ * What a single box should do with what was pasted: a link on its own is an article to read, and anything else is text.
+ * Returns the address to read, with `https://` added if it was left off, or `null` for text.
+ */
+export function urlInInput(value: string): string | null {
+  const trimmed = value.trim();
+  if (!trimmed || /\s/.test(trimmed)) return null;
+  if (/^[a-z][a-z0-9+.-]*:\/\//i.test(trimmed)) return trimmed;
+  return /^(?:[a-z0-9-]+\.)+[a-z]{2,}(?:[/?#]\S*)?$/i.test(trimmed) ? `https://${trimmed}` : null;
+}
+
 export function validateUrl(value: string, maxLength: number = config.url.maxLength): string | null {
   const trimmed = value.trim();
   if (trimmed.length === 0) return t('Enter a URL to check.');
-  if (trimmed.length > maxLength) return t('URL is too long. Use {count} characters or fewer.', { count: maxLength.toLocaleString('en-US') });
+  if (trimmed.length > maxLength)
+    return t('URL is too long. Use {count} characters or fewer.', { count: maxLength.toLocaleString('en-US') });
   if (/\s/.test(trimmed)) return t('URLs cannot contain spaces.');
 
   let parsed: URL;
@@ -49,18 +61,16 @@ export interface FileLimits {
 }
 
 /** Validates typed text together with any attached files. */
-export function validateTextSubmission(
-  text: string,
-  files: { text: string }[],
-  limits: TextLimits = config.text,
-): string | null {
+export function validateTextSubmission(text: string, files: { text: string }[], limits: TextLimits = config.text): string | null {
   if (files.length === 0) return validateText(text, limits);
   if (text.length > limits.maxLength) {
     return t('Text is too long. Shorten it to {count} characters or fewer.', { count: limits.maxLength.toLocaleString('en-US') });
   }
   const total = text.trim().length + files.reduce((sum, file) => sum + file.text.trim().length, 0);
   if (total < limits.minLength) {
-    return t('Add at least {count} characters of text or file content so there is a claim to check.', { count: limits.minLength });
+    return t('Add at least {count} characters of text or file content so there is a claim to check.', {
+      count: limits.minLength,
+    });
   }
   return null;
 }
@@ -74,10 +84,16 @@ export function validateFile(
   if (existing.length >= limits.maxFiles) return t('You can add up to {count} files.', { count: limits.maxFiles });
   const lower = file.name.toLowerCase();
   if (!limits.extensions.some((ext) => lower.endsWith(ext))) {
-    return t('“{name}” is not supported. Add a plain-text file ({types}).', { name: file.name, types: limits.extensions.join(', ') });
+    return t('“{name}” is not supported. Add a plain-text file ({types}).', {
+      name: file.name,
+      types: limits.extensions.join(', '),
+    });
   }
   if (file.size > limits.maxBytes) {
-    return t('“{name}” is too large. Files can be up to {size} KB.', { name: file.name, size: Math.round(limits.maxBytes / 1024) });
+    return t('“{name}” is too large. Files can be up to {size} KB.', {
+      name: file.name,
+      size: Math.round(limits.maxBytes / 1024),
+    });
   }
   if (existing.some((item) => item.name === file.name)) return t('“{name}” is already added.', { name: file.name });
   return null;
@@ -88,7 +104,10 @@ export function validateFileText(name: string, text: string, limits: FileLimits 
   if (text.includes('\u0000')) return t('“{name}” does not look like a text file.', { name });
   if (text.trim().length === 0) return t('“{name}” is empty.', { name });
   if (text.length > limits.maxChars) {
-    return t('“{name}” has too much text. Files can contain up to {count} characters.', { name, count: limits.maxChars.toLocaleString('en-US') });
+    return t('“{name}” has too much text. Files can contain up to {count} characters.', {
+      name,
+      count: limits.maxChars.toLocaleString('en-US'),
+    });
   }
   return null;
 }
@@ -106,9 +125,13 @@ export function validateScreenshot(
   limits: ScreenshotLimits = config.correction.screenshots,
 ): string | null {
   if (existingCount >= limits.maxFiles) return t('You can attach up to {count} screenshots.', { count: limits.maxFiles });
-  if (!limits.types.includes(file.type)) return t('“{name}” is not a supported image. Use PNG, JPG, WebP, or GIF.', { name: file.name });
+  if (!limits.types.includes(file.type))
+    return t('“{name}” is not a supported image. Use PNG, JPG, WebP, or GIF.', { name: file.name });
   if (file.size > limits.maxBytes) {
-    return t('“{name}” is too large. Images can be up to {size} MB.', { name: file.name, size: Math.round(limits.maxBytes / 1024 / 1024) });
+    return t('“{name}” is too large. Images can be up to {size} MB.', {
+      name: file.name,
+      size: Math.round(limits.maxBytes / 1024 / 1024),
+    });
   }
   return null;
 }

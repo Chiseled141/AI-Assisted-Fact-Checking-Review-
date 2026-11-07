@@ -6,6 +6,7 @@ from sqlalchemy.orm import Session
 from ..core.config import Settings, get_settings
 from ..db import models
 from ..db.session import get_session
+from ..pipeline.passages import saved_excerpt
 from . import schemas
 from .deps import get_or_404
 from .serializers import claim_out, revision_out
@@ -16,6 +17,7 @@ router = APIRouter()
 @router.get("/claims/{claim_id}/evidence", response_model=list[schemas.EvidenceOut])
 def claim_evidence(claim_id: str, session: Session = Depends(get_session)):
     claim = get_or_404(session, models.Claim, claim_id)
+    excerpts = {item.id: saved_excerpt(item.excerpt, item.source.text, claim.text) for item in claim.evidence}
     return [
         schemas.EvidenceOut(
             id=item.id,
@@ -23,12 +25,13 @@ def claim_evidence(claim_id: str, session: Session = Depends(get_session)):
             source_title=item.source.title,
             publisher=item.source.publisher,
             url=item.source.url,
-            excerpt=item.excerpt,
+            excerpt=excerpts[item.id],
+            # A translation belongs to one quote, so it goes when cleaning has changed the saved text.
+            translations=item.translations if excerpts[item.id] == item.excerpt else None,
             published_at=item.source.published_at,
             retrieved_at=item.source.retrieved_at,
             image_url=item.source.image_url,
             relation=item.relation,
-            analysis=item.source.analysis,
         )
         for item in claim.evidence
     ]

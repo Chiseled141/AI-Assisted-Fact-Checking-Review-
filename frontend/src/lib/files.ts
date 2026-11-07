@@ -13,7 +13,7 @@ function readFileText(file: File): Promise<string> {
 }
 
 /**
- * Validates and reads picked files in the browser. Nothing is uploaded.
+ * Validates and reads picked files in the browser. Their text is included when the check is submitted.
  * Returns the files that were accepted plus one message per rejected file.
  */
 export async function readTextFiles(

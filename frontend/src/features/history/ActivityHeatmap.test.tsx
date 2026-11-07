@@ -1,7 +1,19 @@
-import { describe, expect, it } from 'vitest';
+import { beforeEach, describe, expect, it } from 'vitest';
 import { screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { renderApp } from '../../test/renderApp';
+import { makeCheck } from '../../test/fixtures';
+import { interceptRequests, jsonResponse } from '../../test/http';
+
+beforeEach(() => {
+  const createdAt = new Date().toISOString();
+  const checks = [makeCheck({ createdAt }), makeCheck({ id: 'chk_failed', status: 'failed', createdAt })];
+  interceptRequests((url) => {
+    if (url.pathname !== '/api/checks') throw new Error(`Unexpected request: ${url}`);
+    const items = url.searchParams.get('status') === 'failed' ? checks.slice(1) : checks;
+    return jsonResponse({ items, page: 1, pageSize: 100, total: items.length, totalPages: 1 });
+  });
+});
 
 describe('History heatmap', () => {
   it('counts the checks per day, with the same numbers in a table for screen readers', async () => {

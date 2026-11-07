@@ -6,7 +6,7 @@ from typing import Annotated, Literal
 from pydantic import BaseModel, ConfigDict, Field, PlainSerializer
 from pydantic.alias_generators import to_camel
 
-from ..core.labels import Freshness, Relation, Verdict
+from ..core.labels import Freshness, InputCategory, Relation, Verdict
 
 # SQLite drops time zones, and every time here is UTC. Without the offset, browsers would read them as local time.
 UtcTime = Annotated[datetime, PlainSerializer(lambda value: value.replace(tzinfo=UTC).isoformat(), return_type=str)]
@@ -51,13 +51,13 @@ class CheckOut(ApiModel):
     input_url: str | None = None
     files: list[SubmittedFile] | None = None
     article: dict | None = None
-    claims_match_input: bool = True
     status: str
     created_at: UtcTime
     updated_at: UtcTime
     claim_count: int | None = None
     error_message: str | None = None
     judge_ids: list[str]
+    input_category: InputCategory | None = None
 
 
 class JudgeVerdictOut(ApiModel):
@@ -65,7 +65,9 @@ class JudgeVerdictOut(ApiModel):
     verdict: Verdict
     confidence: float
     review: str
+    translations: dict[str, str] | None = None
     primary: bool
+    model: str | None = None
 
 
 class RevisionOut(ApiModel):
@@ -96,11 +98,49 @@ class ClaimOut(ApiModel):
     current_version: int
     current: RevisionOut | None = None
     unavailable_reason: str | None = None
-    fact_check: dict | None = None
+    price_chart: dict | None = None
+    location_map: dict | None = None
+    heat_map: dict | None = None
+    country_map: dict | None = None
+    seat_chart: dict | None = None
+    election_map: dict | None = None
+    rephrased_from: str | None = None
+
+
+class TaskProgressOut(ApiModel):
+    """One real task on the Checking screen. Written in `pipeline/progress.py`."""
+
+    id: str
+    kind: Literal["ai", "search", "data"] = "ai"  # Checks saved before this field only recorded model calls.
+    # Saved checks keep the names of their time, so these stay open rather than failing an old check.
+    task: str
+    status: Literal["running", "completed", "failed"]
+    # AI tasks.
+    model_name: str | None = None
+    requested_model: str | None = None
+    actual_model: str | None = None  # What the provider says answered.
+    actual_model_name: str | None = None
+    # Tavily and chart data tasks.
+    service: str | None = None
+    chart: str | None = None
+    phase: Literal["searching", "reading"] | None = None
+    search_count: int | None = None
+    source_count: int | None = None
+    source_target: int | None = None
+    state_count: int | None = None
+    started_at: str
+    finished_at: str | None = None
+    claim_position: int | None = None
+    claim_count: int | None = None
+    input_category: InputCategory | None = None
+    summary: str | None = None
+    translations: dict[str, str] | None = None  # The summary in other languages, written by the model itself.
+    verdict: Verdict | None = None
 
 
 class CheckDetailOut(CheckOut):
     claims: list[ClaimOut]
+    progress: list[TaskProgressOut] = []
 
 
 class EvidenceOut(ApiModel):
@@ -110,11 +150,11 @@ class EvidenceOut(ApiModel):
     publisher: str | None = None
     url: str
     excerpt: str
+    translations: dict[str, str] | None = None
     published_at: str | None = None
     retrieved_at: UtcTime
     image_url: str | None = None
     relation: Relation
-    analysis: dict | None = None
 
 
 class CheckPage(ApiModel):

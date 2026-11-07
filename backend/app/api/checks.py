@@ -12,7 +12,7 @@ from sqlalchemy.orm import Session
 from ..core.config import Settings, get_settings
 from ..db import models
 from ..db.session import get_session
-from ..providers.fetcher import FetchError, check_url_allowed
+from ..search.fetcher import FetchError, check_url_allowed
 from . import schemas
 from .deps import get_or_404
 from .serializers import check_out, claim_out
@@ -24,7 +24,7 @@ _recent_checks_lock = Lock()
 
 
 def enforce_rate_limit(address: str, settings: Settings, now: float | None = None) -> None:
-    """Per process and per address, which is enough for one server. A shared limit would need Redis."""
+    """Per process and per address, which is enough for one server. A shared limit would need a shared store."""
     limit = settings.max_checks_per_hour
     if not limit:
         return
@@ -61,9 +61,7 @@ def validate_input(body: schemas.CreateCheck, settings: Settings) -> list[str]:
             raise HTTPException(422, "Enter some text or attach a file.")
         if len(body.text or "") > settings.max_text_length:
             raise HTTPException(422, f"Text can be at most {settings.max_text_length} characters.")
-        if len(body.files) > settings.max_files or any(
-            len(file.text.encode()) > settings.max_file_bytes for file in body.files
-        ):
+        if len(body.files) > settings.max_files or any(len(file.text.encode()) > settings.max_file_bytes for file in body.files):
             raise HTTPException(422, f"Attach at most {settings.max_files} files, each within the size limit.")
     judge_ids = body.judge_ids or settings.default_judge_ids
     if len(set(judge_ids)) != 2 or any(judge not in settings.judges for judge in judge_ids):
@@ -102,7 +100,9 @@ def create_check(
 def get_check(check_id: str, session: Session = Depends(get_session)):
     check = get_or_404(session, models.Check, check_id)
     return schemas.CheckDetailOut(
-        **check_out(check, session).model_dump(), claims=[claim_out(claim) for claim in check.claims]
+        **check_out(check, session).model_dump(),
+        claims=[claim_out(claim) for claim in check.claims],
+        progress=check.progress or [],
     )
 
 

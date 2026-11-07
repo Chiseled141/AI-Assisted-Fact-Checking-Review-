@@ -50,6 +50,11 @@ export function locale(): string {
   return language === 'vi' ? 'vi-VN' : 'en-US';
 }
 
+/** Text a model wrote itself: its version in the reader's language if it gave one, otherwise as written. */
+export function inLanguage(original: string, translations?: Partial<Record<Language, string>> | null): string {
+  return translations?.[language] ?? original;
+}
+
 /** A label map whose values are translated each time one is read. */
 export function translated<K extends string>(labels: Record<K, string>): Record<K, string> {
   return new Proxy(labels, { get: (target, key) => t(target[key as K]) });

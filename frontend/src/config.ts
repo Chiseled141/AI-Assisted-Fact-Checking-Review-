@@ -1,4 +1,4 @@
-// Tunable limits and demo timings. Adjust here rather than in components.
+// Tunable interface limits. Adjust here rather than in components.
 export const config = {
   text: { minLength: 20, maxLength: 5000 },
   url: { maxLength: 2048 },
@@ -12,8 +12,9 @@ export const config = {
   },
   history: { pageSize: 20 },
   /**
-   * LLM judges offered in the new-check picker. Names are display labels only; real model IDs
-   * go here once they are confirmed. `defaultIds` is the picker's starting pair (demo only); the
+   * LLM judges offered in the new-check picker. IDs and names must match `[judges]` in
+   * backend/config/models.toml, which holds the OpenRouter model IDs.
+   * `defaultIds` is the picker's starting pair; the
    * evaluation pair is frozen separately after a test on about 30 claims.
    */
   judges: {
@@ -25,6 +26,8 @@ export const config = {
       { id: 'glm-5-3-flash', name: 'GLM 5.3 Flash', lab: 'Z.ai', logo: '/logos/zai.svg' },
       { id: 'qwen-flash', name: 'Qwen3.8 Flash', lab: 'Alibaba', logo: '/logos/qwen.svg' },
       { id: 'minimax-flash', name: 'MiniMax M3.1 Flash', lab: 'MiniMax', logo: '/logos/minimax.svg' },
+      { id: 'gemma-4-31b', name: 'Gemma 4 31B', lab: 'Google', logo: '/source-logos/google-com.png' },
+      { id: 'nemotron-ultra', name: 'Nemotron 3 Ultra', lab: 'NVIDIA', logo: '/logos/nvidia.ico' },
     ],
     defaultIds: ['gpt-luna', 'claude-haiku'],
   },
@@ -33,7 +36,7 @@ export const config = {
     showReviewButton: false,
     minReasonLength: 10,
     maxReasonLength: 1000,
-    /** Screenshots are shrunk in the browser so demo data fits in localStorage. */
+    /** Screenshots are shrunk in the browser before being sent to the backend. */
     screenshots: {
       maxFiles: 3,
       maxBytes: 8 * 1024 * 1024,
@@ -43,10 +46,4 @@ export const config = {
       accept: 'image/png,image/jpeg,image/webp,image/gif',
     },
   },
-  /** Simulated duration (ms) of each processing stage before advancing. */
-  stageDurations: { queued: 900, extracting: 1400, retrieving: 1600, assessing: 1400 },
-  /** Simulated network latency (ms) for mock service calls. */
-  mockLatency: 180,
-  storageKey: 'claimtrace.demo',
-  storageSchemaVersion: 16,
 } as const;

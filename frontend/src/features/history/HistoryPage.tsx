@@ -1,12 +1,13 @@
 import { useEffect, useId, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
-import { AlignLeft, ChevronLeft, ChevronRight, FileText, Link2, Loader2, Plus, Search } from 'lucide-react';
+import { AlignLeft, ArrowUpRight, ChevronLeft, ChevronRight, FileText, Link2, Loader2, Plus, Search } from 'lucide-react';
 import type { Check, ListChecksParams, Page } from '../../types/models';
-import { checkService, demoMode } from '../../services';
+import { checkService } from '../../services';
 import { formatDate, formatTime, inputTypeLabel, pluralize } from '../../lib/format';
 import { StatusBadge } from '../../components/Badges';
 import { t, useLanguage } from '../../lib/i18n';
 import { ActivityHeatmap } from './ActivityHeatmap';
+import { inputCategoryLabel } from '../results/UncheckableResult';
 
 type StatusFilter = NonNullable<ListChecksParams['status']>;
 
@@ -28,7 +29,8 @@ const pageButton =
 /** What was checked, as a quiet icon, so the titles stay the only thing to scan. */
 function InputIcon({ check }: { check: Check }) {
   const file = !!check.files?.length;
-  const label = check.inputType === 'url' ? inputTypeLabel.url : file ? pluralize(check.files!.length, 'file') : inputTypeLabel.text;
+  const label =
+    check.inputType === 'url' ? inputTypeLabel.url : file ? pluralize(check.files!.length, 'file') : inputTypeLabel.text;
   const Icon = check.inputType === 'url' ? Link2 : file ? FileText : AlignLeft;
   return (
     <span title={label} className="shrink-0 text-ink-muted">
@@ -113,7 +115,7 @@ export function HistoryPage() {
         <ActivityHeatmap />
       </header>
 
-      <div className="mt-8 flex flex-col-reverse gap-3 border-b border-line sm:flex-row sm:items-end sm:justify-between">
+      <div className="mt-8 flex flex-col-reverse gap-4 border-b border-line pb-1 sm:flex-row sm:items-center sm:justify-between">
         <div role="group" aria-label={t('Filter by status')} className="flex gap-5 overflow-x-auto sm:gap-7">
           {statusOptions.map((option) => {
             const selected = status === option.value;
@@ -123,8 +125,10 @@ export function HistoryPage() {
                 type="button"
                 aria-pressed={selected}
                 onClick={() => updateParams({ status: option.value, page: '1' })}
-                className={`-mb-px min-h-11 shrink-0 border-b-2 text-[15px] font-medium transition-colors focus:outline-none focus-visible:rounded-sm focus-visible:ring-2 focus-visible:ring-brand-700/40 ${
-                  selected ? 'border-brand-700 text-ink' : 'border-transparent text-ink-muted hover:border-line-strong hover:text-ink'
+                className={`-mb-px min-h-11 shrink-0 border-b-2 text-[14px] font-medium transition-colors focus:outline-none focus-visible:rounded-sm focus-visible:ring-2 focus-visible:ring-brand-700/40 ${
+                  selected
+                    ? 'border-brand-700 text-ink'
+                    : 'border-transparent text-ink-muted hover:border-line-strong hover:text-ink'
                 }`}
               >
                 {t(option.label)}
@@ -132,12 +136,12 @@ export function HistoryPage() {
             );
           })}
         </div>
-        <div className="relative w-full pb-2 sm:w-72">
+        <div className="relative w-full sm:w-64">
           <label htmlFor={ids.search} className="sr-only">
             {t('Search checks')}
           </label>
           <Search
-            className="pointer-events-none absolute left-3 top-[18px] h-3.5 w-3.5 -translate-y-1/2 text-ink-muted"
+            className="pointer-events-none absolute left-0 top-[22px] h-3.5 w-3.5 -translate-y-1/2 text-ink-muted"
             aria-hidden="true"
           />
           <input
@@ -146,7 +150,7 @@ export function HistoryPage() {
             value={draftQuery}
             onChange={(e) => setDraftQuery(e.target.value)}
             placeholder={t('Search checks')}
-            className="h-9 w-full rounded-md border border-line bg-white pl-8 pr-3 font-sans text-[13px] text-ink placeholder:text-ink-muted transition-colors hover:border-brand-200 focus:border-brand-600 focus:outline-none focus:ring-2 focus:ring-brand-600/15"
+            className="h-11 w-full border-0 border-b border-transparent bg-transparent pl-6 pr-2 font-sans text-[14px] text-ink placeholder:text-ink-muted transition-colors focus:border-brand-600 focus:outline-none"
           />
         </div>
       </div>
@@ -157,10 +161,7 @@ export function HistoryPage() {
 
       <div className="mt-5">
         {state.kind === 'loading' && (
-          <p
-            className={`${surfacePanel} flex items-center justify-center gap-2 py-20 text-sm text-ink-muted`}
-            role="status"
-          >
+          <p className={`${surfacePanel} flex items-center justify-center gap-2 py-20 text-sm text-ink-muted`} role="status">
             <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" /> {t('Loading history…')}
           </p>
         )}
@@ -186,9 +187,7 @@ export function HistoryPage() {
             <p className="mx-auto mt-2 max-w-sm text-sm leading-[1.7] text-ink-soft">
               {filtered
                 ? t('Try a different search term or status.')
-                : demoMode
-                  ? t('Checks you run in demo mode are saved in this browser and appear here.')
-                  : t('Checks you run appear here.')}
+                : t('Checks you run appear here.')}
             </p>
             {filtered ? (
               <button
@@ -214,40 +213,46 @@ export function HistoryPage() {
                 <section
                   key={group.date}
                   aria-labelledby={`date-group-${groupIndex}`}
-                  className="grid gap-1 border-b border-line py-4 last:border-b-0 sm:grid-cols-[132px_minmax(0,1fr)] sm:gap-x-8 sm:py-5"
+                  className="history-date-group pt-6 first:pt-2"
                 >
-                  <div className="flex items-baseline justify-between sm:block sm:pt-2.5">
+                  <div className="mb-2 flex items-baseline gap-3 border-b border-line pb-2">
                     <h2
                       id={`date-group-${groupIndex}`}
-                      className="font-sans text-[14px] font-medium tracking-[-0.01em] text-ink"
+                      className="font-sans text-[13px] font-semibold tracking-[-0.01em] text-ink"
                     >
                       {group.date}
                     </h2>
-                    <span className="font-sans text-[13px] text-ink-muted sm:mt-0.5 sm:block">
-                      {pluralize(group.items.length, 'check')}
-                    </span>
+                    <span className="font-sans text-[12px] text-ink-muted">{pluralize(group.items.length, 'check')}</span>
                   </div>
-                  <ul className="-mx-3 min-w-0">
+                  <ul className="min-w-0">
                     {group.items.map((check) => (
                       <li key={check.id}>
                         <Link
                           to={`/checks/${check.id}`}
-                          className="group grid gap-x-6 gap-y-1 rounded-md px-3 py-2.5 transition-colors hover:bg-brand-100/60 focus-visible:relative focus-visible:z-10 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center"
+                          className="history-row group grid grid-cols-[minmax(0,1fr)_auto] items-center gap-x-3 gap-y-1 border-b border-line/60 px-2 py-4 focus-visible:relative focus-visible:z-10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-brand-700 sm:gap-x-6 sm:px-3"
                         >
                           <span className="flex min-w-0 items-center gap-2.5">
                             <InputIcon check={check} />
-                            <span className="truncate text-[15px] font-medium tracking-[-0.01em] text-ink">{check.title}</span>
+                            <span className="line-clamp-2 text-[15px] font-medium leading-snug tracking-[-0.01em] text-ink sm:line-clamp-1">
+                              {check.title}
+                            </span>
                           </span>
-                          <span className="flex items-center gap-2 whitespace-nowrap pl-[26px] text-[13px] text-ink-muted sm:pl-0">
+                          <span className="flex items-center justify-end gap-3 whitespace-nowrap text-[12px] tabular-nums text-ink-muted sm:gap-5">
                             {/* A finished check is the normal case, so only the others ask for attention. */}
                             {check.status !== 'completed' && <StatusBadge status={check.status} />}
-                            {check.claimCount !== undefined && (
+                            {check.status === 'completed' && check.claimCount === 0 ? (
+                              <span title={inputCategoryLabel(check.inputCategory)} className="max-w-[105px] truncate rounded-full border border-line-strong bg-white px-2 py-1 text-xs text-ink-soft sm:max-w-[180px]">
+                                {inputCategoryLabel(check.inputCategory)}
+                              </span>
+                            ) : check.claimCount !== undefined && (
                               <>
-                                <span>{pluralize(check.claimCount, 'claim')}</span>
-                                <span aria-hidden="true">·</span>
+                                <span className="hidden sm:inline">{pluralize(check.claimCount, 'claim')}</span>
                               </>
                             )}
-                            <time dateTime={check.createdAt}>{formatTime(check.createdAt)}</time>
+                            <time className="min-w-[68px] text-right" dateTime={check.createdAt}>
+                              {formatTime(check.createdAt)}
+                            </time>
+                            <ArrowUpRight className="history-row-arrow hidden h-4 w-4 sm:block" aria-hidden="true" />
                           </span>
                         </Link>
                       </li>

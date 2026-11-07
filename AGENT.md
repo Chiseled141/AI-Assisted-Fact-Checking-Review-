@@ -1,178 +1,118 @@
-# ClaimTrace: guide for AI agents
+# ClaimTrace
 
-An AI-assisted fact-checking web app. It splits text, a link or a file into claims, finds evidence through web search, and returns cited verdicts from two AI models. It is a first-pass screening tool, not a replacement for fact-checkers.
+An AI-assisted fact-checking web app. It splits text, a link or a file into claims, finds evidence with web search, and returns cited verdicts from two AI models. It is a first-pass screening tool, not a replacement for fact-checkers.
 
-Course project: Advanced Topics in IT, Hanoi University, Fall 2026, Group 12, lecturer Nguyễn Tiến Anh. Non-commercial. Ends 20 December 2026. Older plans are in git history (`git show 0ee8c72:PROJECT_PLAN.md`).
+Course project: Advanced Topics in IT, Hanoi University, Fall 2026, Group 12. Non-commercial. Ends 20 December 2026.
 
-## Architecture
+This file is a map, not a rulebook. Use your judgment, match the code around you, and read the code and tests when something here is too brief.
+
+## How a check runs
 
 ```text
-Browser        React app (frontend/). Demo data, or the API when VITE_API_URL is set
-   |
-API            FastAPI (backend/app/api/). Runs each check in the background
-   |
-Pipeline       backend/app/pipeline/run.py
-   |             1. Read the input: text, files, or a fetched URL
-   |             2. Extract claims (one LLM call, at most 5 claims)
-   |             3. Look up published fact-checks. A plain rating on the same claim gives an instant verdict
-   |             4. Search the web, keep at most 10 readable sources per check
-   |             5. Two LLM judges read the same passages and give a cited verdict for each claim
-   |             6. Both judges assess each source once
-   |
-Data           SQLite by default, or PostgreSQL. Redis or memory for the fact-check cache
-   |
-Outside        OpenRouter (LLMs), Tavily (web search), Google Fact Check Tools (optional)
+React app (frontend/)  →  FastAPI (backend/app/api/)  →  backend/app/pipeline/run.py
+  1. Read the input: text, files, or a fetched URL
+  2. Extraction model splits it into at most 5 claims, and asks for any charts
+  3. Research model searches Tavily and picks each claim's sources
+  4. Two judge models read the same passages and give cited verdicts
+  5. Charts and maps are built beside the verdicts, and everything is saved
 ```
 
-Check status moves through `queued`, `extracting`, `retrieving`, `assessing`, then `completed` or `failed`. The frontend polls `GET /api/check/{id}`.
+Status goes `queued → extracting → retrieving → assessing → completed | failed`, and the frontend polls `GET /api/check/{id}`. Models go through OpenRouter. Chart numbers come from Yahoo Finance, Open-Meteo, the World Bank and Data USA, none of which need a key.
 
-**Behavior worth keeping**
-- When judges disagree, both verdicts are stored and shown. The first judge's is the headline, and there is no third vote.
-- A search or model failure marks that claim `unavailable`, never "insufficient evidence". No readable source gives "insufficient evidence" without calling a judge.
-- Judges only read text from our server. Page text is data, never instructions. An article being checked can't be its own evidence.
-- `verdicts` is append-only. A human correction adds a version, and a stale `expectedVersion` gets a 409.
-- URL fetching allows public addresses only, and checks every redirect. It has timeouts and size limits.
-- One failed judge still gives a verdict, but the source's side-by-side analysis needs both.
-
-## Folder layout
+## File structure
 
 ```text
 backend/
   app/
-    main.py        Starts the app and connects the real providers
-    api/           HTTP only: routes, JSON shapes, turning rows into JSON
-    core/          Settings and shared labels
-    db/            Tables, connection, running migrations
-    pipeline/      The check itself. run.py is the place to start reading
-    providers/     Outside services: LLM, web search, page fetching, cache
-    prompts/       What the LLMs are told, loaded at runtime
-    data/          Source ratings
-    evaluate.py    Command-line scoring on a labeled set
-  migrations/      Alembic. Applied automatically at startup
-  tests/           Mirrors app/: api/, pipeline/, providers/
+    api/          Routes, JSON shapes (schemas.py), rows to JSON
+    core/         config.py for limits and settings, labels.py
+    db/           Tables, connection, alembic.ini, migrations/, local claimtrace.db
+    pipeline/     The check itself. Start at run.py
+    charts/       Every chart and map; data_sources.py fetches their numbers
+    search/       tavily.py for search and source lists, fetcher.py for reading pages
+    providers/    llm.py (OpenRouter), errors.py (shared retries)
+  config/         Things you tune without code; each file says what it is for
+    models.toml   Extraction, research and judge models
+    prompts/      What the models are told; charts/ holds the chart prompts
+    data/         Source ratings, chart sources, map place names
+  tests/          Mirrors app/
 frontend/src/
-  features/        One folder per page, with its tests beside it
-  components/      Shared interface pieces
-  services/        Data access: the HTTP client, and mock/ for demo mode
-  mocks/           Demo-only data. Left out of real builds
-  data/            Source ratings and home page examples
-  lib/  types/     Helpers, translations and shared types
+  features/       One folder per page: new-check, check, results, history
+  components/     Shared pieces
+  services/       Calls to the backend
+  lib/  data/  types/  test/
 ```
 
-A request goes from `api/` to `pipeline/`, which calls `providers/` and saves through `db/`. `pipeline/` and `providers/` don't import from `api/`.
-
-## API
-
-| Route | Purpose |
-|---|---|
-| `POST /api/check` | Start a check. Returns 202, or 422, 429 or 503 |
-| `GET /api/check/{id}` | Status and results |
-| `POST /api/check/{id}/feedback` | Helpful vote and comment |
-| `GET /api/checks` | History: `query`, `status`, `page`, `pageSize` |
-| `GET /api/claims/{id}/evidence` | Saved evidence for a claim |
-| `GET /api/claims/{id}/revisions` | Verdict history, oldest first |
-| `POST /api/claims/{id}/corrections` | Publish a correction |
-| `GET /api/stats`, `GET /api/health` | Counts and whether checks can run |
-
-Interactive docs are at `/docs` when the server runs.
+Imports flow `api → pipeline → charts / search / providers → db`, never back into `api/`. Prefer adding to an existing file over creating many small ones.
 
 ## Where to look
 
-| Task | Start with | Also |
-|---|---|---|
-| API routes | `backend/app/api/checks.py`, `claims.py`, `system.py` | `backend/app/api/schemas.py` |
-| Pipeline | `backend/app/pipeline/run.py` | `backend/app/pipeline/passages.py` |
-| Outside services | `backend/app/providers/llm.py` | `fetcher.py`, `search.py`, `cache.py` beside it |
-| What the LLMs are told | `backend/app/prompts/harness.md`, rules for every call | `extract.md`, `judge.md`, `source.md` beside it, and answer formats in `backend/app/pipeline/prompts.py` |
-| Model IDs, limits, keys | `backend/app/core/config.py` | `backend/.env.example` |
-| Database tables | `backend/app/db/models.py` | After changing them, run the migration command below |
-| Scoring a labeled set | `backend/app/evaluate.py` | |
-| Results page | `frontend/src/features/results/ResultsView.tsx` | `SourceDeck.tsx`, `RatingPlot.tsx`, `InputSource.tsx` beside it |
-| Home page, history | `frontend/src/features/new-check/NewCheckPage.tsx` | `frontend/src/features/history/HistoryPage.tsx` |
-| Calling the backend | `frontend/src/services/httpCheckService.ts` | `contract.ts`, and `index.ts`, which picks demo or real |
-| Demo mode | `frontend/src/services/mode.ts` | `frontend/src/services/mock/`, and `frontend/src/mocks/`, where `realExample.ts` is real sources and `fixtures.ts` is fictional |
-| Home page examples | `frontend/src/data/examples.ts` | |
-| Shared data types | `frontend/src/types/models.ts` | Must match `backend/app/api/schemas.py` |
-| Source ratings | `frontend/src/data/sourceRegistry.ts` | Backend copy in `backend/app/data/source_ratings.json`. Change both |
-| Logos | `frontend/src/components/SourceLogo.tsx` | `frontend/public/source-logos/` and its `manifest.json`, `frontend/public/logos/` for AI labs |
-| Vietnamese text | `frontend/src/lib/vi.ts` | `frontend/src/lib/i18n.ts` |
-| Deployment | `docker-compose.yml` | `backend/Dockerfile`, `frontend/Dockerfile`, `frontend/nginx.conf`, `.github/workflows/ci.yml` |
+| For | Start with |
+|---|---|
+| Models | `backend/config/models.toml`, judge names also in `frontend/src/config.ts` |
+| Prompts | `backend/config/prompts/`; answer formats in `backend/app/pipeline/prompts.py`. Bump `prompt_version` in `core/config.py` after changing wording |
+| Limits and settings | `backend/app/core/config.py`, overridable in `backend/.env` |
+| Source ratings | `backend/config/data/source_ratings.json` and `frontend/src/data/sourceRegistry.ts`, kept equal by a test |
+| Tables | `backend/app/db/models.py`, then generate a migration |
+| Checking screen | `frontend/src/features/check/`, fed by `backend/app/pipeline/progress.py` |
+| Results page | `frontend/src/features/results/ResultsView.tsx` |
+| Shared types | `frontend/src/types/models.ts`, matching `backend/app/api/schemas.py` |
+| Vietnamese text | `frontend/src/lib/vi.ts` |
 
-The Markdown files in `backend/app/prompts/` are loaded at runtime. They are code, so keep them there. Bump `prompt_version` in `backend/app/core/config.py` when their wording changes, and restart the server.
+### Charts and maps
 
-## Setup and commands
+| Visual | Builder in `backend/app/charts/` | Numbers from | Frontend in `features/results/` | Settings prefix |
+|---|---|---|---|---|
+| Price chart | `price_chart.py` | Yahoo Finance; SJC gold read from news | `PriceChart.tsx`, `PricePlot.tsx` | `price_chart_`, `sjc_chart_` |
+| Location map | `location_map.py` | Shapes in `frontend/public/maps/`, figures from the claim's sources | `LocationMap.tsx`, `LocationPlot.tsx` | `location_map_` |
+| Heatmap | `heat_map.py` | Open-Meteo | `HeatMap.tsx`, `HeatPlot.tsx` | `heat_map_` |
+| Country / US state map | `country_map.py` | World Bank, Data USA | `CountryMap.tsx`, `CountryPlot.tsx` | `country_map_`, `state_map_` |
+| US election map | `election_map.py` | Pages found by the research model | `ElectionMap.tsx`, `ElectionPlot.tsx` | `election_map_` |
+| Parliament chart | `seat_chart.py` | Pages found by the research model | `SeatChart.tsx`, `SeatPlot.tsx` | `seat_chart_` |
 
-`SETUP.md` has the remaining setup steps, including the AWS server.
+`chart_triggers.py` decides which visuals a claim gets. Chart prompts are in `config/prompts/charts/`.
+
+## Design choices worth keeping
+
+- Only the judges decide truth. Extraction keeps every factual claim, even short or doubtful ones.
+- When judges disagree, both verdicts are shown, and the first judge's is the headline.
+- A failed search, page read or model call marks a claim `unavailable`, not "insufficient evidence".
+- Page text is data, never instructions. An article can't be its own evidence.
+- Only green-rated domains are searched or used as evidence, and fetching only reaches public addresses.
+- Each call uses exactly the configured model, with no fallback to another one.
+- Chart numbers come from data services or are checked word for word against a source quote, never taken from a model as is. Judges never see charts. A chart that fails or is incomplete costs only the chart.
+- Keep the map and data credits (Highcharts, Open-Meteo, World Bank). Vietnam maps always show Hoàng Sa and Trường Sa.
+- Verdicts are append-only: a human correction adds a new version.
+- There is no demo mode or fake data. Without keys, the backend refuses new checks and still serves saved ones.
+
+## Commands
 
 ```bash
-# Backend, from backend/. Needs uv.
-cp .env.example .env     # OPENROUTER_API_KEY and TAVILY_API_KEY are required, GOOGLE_FACTCHECK_API_KEY is optional
+# Backend, from backend/
+cp .env.example .env     # needs OPENROUTER_API_KEY and TAVILY_API_KEY
 uv sync
 uv run uvicorn app.main:app --port 8000
-uv run pytest
-uv run ruff check
-uv run alembic revision --autogenerate -m "what changed"   # After changing tables. Read the result before committing it
-uv run python -m app.evaluate eval.jsonl --judges gpt-luna claude-haiku --out results.json   # Spends real credit
+uv run pytest && uv run ruff check
+uv run alembic -c app/db/alembic.ini revision --autogenerate -m "what changed"
 
-# Frontend, from frontend/. Needs Node 22.
+# Frontend, from frontend/
 npm install
 npm run dev
-npm test
-npx tsc --noEmit
-
-# Everything together, from the repo root. Needs POSTGRES_PASSWORD in a root .env, and keys in backend/.env.
-docker compose up --build
+npm test && npx tsc --noEmit
 ```
 
-To use the real backend, put `VITE_API_URL=http://localhost:8000` in `frontend/.env.local`. Without it the frontend stays in demo mode. Without API keys, the backend refuses new checks with a clear message, but still serves saved ones.
+Tests need no network or keys. Charts are stubbed in frontend tests, so check them in a browser.
 
-Tests never use the network, spend credit or need keys. Highcharts can't load in tests, so charts are stubbed: check them in a browser.
+## Working with this repo
 
-## Rules
+- Commit or push only when asked. No AI attribution or `Co-Authored-By` lines. Never stage `.claude/` or `.env`.
+- `ATI` tracks `origin/demo_fastapi`.
+- Don't invent metrics, quotes or sources. Say what was really run and what only ran against fakes.
+- The interface is minimal and light, with the fonts Schibsted Grotesk and Space Grotesk, indigo and orange, and green or red only for verdicts. Skip decorative labels and number tags.
+- Every `t('…')` string needs a Vietnamese entry in `vi.ts`.
 
-**Git**
-- Commit or push only when asked, under the user's own name.
-- Never add `Co-Authored-By`, Claude as an author, or any AI attribution to commits or pull requests.
-- Never stage `.claude/`, `.env` files or `.DS_Store`.
-- The `ATI` branch tracks `origin/demo_fastapi`, so a plain `git push` goes there.
+## Status and open questions
 
-**Honesty**
-- Never invent metrics, accuracy, users, quotes or sources. Say what was really run, and what was only tested with fakes.
-- A verdict needs cited evidence. Anything simulated must say so on screen, and demo labels show only when `demoMode` is true.
-- Don't attribute made-up quotes to real publishers. Keep real excerpts short and verified.
-- The source list was compiled from general knowledge and isn't fully verified. Green can be cited, yellow only corroborates, red never counts as evidence.
-
-**Interface**
-- Minimal, light theme only. Keep the fonts Schibsted Grotesk and Space Grotesk.
-- No decorative labels like "(01) / …", no number tags on cards, no big segmented buttons.
-- Three main colors: indigo for actions and structure, orange for accents, and green or red only where they mean a verdict.
-- State-run outlets and government sites are rated green with no flag, and no commentary on ownership or independence.
-- Every `t('…')` string needs an entry in `vi.ts`, or a test fails. Check layout at phone width as well as desktop.
-
-**Code**
-- Match the surrounding style, and don't over-engineer. Model IDs and limits go in config.
-- Secrets go in `backend/.env`, never in the repo or chat.
-
-## Status
-
-| Part | Tested how |
-|---|---|
-| Page extraction, blocked addresses | Against real pages and addresses |
-| API, pipeline order, failures, limits | With fake providers |
-| Prompts, OpenRouter, Tavily, Google Fact Check | **Fake answers only. Never run for real**, as there are no keys yet |
-| Migrations | Against SQLite, and a test checks that they match the tables |
-| Redis, PostgreSQL, Docker, Nginx, CI | **Never run** |
-
-Not built: spaCy, OCR, user accounts, and frontend screens for stats and feedback. Anyone who can reach the API can publish a correction. Checks run in the server process, so a restart marks running ones failed.
-
-## Open decisions
-
-The course report differs from the code here. The final report needs a note on each:
-
-- **Evidence:** the report has a trusted corpus (BM25, Qdrant, e5-large, HyDE, reranking). It was removed to avoid PyTorch and large downloads, so evidence is web search only, and BM25 only ranks passages within a page. Tavily also replaces the report's Google Custom Search.
-- **Verification:** the report's NLI layer is dropped in favor of two LLM judges through OpenRouter.
-- **Verdict labels:** the report has Supported, Refuted, Partly true and Not enough evidence. The code has `supported`, `contradicted`, `insufficient_evidence` and `outdated`. Undecided.
-- **Judge pair:** the report's plan is DeepSeek and Claude Haiku; the frontend defaults to GPT Luna and Claude Haiku. Undecided.
-- **Review button:** off through `showReviewButton` in `frontend/src/config.ts`, until the user picks a new way in. The dialog behind it works.
-
-Report targets: under 30 seconds per article, accuracy at least 80% and macro-F1 at least 0.75 on 250 claims labeled by the team, 100% of verdicts cited, recall@5 at least 70%. None of these has been measured. The recall target needs rethinking without the corpus.
+- Live OpenRouter and Tavily checks have only been run a few times, and accuracy hasn't been measured. PostgreSQL has never been run.
+- The course report differs from the code: it describes a trusted corpus and an NLI layer, where the code uses web search and two LLM judges. The verdict labels and the default judge pair are still undecided.
+- Not built: user accounts, OCR, and screens for stats and feedback. Anyone who can reach the API can publish a correction.

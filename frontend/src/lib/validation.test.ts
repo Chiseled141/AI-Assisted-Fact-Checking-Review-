@@ -77,9 +77,7 @@ describe('file validation', () => {
     expect(validateFile({ name: 'report.pdf', size: 10 }, [], limits)).toMatch(/not supported/);
     expect(validateFile({ name: 'big.txt', size: 1001 }, [], limits)).toMatch(/too large/);
     expect(validateFile({ name: 'a.txt', size: 10 }, [{ name: 'a.txt' }], limits)).toMatch(/already added/);
-    expect(validateFile({ name: 'c.txt', size: 10 }, [{ name: 'a.txt' }, { name: 'b.txt' }], limits)).toMatch(
-      /up to 2 files/,
-    );
+    expect(validateFile({ name: 'c.txt', size: 10 }, [{ name: 'a.txt' }, { name: 'b.txt' }], limits)).toMatch(/up to 2 files/);
   });
 
   it('rejects empty, binary, and overlong contents', () => {
@@ -114,14 +112,14 @@ describe('screenshot validation', () => {
   });
 });
 
-describe('evidence date and capture helpers', () => {
+describe('evidence date and image helpers', () => {
   it('formats calendar dates without time-zone drift', () => {
     expect(formatCalendarDate('2024-03-18')).toBe('March 18, 2024');
     expect(formatCalendarDate('not-a-date')).toBe('Unknown date');
   });
 
-  it('allows only same-origin paths and https URLs for captures', () => {
-    expect(safeImageSrc('/captures/a.svg')).toBe('/captures/a.svg');
+  it('allows only same-origin paths and https URLs for images', () => {
+    expect(safeImageSrc('/images/article.png')).toBe('/images/article.png');
     expect(safeImageSrc('https://cdn.example.org/a.png')).toBe('https://cdn.example.org/a.png');
     expect(safeImageSrc('//evil.example/a.png')).toBeNull();
     expect(safeImageSrc('javascript:alert(1)')).toBeNull();

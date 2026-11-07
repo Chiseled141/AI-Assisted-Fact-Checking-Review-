@@ -2,112 +2,146 @@ import { describe, expect, it } from 'vitest';
 import { screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { renderApp } from '../../test/renderApp';
+import { makeCheck } from '../../test/fixtures';
+import { interceptRequests, jsonResponse } from '../../test/http';
 
-describe('New Check form validation', () => {
-  it('shows an inline error for short text and does not submit', async () => {
+describe('New Check', () => {
+  it('validates short text before sending a request', async () => {
     const user = userEvent.setup();
+    const fetchMock = interceptRequests(() => { throw new Error('Validation must happen before HTTP.'); });
     renderApp('/');
     await user.type(screen.getByLabelText('Text to check'), 'Too short');
     await user.click(screen.getByRole('button', { name: 'Check claims' }));
-
     expect(screen.getByRole('alert')).toHaveTextContent(/at least 20 characters/i);
     expect(screen.getByLabelText('Text to check')).toHaveAttribute('aria-invalid', 'true');
-    expect(screen.getByRole('heading', { name: /trace claims/i })).toBeInTheDocument();
+    expect(fetchMock).not.toHaveBeenCalled();
   });
 
-  it('rejects a non-http URL in URL mode', async () => {
+  it('rejects a non-http URL before submission', async () => {
     const user = userEvent.setup();
     renderApp('/');
-    await user.click(screen.getByRole('tab', { name: 'URL' }));
-    await user.type(screen.getByLabelText('Article URL'), 'ftp://example.org/file');
+    await user.type(screen.getByLabelText('Text to check'), 'ftp://example.org/file');
     await user.click(screen.getByRole('button', { name: 'Check claims' }));
-
     expect(screen.getByRole('alert')).toHaveTextContent(/only http/i);
-    expect(screen.getByText(/page is not fetched/i)).toBeInTheDocument();
   });
 
-  it('starts processing for a valid URL', async () => {
+  it('posts the URL and selected judges, then shows the server status', async () => {
+    const check = makeCheck({ inputType: 'url', inputUrl: 'https://example.org/story', status: 'retrieving', claims: [] });
+    const fetchMock = interceptRequests((url, init) => {
+      if (url.pathname === '/api/check' && init?.method === 'POST') return jsonResponse(check, 202);
+      if (url.pathname === '/api/check/chk_test') return jsonResponse(check);
+      throw new Error(`Unexpected request: ${url}`);
+    });
     const user = userEvent.setup();
     renderApp('/');
-    await user.click(screen.getByRole('tab', { name: 'URL' }));
-    await user.type(screen.getByLabelText('Article URL'), 'https://example.org/news/story');
+    await user.type(screen.getByLabelText('Text to check'), 'https://example.org/story');
+    await user.click(screen.getByRole('button', { name: 'Judges: GPT Luna + Claude Haiku 5.5' }));
+    await user.click(screen.getByRole('checkbox', { name: 'Gemma 4 31B' }));
+    await user.keyboard('{Escape}');
     await user.click(screen.getByRole('button', { name: 'Check claims' }));
-
     expect(await screen.findByRole('heading', { name: 'Checking claims' })).toBeInTheDocument();
-    expect(screen.getByText(/simulated processing/i)).toBeInTheDocument();
+    expect(screen.getByText('Looking up and saving source snapshots')).toBeInTheDocument();
+    const post = fetchMock.mock.calls.find(([, init]) => init?.method === 'POST')!;
+    expect(JSON.parse(String(post[1]?.body))).toEqual({
+      inputType: 'url', url: 'https://example.org/story', judgeIds: ['claude-haiku', 'gemma-4-31b'],
+    });
+    expect(screen.queryByText(/simulated|demo/i)).not.toBeInTheDocument();
   });
-});
 
-describe('Adding files', () => {
-  const textFile = (name: string, content: string, type = 'text/plain') => new File([content], name, { type });
-
-  it('attaches a text file, lets it stand in for typed text, and saves it with the check', async () => {
+  it('shows missing-key errors without fabricating results', async () => {
+    const message = 'The server is missing its API keys, so it can’t run checks yet.';
+    interceptRequests(() => jsonResponse({ detail: message }, 503));
     const user = userEvent.setup();
     renderApp('/');
-    await user.upload(
-      screen.getByTestId('file-input'),
-      textFile('statement.txt', 'The Harbor Line opened to passengers in March 2024.'),
-    );
-
-    const attached = await screen.findByRole('list', { name: 'Attached files' });
-    expect(within(attached).getByText('statement.txt')).toBeInTheDocument();
-
+    await user.type(screen.getByLabelText('Text to check'), 'The route opened in March 2024.');
     await user.click(screen.getByRole('button', { name: 'Check claims' }));
-    expect(await screen.findByRole('heading', { name: 'Checking claims' })).toBeInTheDocument();
-    expect(screen.getByText('statement.txt')).toBeInTheDocument();
+    expect(await screen.findByRole('alert')).toHaveTextContent(message);
+    expect(screen.queryByRole('heading', { name: 'Checking claims' })).not.toBeInTheDocument();
+  });
+
+  it('sends attached file text to the backend', async () => {
+    const text = 'The route opened to passengers in March 2024.';
+    const check = makeCheck({ status: 'extracting', claims: [] });
+    const fetchMock = interceptRequests(() => jsonResponse(check));
+    const user = userEvent.setup();
+    renderApp('/');
+    await user.upload(screen.getByTestId('file-input'), new File([text], 'statement.txt', { type: 'text/plain' }));
+    expect(await screen.findByRole('list', { name: 'Attached files' })).toHaveTextContent('statement.txt');
+    await user.click(screen.getByRole('button', { name: 'Check claims' }));
+    await screen.findByRole('heading', { name: 'Checking claims' });
+    const post = fetchMock.mock.calls.find(([, init]) => init?.method === 'POST')!;
+    expect(JSON.parse(String(post[1]?.body)).files).toEqual([{ name: 'statement.txt', size: text.length, text }]);
   });
 
   it('removes an attached file', async () => {
     const user = userEvent.setup();
     renderApp('/');
-    await user.upload(screen.getByTestId('file-input'), textFile('notes.md', '# Notes\nA claim worth checking.'));
+    await user.upload(screen.getByTestId('file-input'), new File(['A claim.'], 'notes.md', { type: 'text/markdown' }));
     await user.click(await screen.findByRole('button', { name: 'Remove notes.md' }));
     expect(screen.queryByRole('list', { name: 'Attached files' })).not.toBeInTheDocument();
   });
 
-  it('rejects unsupported files with an inline error', async () => {
+  it('rejects unsupported files', async () => {
     const user = userEvent.setup({ applyAccept: false });
     renderApp('/');
-    await user.upload(screen.getByTestId('file-input'), textFile('scan.pdf', '%PDF-1.7', 'application/pdf'));
+    await user.upload(screen.getByTestId('file-input'), new File(['%PDF-1.7'], 'scan.pdf', { type: 'application/pdf' }));
     expect(await screen.findByRole('alert')).toHaveTextContent(/“scan.pdf” is not supported/);
-    expect(screen.queryByRole('list', { name: 'Attached files' })).not.toBeInTheDocument();
   });
-});
 
-describe('Demo scenario', () => {
-  it('picks the simulated scenario from the composer menu', async () => {
+  it('fills example input without precomputing results', async () => {
+    const fetchMock = interceptRequests(() => { throw new Error('Examples must not submit automatically.'); });
     const user = userEvent.setup();
     renderApp('/');
-
-    await user.click(screen.getByRole('button', { name: /demo scenario: completed check/i }));
-    expect(screen.getByRole('radio', { name: /completed check/i })).toBeChecked();
-
-    await user.click(screen.getByRole('radio', { name: /stale correction conflict/i }));
-    expect(screen.queryByRole('radio')).not.toBeInTheDocument();
-    expect(
-      screen.getByRole('button', { name: /demo scenario: stale correction conflict/i }),
-    ).toHaveFocus();
+    await user.click(screen.getByRole('button', { name: 'Transit news' }));
+    expect((screen.getByLabelText('Text to check') as HTMLTextAreaElement).value).toContain('Cát Linh');
+    expect(fetchMock).not.toHaveBeenCalled();
+    expect(screen.queryByRole('button', { name: /demo scenario/i })).not.toBeInTheDocument();
   });
-});
 
-describe('How it works', () => {
-  it('lives below the page as an anchor target and expands each step', async () => {
+  it('expands the explanation of evidence retrieval', async () => {
     const user = userEvent.setup();
     renderApp('/');
-    const link = screen.getByRole('link', { name: 'How it works' });
-    expect(link).toHaveAttribute('href', '#how-it-works');
     const guide = screen.getByRole('region', { name: 'How it works' });
-    expect(guide).toHaveAttribute('id', 'how-it-works');
-
     const step = within(guide).getByRole('button', { name: /find evidence/i });
     expect(step).toHaveAttribute('aria-expanded', 'false');
-
     await user.click(step);
     expect(step).toHaveAttribute('aria-expanded', 'true');
     expect(within(guide).getByText(/at most ten sources/i)).toBeInTheDocument();
+  });
 
-    await user.click(step);
-    expect(step).toHaveAttribute('aria-expanded', 'false');
-    expect(within(guide).queryByText(/at most ten sources/i)).not.toBeInTheDocument();
+  it.each([
+    ['https://example.org/story', 'https://example.org/story'],
+    ['  example.org/story  ', 'https://example.org/story'],
+    ['vnexpress.net', 'https://vnexpress.net'],
+  ])('reads %s on its own as a link', async (typed, url) => {
+    const fetchMock = interceptRequests((_, init) => jsonResponse(makeCheck({ id: 'chk_new', status: 'queued', claims: [] }), init?.method === 'POST' ? 202 : 200));
+    const user = userEvent.setup();
+    renderApp('/');
+    await user.type(screen.getByLabelText('Text to check'), typed);
+    expect(screen.getByText('This link will be read as an article.')).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: 'Check claims' }));
+    const post = fetchMock.mock.calls.find(([, init]) => init?.method === 'POST')!;
+    expect(JSON.parse(String(post[1]?.body))).toMatchObject({ inputType: 'url', url });
+  });
+
+  it.each([
+    'The U.S. economy grew by 2.8% in 2024.',
+    'See https://example.org/story for how the route opened in March.',
+    'Version 3.14 shipped in the first week of March.',
+  ])('keeps %s as text, even with a link or dots inside', async (typed) => {
+    const fetchMock = interceptRequests((_, init) => jsonResponse(makeCheck({ id: 'chk_new', status: 'queued', claims: [] }), init?.method === 'POST' ? 202 : 200));
+    const user = userEvent.setup();
+    renderApp('/');
+    await user.type(screen.getByLabelText('Text to check'), typed);
+    expect(screen.queryByText('This link will be read as an article.')).not.toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: 'Check claims' }));
+    const post = fetchMock.mock.calls.find(([, init]) => init?.method === 'POST')!;
+    expect(JSON.parse(String(post[1]?.body))).toMatchObject({ inputType: 'text', text: typed });
+  });
+
+  it('has no text and link tabs to choose between', () => {
+    interceptRequests(() => jsonResponse({}));
+    renderApp('/');
+    expect(screen.queryByRole('tab')).not.toBeInTheDocument();
   });
 });

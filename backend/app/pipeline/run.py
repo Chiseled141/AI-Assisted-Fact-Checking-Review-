@@ -1,42 +1,74 @@
-"""The check pipeline: extract claims, look up fact-checks, retrieve evidence, then judge."""
+"""The check pipeline: extract claims, retrieve evidence, then judge."""
 
 import logging
+import re
 from collections.abc import Callable
-from concurrent.futures import ThreadPoolExecutor
+from concurrent.futures import FIRST_COMPLETED, ThreadPoolExecutor, as_completed, wait
 from dataclasses import dataclass
+from functools import partial
+from queue import SimpleQueue
+from typing import TypeVar
 
 from sqlalchemy.orm import Session, sessionmaker
 
+from ..charts.chart_research import make_chart_finder
+from ..charts.chart_triggers import add_chart_requests
+from ..charts.country_map import build_country_map
+from ..charts.data_sources import ClimateData, CountryData, MarketData, StateData
+from ..charts.election_map import build_election_visuals, election_window
+from ..charts.heat_map import build_heat_map
+from ..charts.location_map import build_location_map, build_map_details
+from ..charts.price_chart import build_price_chart, build_sjc_chart, price_table
 from ..core.config import Settings
+from ..core.labels import InputCategory
 from ..db.models import Check, Claim, Evidence, Source, Verdict, utcnow
-from ..providers.fetcher import FetchError, Page
 from ..providers.llm import LLM, LLMError
-from ..providers.search import FactChecks, Search, SearchError, fast_path_verdict
-from .passages import top_passages
+from ..search.fetcher import FetchError, Page
+from ..search.tavily import (
+    Search,
+    SearchError,
+    SearchHit,
+    TimeWindow,
+    election_sources,
+    is_allowed_source,
+    page_date,
+    read_hit,
+    source_domain,
+    source_url_key,
+)
+from .passages import quote_in_text, top_passages
+from .people import names_person, person_query
+from .progress import NO_READABLE_SOURCE, NO_TASKS, ONLY_OLDER_PAGES, TaskLog, closed_tasks
 from .prompts import (
     EXTRACT_SYSTEM,
     JUDGE_SYSTEM,
-    SOURCE_SYSTEM,
+    QUESTION_SYSTEM,
     ExtractedClaim,
     ExtractedClaims,
     JudgeAnswer,
-    SourceAnswer,
     tagged,
 )
+from .research import Research, research_sources
 
 logger = logging.getLogger(__name__)
 
 SEARCH_FAILED = "Evidence could not be retrieved, so there is no verdict."
 JUDGES_FAILED = "The AI judges could not assess this claim, so there is no verdict."
-NO_EVIDENCE = "No readable source was found for this claim, so it cannot be verified."
+NO_EVIDENCE = "No relevant source was found for this claim, so it cannot be verified."
+DATA_ID = "D1"  # The claim's own price data, which judges may cite beside the passages.
+
+VisualResult = TypeVar("VisualResult")
 
 
 @dataclass
 class Providers:
     llm: LLM
     search: Search
-    fact_checks: FactChecks
     fetch: Callable[[str], Page]
+    market: MarketData | None = None
+    climate: ClimateData | None = None
+    country_data: CountryData | None = None
+    state_data: StateData | None = None
 
 
 def _input_text(check: Check, providers: Providers) -> tuple[str, Page | None]:
@@ -52,68 +84,424 @@ def _today() -> str:
     return f"Today's date: {utcnow().date().isoformat()}"
 
 
-def _extract_claims(text: str, article: Page | None, providers: Providers, settings: Settings) -> list[ExtractedClaim]:
+def _election_key(item: ExtractedClaim) -> tuple | None:
+    if not item.election_map or not item.election_map.year:
+        return None
+    return item.election_map.office, item.election_map.year, item.seat_chart.body if item.seat_chart else None
+
+
+def _election_search_window(item: ExtractedClaim) -> TimeWindow | None:
+    """When reports of a claim's election can be expected, if it names one."""
+    if item.election_map and item.election_map.year:
+        return election_window(item.election_map.year, us=True)
+    return election_window(item.seat_chart.year) if item.seat_chart else None
+
+
+def _states_a_period(item: ExtractedClaim) -> bool:
+    """A claim naming a year asks about that time, so the newest reports aren't the best ones for it."""
+    return bool(re.search(r"(?<!\d)(19|20)\d{2}(?!\d)", f"{item.text} {item.time_context or ''}"))
+
+
+def _search_query(item: ExtractedClaim) -> str:
+    """Keep explicit figures in evidence queries, even if the extraction model omitted them."""
+    query = item.search_query or item.text
+    if item.seat_chart:
+        query = f"{item.seat_chart.body} {item.seat_chart.year or ''} final election results {query}"
+    missing = [number for number in dict.fromkeys(re.findall(r"\b\d+(?:[.,]\d+)*\b", item.text))
+               if number not in re.findall(r"\b\d+(?:[.,]\d+)*\b", query)]
+    suffix = (" " + " ".join(missing))[:400] if missing else ""
+    return (query[:400 - len(suffix)].strip() + suffix).strip()
+
+
+def _extract_claims(
+    text: str, article: Page | None, providers: Providers, settings: Settings
+) -> tuple[list[ExtractedClaim], str, InputCategory | None]:
     lines = [_today()]
     if article and article.published_at:
         lines.append(f"Article date: {article.published_at}")
-    answer, _ = providers.llm.complete(
+    answer, model = providers.llm.complete(
         settings.extraction_model, EXTRACT_SYSTEM, "\n\n".join([*lines, tagged("input", text)]), ExtractedClaims
     )
-    worthy = [claim for claim in answer.claims if claim.checkworthiness >= settings.min_checkworthiness]
-    worthy.sort(key=lambda claim: claim.checkworthiness, reverse=True)
-    return worthy[: settings.max_claims_per_check]
+    # Checkworthiness ranks factual claims; it is not a truth or eligibility score.
+    ranked = sorted(answer.claims, key=lambda claim: claim.checkworthiness, reverse=True)
+    claims = [add_chart_requests(item) for item in ranked[: settings.max_claims_per_check]]
+    return claims, model, answer.input_category if not ranked else None
+
+
+def _claims_from_question(
+    text: str, providers: Providers, settings: Settings, tasks: TaskLog
+) -> tuple[list[ExtractedClaim], InputCategory | None]:
+    """A short input with no claims is often a question. The research model writes the claim it asks about, or nothing."""
+    task = tasks.model("question", "rephrasing", settings.research_model, settings)
+    try:
+        answer, model = providers.llm.complete(
+            settings.research_model, QUESTION_SYSTEM, tagged("input", text), ExtractedClaims
+        )
+    except LLMError as error:
+        task.fail(error.public_message)  # The check still ends as having no claims, which is true.
+        return [], None
+    claims = answer.claims[: settings.max_claims_per_check]
+    category = answer.input_category if not claims else None
+    task.finish_model(model, settings, claimCount=len(claims), inputCategory=category)
+    return [add_chart_requests(item) for item in claims], category
+
+
+def _save_progress(check: Check, session: Session, event: dict) -> None:
+    """Persist public task status and finished explanations, never a model's private reasoning stream."""
+    events = [dict(item) for item in check.progress or []]
+    for item in events:
+        if item["id"] == event["id"]:
+            item.update(event)
+            break
+    else:
+        events.append(event)
+    check.progress = events
+    session.commit()
+
+
+def _run_visuals(
+    jobs: list[tuple[int, Callable[[TaskLog], VisualResult]]], tasks: TaskLog, settings: Settings
+) -> list[VisualResult]:
+    """One job per claim, all at once, with results in the order given.
+
+    Jobs get their own threads because they wait on the shared pool, and doing that from inside it could deadlock.
+    They can't touch the database session, so their task updates come back on a queue, and this thread saves them.
+    """
+    updates: SimpleQueue[dict] = SimpleQueue()
+    with ThreadPoolExecutor(settings.max_parallel_calls) as workers:
+        futures = [workers.submit(job, TaskLog(updates.put, position)) for position, job in jobs]
+        pending = set(futures)
+        while pending:
+            _, pending = wait(pending, timeout=0.1, return_when=FIRST_COMPLETED)
+            while not updates.empty():
+                tasks.save(updates.get())
+    return [future.result() for future in futures]
+
+
+def _fetch_visuals(
+    item: ExtractedClaim, providers: Providers, settings: Settings, pool: ThreadPoolExecutor, tasks: TaskLog
+) -> tuple[dict | None, dict | None, dict | None]:
+    """The charts that need no evidence from the claim's own search. One map per claim, so a heatmap rules out the other."""
+    price_chart = build_price_chart(item, providers.market, settings, tasks) or build_sjc_chart(
+        item, providers.search, providers.fetch, providers.llm, settings, pool, tasks
+    )
+    heat_map = build_heat_map(item, providers.climate, settings, pool, tasks)
+    country_map = None if heat_map else build_country_map(item, providers.country_data, settings, providers.state_data, tasks)
+    return price_chart, heat_map, country_map
+
+
+def _read_visual_figures(
+    item: ExtractedClaim, location_map: dict | None, evidence: list[Evidence], skip_url: str | None, providers: Providers,
+    settings: Settings, pool: ThreadPoolExecutor, tasks: TaskLog,
+) -> tuple[dict | None, list[dict], dict | None]:
+    """The figures that come from sources. `evidence` is already loaded, so this only reads it."""
+    request = item.election_map or item.seat_chart
+    sources = election_sources(
+        item.text, item.seat_chart.body if item.seat_chart else "", request.year if request else None,
+        item.election_map.office if item.election_map else None,
+    )
+    finder = make_chart_finder(
+        getattr(providers.search, "search_hits", None), getattr(providers.llm, "research", None), providers.fetch, settings, pool,
+        _election_search_window(item), skip_url, item.text,
+        sources.pages, sources.domains,
+    )
+    seat_chart, election_map = build_election_visuals(item, evidence, providers.llm, settings, tasks, finder)
+    if seat_chart or election_map or not location_map:
+        return seat_chart, [], election_map
+    return None, build_map_details(item.text, location_map, evidence, providers.llm, settings, tasks), None
+
+
+def _finish_research(task, research: Research, settings: Settings) -> None:
+    if research.llm_error:
+        task.fail(research.llm_error)
+    elif research.hits is None:
+        task.fail(research.search_error or NO_READABLE_SOURCE)
+    else:
+        task.finish_model(research.reported_model, settings, sourceCount=len(research.hits), searchCount=research.searches)
+
+
+def _research_brief(item: ExtractedClaim, window: TimeWindow | None) -> str:
+    """What the research model should look for. The server applies the period itself, so this only explains it."""
+    lines = [f"Suggested query: {item.search_query or item.text}"]
+    if names_person(item.text, item.person_name):
+        lines.append(f"Person to identify exactly: {item.person_name}. Reject unrelated namesakes and generic topic pages.")
+    if window:
+        lines.append(f"Reports of this election appear from {window.start}" + (f" to {window.end}." if window.end else "."))
+    elif item.time_context:
+        lines.append(f"Period the claim refers to: {item.time_context}")
+    if item.seat_chart:
+        lines.append(f"The chart needs: final seats for every party in {item.seat_chart.body} and the chamber's size.")
+    if item.election_map:
+        lines.append("The chart needs: who won each US state in this election.")
+    return "\n".join(lines)
 
 
 def _retrieve(
-    claims: list[Claim], skip_url: str | None, providers: Providers, settings: Settings, pool: ThreadPoolExecutor
+    claims: list[Claim], skip_url: str | None, providers: Providers, settings: Settings, pool: ThreadPoolExecutor,
+    queries: dict[str, str] | None = None, tasks: TaskLog = NO_TASKS, windows: dict[str, TimeWindow] | None = None,
+    dated_claims: set[str] | None = None, briefs: dict[str, str] | None = None,
+    english_queries: dict[str, str] | None = None,
+    people: dict[str, str] | None = None,
 ) -> tuple[dict[str, Page], dict[str, list[str]], set[str]]:
-    """Returns pages by URL, the URLs each claim uses, and the claims whose search failed."""
-    urls_by_claim: dict[str, list[str]] = {}
-    failed: set[str] = set()
+    """Target five readable publishers per claim, within search, page-read and saved-source budgets."""
+    pages: dict[str, Page] = {}
+    selected: dict[str, list[str]] = {claim.id: [] for claim in claims}
+    candidates: dict[str, list[SearchHit]] = {claim.id: [] for claim in claims}
+    domains_seen: dict[str, set[str]] = {claim.id: set() for claim in claims}
+    had_candidates: set[str] = set()
+    identity_rejected: set[str] = set()
+    unreadable_people: set[str] = set()
+    search_failed: set[str] = set()
+    attempted: dict[str, Page | None] = {}
+    saved_keys: dict[str, str] = {}
+    skip_key = source_url_key(skip_url) if skip_url else None
+    target = settings.target_publishers_per_claim
+    search_errors: dict[str, str] = {}
+    windows = windows or {}
+    # A claim about a stated period wants what is relevant to it. Only an undated claim wants the newest reports.
+    relevance_first = set(windows) | (dated_claims or set())
+    only_older: set[str] = set()
+    later_pages: dict[str, list[tuple[SearchHit, Page]]] = {claim.id: [] for claim in claims}
+    searches = {claim.id: 1 for claim in claims}
+    finished_searches: set[str] = set()
+    search_tasks = {
+        claim.id: tasks.for_claim(claim.position).search(
+            "search", "searching", phase="searching", searchCount=1, sourceCount=0, sourceTarget=target,
+        )
+        for claim in claims
+    }
 
-    def search(claim: Claim):
+    # The research model chooses the sources. Without it, or if it fails, the query goes straight to Tavily.
+    search_hits_call = getattr(providers.search, "search_hits", None)
+    research_call = getattr(providers.llm, "research", None) if briefs and search_hits_call else None
+    research_tasks = {
+        claim.id: tasks.for_claim(claim.position).model("research", "researching", settings.research_model, settings)
+        for claim in claims
+    } if research_call else {}
+    researched: set[str] = set()
+
+    def show_reading():
+        for claim in claims:
+            if claim.id in finished_searches:
+                continue
+            saved = len(selected[claim.id])
+            if saved >= target:  # This claim is done, even while other claims are still reading.
+                finished_searches.add(claim.id)
+                search_tasks[claim.id].finish(
+                    sourceCount=saved, searchCount=searches[claim.id], summary=search_errors.get(claim.id)
+                )
+            else:
+                search_tasks[claim.id].update(phase="reading", searchCount=searches[claim.id], sourceCount=saved)
+
+    def search(claim: Claim, more: bool = False):
+        query = person_query((queries or {}).get(claim.id) or claim.text, (people or {}).get(claim.id), claim.text)
+        research = None
+        if research_call and not more:
+            research = research_sources(
+                claim.text, briefs[claim.id], search_hits_call, research_call, settings,
+                windows.get(claim.id), claim.id not in relevance_first,
+                first_query=(english_queries or {}).get(claim.id),
+            )
+            if research.hits is not None:
+                return claim.id, research.hits, None, research
+        since = {"newest_first": False} if claim.id in relevance_first else {}
+        if window := windows.get(claim.id):
+            since["start_date"] = window.start
+            if window.end and not more:  # The backfill may reach later reports, which only count if nothing better is found.
+                since["end_date"] = window.end
         try:
-            return claim.id, providers.search.search(claim.text)
+            if more:
+                hits = providers.search.search_more(query, sorted(domains_seen[claim.id]), **since)
+            else:
+                search_hits = getattr(providers.search, "search_hits", None)
+                hits = search_hits(query, **since) if search_hits else [SearchHit(url) for url in providers.search.search(query)]
+            return claim.id, hits, None, research
         except SearchError as error:
             logger.warning("Search failed: %s", error)
-            return claim.id, None
+            return claim.id, None, str(error), research
 
-    for claim_id, urls in pool.map(search, claims):
-        if urls is None:
-            failed.add(claim_id)
+    def add_candidates(results):
+        for claim_id, hits, error, research in results:
+            if research:
+                _finish_research(research_tasks[claim_id], research, settings)
+                # When research fails, the search that replaces it counts too.
+                searches[claim_id] = research.searches + (research.hits is None)
+                # A successful selection/rejection must not be undone by an unreviewed backfill.
+                if research.hits or (research.hits is not None and research.candidate_count):
+                    researched.add(claim_id)
+            if hits is None:
+                search_failed.add(claim_id)
+                search_errors[claim_id] = error
+                continue
+            for hit in hits:
+                if not is_allowed_source(hit.url) or source_url_key(hit.url) == skip_key:
+                    continue
+                candidates[claim_id].append(hit)
+                domains_seen[claim_id].add(source_domain(hit.url))
+                had_candidates.add(claim_id)
+
+    def fetch(hit: SearchHit):
+        return read_hit(hit, providers.fetch, settings)
+
+    def keep(claim_id: str, hit: SearchHit, page: Page | None, allow_later: bool = False):
+        if not page or not is_allowed_source(page.url) or source_url_key(page.url) == skip_key:
+            if (people or {}).get(claim_id):
+                unreadable_people.add(claim_id)
+            return
+        if len(page.text.split()) < settings.min_source_words:
+            if (people or {}).get(claim_id):
+                unreadable_people.add(claim_id)
+            return
+        person = (people or {}).get(claim_id)
+        if person and not names_person(page.text, person):
+            identity_rejected.add(claim_id)
+            return  # A general article about the topic cannot establish a fact about this person.
+        window, date = windows.get(claim_id), page_date(page.url, page.published_at)
+        if window and date:
+            if date < window.start:
+                only_older.add(claim_id)  # A report from before this election can't count towards the target.
+                return
+            if window.end and date > window.end and not allow_later:
+                later_pages[claim_id].append((hit, page))
+                return
+        publisher = source_domain(page.url)
+        if any(source_domain(pages[url].url) == publisher for url in selected[claim_id]):
+            return
+        key = source_url_key(page.url)
+        original = saved_keys.get(key)
+        if original is None:
+            if len(pages) >= settings.max_sources_per_check:
+                return
+            original = hit.url
+            pages[original] = page
+            saved_keys[key] = original
+        selected[claim_id].append(original)
+
+    def read_candidates():
+        # Round-robin reads let every claim receive candidates before the check's global budget runs out.
+        while True:
+            batch: dict[str, tuple[SearchHit, list[str]]] = {}
+            for claim in claims:
+                if len(selected[claim.id]) >= settings.target_publishers_per_claim:
+                    continue
+                while candidates[claim.id]:
+                    hit = candidates[claim.id].pop(0)
+                    if any(source_domain(pages[url].url) == source_domain(hit.url) for url in selected[claim.id]):
+                        continue
+                    key = source_url_key(hit.url)
+                    if key in attempted:
+                        keep(claim.id, hit, attempted[key])
+                        if len(selected[claim.id]) >= settings.target_publishers_per_claim:
+                            break
+                        continue
+                    if key in batch:
+                        batch[key][1].append(claim.id)
+                        break
+                    if len(attempted) + len(batch) >= settings.max_page_reads_per_check:
+                        break
+                    if len(pages) >= settings.max_sources_per_check:
+                        break
+                    batch[key] = (hit, [])
+                    batch[key][1].append(claim.id)
+                    break
+            if not batch:
+                return
+            fetched = pool.map(fetch, [hit for hit, _ in batch.values()])
+            for (key, (hit, owners)), page in zip(batch.items(), fetched, strict=True):
+                attempted[key] = page
+                for claim_id in owners:
+                    keep(claim_id, hit, page)
+            show_reading()
+
+    add_candidates(pool.map(search, claims))
+    show_reading()
+    read_candidates()
+    # One bounded backfill query by default, excluding publishers that already occupied the result set.
+    if callable(getattr(providers.search, "search_more", None)):
+        for _ in range(1, settings.tavily_max_searches_per_claim):
+            short = [claim for claim in claims
+                     if len(selected[claim.id]) < settings.target_publishers_per_claim and claim.id not in researched]
+            if not short or len(pages) >= settings.max_sources_per_check or len(attempted) >= settings.max_page_reads_per_check:
+                break
+            for claim in short:
+                searches[claim.id] += 1
+                search_tasks[claim.id].update(phase="searching", searchCount=searches[claim.id])
+            add_candidates(pool.map(lambda claim: search(claim, more=True), short))
+            show_reading()
+            read_candidates()
+    # Later reports only fill the places that reports from the period itself left empty, the closest to it first.
+    for claim_id, later in later_pages.items():
+        for hit, page in sorted(later, key=lambda pair: page_date(pair[1].url, pair[1].published_at) or ""):
+            if len(selected[claim_id]) < settings.target_publishers_per_claim:
+                keep(claim_id, hit, page, allow_later=True)
+    show_reading()
+    # Tavily's dates only estimate, so the pages' own dates set the final order. Undated pages go last.
+    for claim_id, urls in selected.items():
+        if claim_id not in relevance_first:
+            urls.sort(key=lambda url: pages[url].published_at or "", reverse=True)
+    failed = {claim.id for claim in claims if not selected[claim.id]
+              and (claim.id in search_failed or (claim.id in had_candidates and claim.id not in only_older
+                   and (claim.id not in identity_rejected or claim.id in unreadable_people)))}
+    for claim in claims:
+        if claim.id in finished_searches:
+            continue
+        task, saved = search_tasks[claim.id], len(selected[claim.id])
+        if claim.id in failed:
+            task.fail(search_errors.get(claim.id, NO_READABLE_SOURCE), sourceCount=saved, searchCount=searches[claim.id])
         else:
-            # The article being checked can't be evidence for itself.
-            urls_by_claim[claim_id] = [url for url in dict.fromkeys(urls) if url != skip_url]
+            # A later search can fail after an earlier one found sources, so the failure stays on screen.
+            older = ONLY_OLDER_PAGES if not saved and claim.id in only_older else None
+            task.finish(sourceCount=saved, searchCount=searches[claim.id], summary=search_errors.get(claim.id) or older)
+    return pages, selected, failed
 
-    # At most this many pages for the whole check. Taking each claim's best result first keeps it fair.
-    kept: list[str] = []
-    for rank in range(settings.search_results_per_claim):
-        for urls in urls_by_claim.values():
-            if rank < len(urls) and urls[rank] not in kept and len(kept) < settings.max_sources_per_check:
-                kept.append(urls[rank])
 
-    def fetch(url: str):
-        try:
-            return url, providers.fetch(url)
-        except FetchError:
-            return url, None  # Not readable, so it isn't used as support.
+def _distinct_titles(pages: dict[str, Page]) -> dict[str, str]:
+    """A site can give many pages one title, such as a weather service's reports, so the pages' own words tell them apart."""
+    titles = {url: page.title for url, page in pages.items()}
+    lines = {url: [line.strip() for line in page.text.splitlines() if line.strip()] for url, page in pages.items()}
+    for url, title in titles.copy().items():
+        others = {line for other, page in pages.items() if other != url and page.title == title for line in lines[other]}
+        if others:
+            line = next((line for line in lines[url] if line not in others and len(line) <= 80), None)
+            titles[url] = f"{title}: {line}" if line else title
+    return titles
 
-    pages = {url: page for url, page in pool.map(fetch, kept) if page}
-    return pages, {claim_id: [url for url in urls if url in pages] for claim_id, urls in urls_by_claim.items()}, failed
+
+def _figures(text: str) -> set[str]:
+    return set(re.findall(r"\d+", re.sub(r"(?<=\d)[.,](?=\d)", "", text)))
+
+
+def _translations(original: str, **versions: str | None) -> dict[str, str]:
+    """A judge's own translations. One that loses a figure of the original is dropped, and the reader gets the original."""
+    wanted = _figures(original)
+    return {
+        language: text.strip()
+        for language, text in versions.items()
+        if text and text.strip() and wanted <= _figures(text)
+    }
 
 
 def _judge_claim(
-    claim: Claim, evidence: list[Evidence], check: Check, providers: Providers, settings: Settings, pool: ThreadPoolExecutor
+    claim: Claim,
+    evidence: list[Evidence],
+    check: Check,
+    providers: Providers,
+    settings: Settings,
+    pool: ThreadPoolExecutor,
+    tasks: TaskLog = NO_TASKS,
+    reading_query: str | None = None,
 ) -> Verdict | None:
     """Both judges read the same passages. Returns None when neither gives a valid answer."""
     labels = {f"E{index + 1}": item for index, item in enumerate(evidence)}
+    prices = price_table(claim.price_chart)
+    data = [tagged("data", prices, evidence_id=DATA_ID, kind="prices")] if prices else []
     prompt = "\n\n".join(
         [_today(), tagged("input", claim.text, type="claim")]
         + ([f"Period the claim refers to: {claim.time_context}"] if claim.time_context else [])
         + [
             tagged(
                 "passage",
-                top_passages(item.source.text, claim.text, settings.passages_per_source),
+                top_passages(item.source.text, reading_query or claim.text, settings.passages_per_source),
                 evidence_id=label,
                 title=item.source.title.replace('"', "'"),
                 publisher=(item.source.publisher or "unknown").replace('"', "'"),
@@ -121,12 +509,14 @@ def _judge_claim(
             )
             for label, item in labels.items()
         ]
+        + data
     )
+    citable = [*labels, *([DATA_ID] if data else [])]
 
     def check_answer(answer: JudgeAnswer) -> None:
-        unknown = [citation.evidence_id for citation in answer.citations if citation.evidence_id not in labels]
+        unknown = [citation.evidence_id for citation in answer.citations if citation.evidence_id not in citable]
         if unknown:
-            raise ValueError(f"Unknown evidence ids: {unknown}. Use only: {list(labels)}")
+            raise ValueError(f"Unknown evidence ids: {unknown}. Use only: {citable}")
         if answer.verdict != "insufficient_evidence" and not answer.citations:
             raise ValueError("This verdict must cite at least one passage.")
 
@@ -134,12 +524,32 @@ def _judge_claim(
         option = settings.judges[judge_id]
         try:
             answer, model = providers.llm.complete(option.model, JUDGE_SYSTEM, prompt, JudgeAnswer, check_answer)
-            return option, answer, model
+            return option, answer, model, None
         except LLMError as error:
             logger.warning("Judge %s failed: %s", judge_id, error)
-            return option, None, None
+            return option, None, "", error.public_message
 
-    results = list(pool.map(ask, check.judge_ids))
+    claim_tasks = tasks.for_claim(claim.position)
+    futures = {}
+    for index, judge_id in enumerate(check.judge_ids):
+        task = claim_tasks.model(f"judge-{judge_id}", "judging", settings.judges[judge_id].model, settings)
+        futures[pool.submit(ask, judge_id)] = (index, task)
+
+    ordered = {}
+    for future in as_completed(futures):
+        index, task = futures[future]
+        option, answer, reported_model, error = future.result()
+        # A saved verdict always names a model. If the provider didn't report one, that is the one we asked for.
+        ordered[index] = (option, answer, reported_model or option.model)
+        if answer:
+            task.finish_model(
+                reported_model, settings, summary=answer.review, verdict=answer.verdict,
+                translations=_translations(answer.review, en=answer.review_en, vi=answer.review_vi),
+            )
+        else:
+            task.fail(error)
+    # Finishing first never changes which selected judge supplies the headline.
+    results = [ordered[index] for index in range(len(check.judge_ids))]
     answered = [result for result in results if result[1] is not None]
     if not answered:
         return None
@@ -148,11 +558,15 @@ def _judge_claim(
     option, primary, model = answered[0]
     for _, answer, _ in reversed(answered):
         for citation in answer.citations:
+            if citation.evidence_id not in labels:
+                continue  # The price data is shown as the claim's chart, not as a source.
             item = labels[citation.evidence_id]
             item.relation = citation.relation
-            if citation.quote and citation.quote in item.source.text:  # Only real quotes are shown as quotes.
+            if citation.quote and quote_in_text(citation.quote, item.source.text):  # Only real quotes are shown as quotes.
                 item.excerpt = citation.quote
-    cited = [labels[citation.evidence_id].id for citation in primary.citations]
+                item.translations = _translations(citation.quote, en=citation.quote_en, vi=citation.quote_vi)
+    source_citations = [citation for citation in primary.citations if citation.evidence_id in labels]
+    cited = [labels[citation.evidence_id].id for citation in source_citations]
     return Verdict(
         claim_id=claim.id,
         version=1,
@@ -162,47 +576,23 @@ def _judge_claim(
         evidence_ids=list(dict.fromkeys(cited)),
         citation_freshness={
             labels[citation.evidence_id].id: {"status": citation.freshness, "reason": citation.freshness_reason}
-            for citation in primary.citations
+            for citation in source_citations
         },
         model={"name": model, "promptVersion": settings.prompt_version},
         judges=[
             {
-                "judge": result_option.name,
+                "judge": settings.model_display_name(result_model),
+                "model": result_model,
                 "verdict": answer.verdict,
                 "confidence": answer.confidence,
                 "review": answer.review,
+                "translations": _translations(answer.review, en=answer.review_en, vi=answer.review_vi),
                 "primary": result_option is option,
             }
-            for result_option, answer, _ in answered
+            for result_option, answer, result_model in answered
         ],
-        author=f"AI · {option.name}",
+        author=f"AI · {settings.model_display_name(model)}",
     )
-
-
-def _judge_source(source: Source, claims: list[str], check: Check, providers: Providers, settings: Settings) -> dict | None:
-    """Saved once per source. Both judges must answer, because the page compares them side by side."""
-    prompt = "\n\n".join(
-        [_today(), *(tagged("input", claim, type="claim") for claim in claims)]
-        + [tagged("passage", top_passages(source.text, " ".join(claims), settings.passages_per_source + 2))]
-    )
-    notes, first = [], None
-    for judge_id in check.judge_ids:
-        option = settings.judges[judge_id]
-        try:
-            answer, _ = providers.llm.complete(option.model, SOURCE_SYSTEM, prompt, SourceAnswer)
-        except LLMError as error:
-            logger.warning("Source judgment by %s failed: %s", judge_id, error)
-            return None
-        first = first or answer
-        ratings = answer.ratings
-        notes.append(
-            {
-                "judge": option.name,
-                "note": answer.note,
-                "ratings": [ratings.match, ratings.directness, ratings.timing, ratings.detail],
-            }
-        )
-    return {"summary": first.summary, "keyPoints": first.key_points, "assessment": first.assessment, "judgeNotes": notes}
 
 
 def run_check(
@@ -230,6 +620,7 @@ def run_check(
 
 
 def _fail(check: Check, session: Session, message: str) -> None:
+    check.progress = closed_tasks(check.progress, message)
     check.status = "failed"
     check.error_message = message
     session.commit()
@@ -240,18 +631,6 @@ def _set_status(check: Check, session: Session, status: str) -> None:
     session.commit()
 
 
-def _fact_check_verdict(claim: Claim, verdict: str) -> Verdict:
-    publisher, rating = claim.fact_check["publisher"], claim.fact_check["rating"]
-    return Verdict(
-        claim_id=claim.id,
-        version=1,
-        kind="ai_assessment",
-        label=verdict,
-        explanation=f"{publisher}: {rating}",
-        author=publisher,
-    )
-
-
 def _run(
     check: Check,
     session: Session,
@@ -260,13 +639,24 @@ def _run(
     pool: ThreadPoolExecutor,
     given_claims: list[str] | None = None,
 ) -> None:
+    tasks = TaskLog(lambda event: _save_progress(check, session, event))
+    rephrased_from = None
     _set_status(check, session, "extracting")
     if given_claims is None:
         text, article = _input_text(check, providers)
         if article:
             check.article = {"title": article.title, "publisher": article.publisher, "publishedAt": article.published_at}
             check.title = article.title
-        extracted = _extract_claims(text, article, providers, settings)
+        task = tasks.model("extraction", "extracting", settings.extraction_model, settings)
+        try:
+            extracted, model, category = _extract_claims(text, article, providers, settings)
+        except LLMError as error:
+            task.fail(error.public_message)
+            raise
+        task.finish_model(model, settings, claimCount=len(extracted), inputCategory=category)
+        if not extracted and category is None and text.strip() and len(text) <= settings.question_max_chars:
+            extracted, category = _claims_from_question(text, providers, settings, tasks)
+            rephrased_from = text.strip() if extracted else None
     else:
         extracted = [ExtractedClaim(text=claim, checkworthiness=1) for claim in given_claims]
     claims = [
@@ -277,6 +667,8 @@ def _run(
             topic=item.topic,
             time_context=item.time_context,
             checkworthy_score=item.checkworthiness,
+            location_map=build_location_map(item, settings),
+            rephrased_from=rephrased_from,
         )
         for index, item in enumerate(extracted)
     ]
@@ -284,21 +676,40 @@ def _run(
     session.flush()
 
     _set_status(check, session, "retrieving")
-    fast_verdicts: dict[str, str] = {}
-    for claim, match in zip(claims, pool.map(lambda claim: providers.fact_checks.lookup(claim.text), claims), strict=True):
-        if match:
-            verdict = fast_path_verdict(claim.text, match)
-            if verdict:
-                fast_verdicts[claim.id] = verdict
-            claim.fact_check = {key: match[key] for key in ("publisher", "rating", "url")}
-    to_retrieve = [claim for claim in claims if claim.id not in fast_verdicts]
-    pages, urls_by_claim, failed = _retrieve(to_retrieve, check.input_url, providers, settings, pool)
+    visuals = _run_visuals(
+        [(claim.position, partial(_fetch_visuals, item, providers, settings, pool))
+         for claim, item in zip(claims, extracted, strict=True)],
+        tasks, settings,
+    )
+    for claim, (price_chart, heat_map, country_map) in zip(claims, visuals, strict=True):
+        claim.price_chart, claim.heat_map, claim.country_map = price_chart, heat_map, country_map
+        # One map per claim, and each of these already shows the place.
+        if heat_map or country_map:
+            claim.location_map = None
+    queries = {claim.id: _search_query(item) for claim, item in zip(claims, extracted, strict=True)}
+    windows = {
+        claim.id: window for claim, item in zip(claims, extracted, strict=True) if (window := _election_search_window(item))
+    }
+    dated_claims = {claim.id for claim, item in zip(claims, extracted, strict=True) if _states_a_period(item)}
+    briefs = {claim.id: _research_brief(item, windows.get(claim.id)) for claim, item in zip(claims, extracted, strict=True)}
+    people = {claim.id: item.person_name for claim, item in zip(claims, extracted, strict=True)
+              if names_person(item.text, item.person_name)}
+    english_queries = {
+        claim.id: person_query(item.search_query_en, people.get(claim.id), item.text)
+        for claim, item in zip(claims, extracted, strict=True) if item.search_query_en
+    }
+    # Passages are picked by matching words, so an English page needs English words to match a Vietnamese claim.
+    reading_queries = {claim.id: f"{english_queries[claim.id]} {claim.text}" for claim in claims if claim.id in english_queries}
+    pages, urls_by_claim, failed = _retrieve(
+        claims, check.input_url, providers, settings, pool, queries, tasks, windows, dated_claims, briefs, english_queries, people
+    )
 
+    titles = _distinct_titles(pages)
     sources = {
         url: Source(
             check_id=check.id,
             url=page.url,
-            title=page.title,
+            title=titles[url],
             publisher=page.publisher,
             published_at=page.published_at,
             image_url=page.image_url,
@@ -316,7 +727,7 @@ def _run(
                 source_id=sources[url].id,
                 position=index,
                 # Replaced by a judge's quote when one can be found in the page.
-                excerpt=top_passages(sources[url].text, claim.text, 1)[:280].strip(),
+                excerpt=top_passages(sources[url].text, reading_queries.get(claim.id, claim.text), 1)[:280].strip(),
                 source=sources[url],
             )
             for index, url in enumerate(urls_by_claim.get(claim.id, []))
@@ -328,11 +739,9 @@ def _run(
     _set_status(check, session, "assessing")
     for claim in claims:
         items = evidence_by_claim[claim.id]
-        if claim.id in fast_verdicts:
-            session.add(_fact_check_verdict(claim, fast_verdicts[claim.id]))
-        elif claim.id in failed:
+        if claim.id in failed:
             claim.status, claim.unavailable_reason = "unavailable", SEARCH_FAILED
-        elif not items:
+        elif not items and not price_table(claim.price_chart):
             session.add(
                 Verdict(
                     claim_id=claim.id,
@@ -344,19 +753,36 @@ def _run(
                 )
             )
         else:
-            verdict = _judge_claim(claim, items, check, providers, settings, pool)
+            verdict = _judge_claim(claim, items, check, providers, settings, pool, tasks, reading_queries.get(claim.id))
             if verdict:
                 session.add(verdict)
             else:
                 claim.status, claim.unavailable_reason = "unavailable", JUDGES_FAILED
     session.commit()
 
-    claims_by_source: dict[str, list[str]] = {}
-    for claim in claims:
-        for item in evidence_by_claim[claim.id]:
-            claims_by_source.setdefault(item.source_id, []).append(claim.text)
-    for source in sources.values():
-        if source.id in claims_by_source:
-            source.analysis = _judge_source(source, claims_by_source[source.id], check, providers, settings)
+    # Claims about one election share its search, its model call and so its map, with all their sources to read.
+    groups: dict[object, list[int]] = {}
+    for index, (claim, item) in enumerate(zip(claims, extracted, strict=True)):
+        groups.setdefault(_election_key(item) or claim.id, []).append(index)
+    jobs = [
+        (claims[members[0]].position, partial(
+            _read_visual_figures, extracted[members[0]], claims[members[0]].location_map,
+            [entry for index in members for entry in evidence_by_claim[claims[index].id]], check.input_url,
+            providers, settings, pool,
+        ))
+        for members in groups.values()
+    ]
+    results = _run_visuals(jobs, tasks, settings)
+    figures = [None] * len(claims)
+    for members, result in zip(groups.values(), results, strict=True):
+        for index in members:
+            figures[index] = result
+    for claim, (seat_chart, details, election_map) in zip(claims, figures, strict=True):
+        claim.seat_chart, claim.election_map = seat_chart, election_map
+        if seat_chart or election_map:
+            claim.location_map = None  # A seat chart and an election map can sit together, but never with this one.
+        elif details:
+            claim.location_map = {**claim.location_map, "details": details}
+
     check.completed_at = utcnow()
     _set_status(check, session, "completed")

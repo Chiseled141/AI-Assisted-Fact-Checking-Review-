@@ -585,19 +585,6 @@
     "notes": "Central Institute for Economic Management site unreachable; uses the Vietnamese national emblem (Quốc huy) as a generic government marker, not the agency's own logo. Vietnamese national emblem: use is restricted by law."
   },
   {
-    "domain": "cnn.com",
-    "name": "CNN",
-    "tag": "green",
-    "file": "cnn-com.svg",
-    "format": "svg",
-    "width": 259,
-    "height": 69,
-    "origin_url": "https://edition.cnn.com/media/sites/cnn/stellar-logo.svg",
-    "method": "site-header",
-    "status": "ok",
-    "notes": "Redirects to edition.cnn.com; logo saved under the original domain."
-  },
-  {
     "domain": "cochranelibrary.com",
     "name": "Cochrane Library",
     "tag": "green",
@@ -832,19 +819,6 @@
     "notes": "PNG is 100x100, below the 128 px guideline."
   },
   {
-    "domain": "dsvn.vn",
-    "name": "Đường sắt Việt Nam",
-    "tag": "green",
-    "file": "dsvn-vn.png",
-    "format": "png",
-    "width": 295,
-    "height": 189,
-    "origin_url": "https://dsvn.vn/images/fpt-logo2.png",
-    "method": "site-header",
-    "status": "ok",
-    "notes": ""
-  },
-  {
     "domain": "dw.com",
     "name": "Deutsche Welle",
     "tag": "green",
@@ -856,19 +830,6 @@
     "method": "apple-touch-icon",
     "status": "ok",
     "notes": ""
-  },
-  {
-    "domain": "e.vnexpress.net",
-    "name": "VnExpress International",
-    "tag": "green",
-    "file": "e-vnexpress-net.png",
-    "format": "png",
-    "width": 470,
-    "height": 246,
-    "origin_url": "https://s.vnecdn.net/english/i/v68/graphics/logo_site_share.png",
-    "method": "site-header",
-    "status": "ok",
-    "notes": "Site's social-share logo image (470x246); the header wordmark is white-on-transparent. Served from the site's asset host s.vnecdn.net."
   },
   {
     "domain": "ec.europa.eu",
@@ -1053,19 +1014,6 @@
     "notes": ""
   },
   {
-    "domain": "fao.org",
-    "name": "FAO",
-    "tag": "green",
-    "file": "fao-org.svg",
-    "format": "svg",
-    "width": 828,
-    "height": 828,
-    "origin_url": "https://www.fao.org/images/corporatelibraries/sdg-logo/sdg01-en.svg",
-    "method": "site-header",
-    "status": "ok",
-    "notes": ""
-  },
-  {
     "domain": "fda.gov",
     "name": "FDA",
     "tag": "green",
@@ -1129,19 +1077,6 @@
     "method": "google-favicon-fallback",
     "status": "needs-review",
     "notes": "Google favicon service fallback; low-resolution raster. Site returns 403/429 to non-browser clients; logo obtained via Wikimedia Commons or favicon service."
-  },
-  {
-    "domain": "ftu.edu.vn",
-    "name": "Đại học Ngoại thương",
-    "tag": "green",
-    "file": "ftu-edu-vn.png",
-    "format": "png",
-    "width": 320,
-    "height": 210,
-    "origin_url": "https://ftu.edu.vn/images/stories/joomlart/banners/logokd.jpg",
-    "method": "site-header",
-    "status": "ok",
-    "notes": "Converted from JPG to PNG (pixels unchanged)."
   },
   {
     "domain": "fullfact.org",
@@ -1326,32 +1261,6 @@
     "notes": ""
   },
   {
-    "domain": "icrc.org",
-    "name": "ICRC",
-    "tag": "green",
-    "file": "icrc-org.svg",
-    "format": "svg",
-    "width": 960,
-    "height": 960,
-    "origin_url": "https://www.icrc.org/en",
-    "method": "press-kit",
-    "status": "ok",
-    "notes": "Red Cross emblem: protected under the Geneva Conventions; use is restricted."
-  },
-  {
-    "domain": "ictnews.vietnamnet.vn",
-    "name": "ICTNews",
-    "tag": "green",
-    "file": "vietnamnet-vn.svg",
-    "format": "svg",
-    "width": 312,
-    "height": 54,
-    "origin_url": "https://vnn-res.vgcloud.vn/ResV9/images/vpremium-menu-logo.svg",
-    "method": "site-header",
-    "status": "ok",
-    "notes": "Shares the vietnamnet.vn logo (same organisation). Same file as vietnamnet.vn."
-  },
-  {
     "domain": "iea.org",
     "name": "IEA",
     "tag": "green",
@@ -1519,19 +1428,6 @@
     "method": "site-header",
     "status": "low-resolution",
     "notes": "PNG is 210x85, below the 128 px guideline. Served from the site's asset host kiemsat.1cdn.vn."
-  },
-  {
-    "domain": "kinhtedothi.vn",
-    "name": "Kinh tế & Đô thị",
-    "tag": "green",
-    "file": "kinhtedothi-vn.svg",
-    "format": "svg",
-    "width": 576,
-    "height": 512,
-    "origin_url": "https://kinhtedothi.vn/",
-    "method": "site-header",
-    "status": "ok",
-    "notes": ""
   },
   {
     "domain": "koreaherald.com",
@@ -2093,19 +1989,6 @@
     "notes": ""
   },
   {
-    "domain": "pbs.org",
-    "name": "PBS",
-    "tag": "green",
-    "file": "pbs-org.svg",
-    "format": "svg",
-    "width": 68,
-    "height": 67,
-    "origin_url": "https://www.pbs.org/_next/static/media/pbs-kids-logo.13adhf38mtyy8.svg",
-    "method": "site-header",
-    "status": "ok",
-    "notes": ""
-  },
-  {
     "domain": "pesacheck.org",
     "name": "PesaCheck",
     "tag": "green",
@@ -2249,19 +2132,6 @@
     "notes": ""
   },
   {
-    "domain": "reporterslab.duke.edu",
-    "name": "Duke Reporters' Lab",
-    "tag": "green",
-    "file": "duke-edu.svg",
-    "format": "svg",
-    "width": 367,
-    "height": 121,
-    "origin_url": "https://www.duke.edu/wp-content/plugins/duke-blocks/assets/images/dd-white.svg",
-    "method": "site-header",
-    "status": "ok",
-    "notes": "Shares the duke.edu logo (same organisation)."
-  },
-  {
     "domain": "reuters.com",
     "name": "Reuters",
     "tag": "green",
@@ -2364,19 +2234,6 @@
     "method": "site-header",
     "status": "low-resolution",
     "notes": "PNG is 125x40, below the 128 px guideline. Served from the site's asset host static-cms-sggp.epicdn.me."
-  },
-  {
-    "domain": "snopes.com",
-    "name": "Snopes",
-    "tag": "green",
-    "file": "snopes-com.svg",
-    "format": "svg",
-    "width": 576,
-    "height": 512,
-    "origin_url": "https://www.snopes.com/",
-    "method": "site-header",
-    "status": "ok",
-    "notes": ""
   },
   {
     "domain": "ssc.gov.vn",
@@ -2626,19 +2483,6 @@
     "notes": "Wikipedia lead image used; verify it is current. Wikimedia Commons file: en.wikipedia:Emblem_of_Vietnam_People's_Courts.png. Site yielded no usable logo; Wikimedia Commons used."
   },
   {
-    "domain": "toolbox.google.com",
-    "name": "Google Fact Check Tools",
-    "tag": "green",
-    "file": "google-com.png",
-    "format": "png",
-    "width": 32,
-    "height": 32,
-    "origin_url": "https://www.gstatic.com/images/branding/searchlogo/ico/favicon.ico",
-    "method": "favicon",
-    "status": "low-resolution",
-    "notes": "Shares the google.com logo (same organisation). PNG is 32x32, below the 128 px guideline."
-  },
-  {
     "domain": "tuoitre.vn",
     "name": "Tuổi Trẻ",
     "tag": "green",
@@ -2717,19 +2561,6 @@
     "notes": "Wikipedia lead image used; verify it is current. Wikimedia Commons file: en.wikipedia:Seal_of_the_United_States_Geological_Survey.svg. Site unreachable (error); logo from fallback."
   },
   {
-    "domain": "vass.gov.vn",
-    "name": "Viện Hàn lâm KHXH Việt Nam",
-    "tag": "green",
-    "file": "vass-gov-vn.svg",
-    "format": "svg",
-    "width": 210,
-    "height": 101,
-    "origin_url": "https://media.vov.vn/sites/default/files/logo/logovov.svg",
-    "method": "site-header",
-    "status": "ok",
-    "notes": "Served from the site's asset host media.vov.vn."
-  },
-  {
     "domain": "vast.vn",
     "name": "Viện Hàn lâm KH&CN Việt Nam",
     "tag": "green",
@@ -2793,32 +2624,6 @@
     "method": "site-header",
     "status": "ok",
     "notes": "Served from the site's asset host sf.ex-cdn.com."
-  },
-  {
-    "domain": "vietnamnet.vn",
-    "name": "VietnamNet",
-    "tag": "green",
-    "file": "vietnamnet-vn.svg",
-    "format": "svg",
-    "width": 312,
-    "height": 54,
-    "origin_url": "https://vnn-res.vgcloud.vn/ResV9/images/vpremium-menu-logo.svg",
-    "method": "site-header",
-    "status": "ok",
-    "notes": "Served from the site's asset host vnn-res.vgcloud.vn."
-  },
-  {
-    "domain": "vietnamnews.vn",
-    "name": "Vietnam News",
-    "tag": "green",
-    "file": "vietnamnews-vn.png",
-    "format": "png",
-    "width": 750,
-    "height": 341,
-    "origin_url": "https://image.vietnamnews.vn/MediaUpload/Adv/2024/09/08/09202408212618-ann-logo.jpg",
-    "method": "site-header",
-    "status": "ok",
-    "notes": "Converted from JPG to PNG (pixels unchanged)."
   },
   {
     "domain": "vietnamplus.vn",
@@ -3495,19 +3300,6 @@
     "method": "google-favicon-fallback",
     "status": "needs-review",
     "notes": "From TRUSTED_SOURCES.md: user-generated; useful as leads only Google favicon service fallback; low-resolution raster. Site unreachable (error); logo from fallback."
-  },
-  {
-    "domain": "wikipedia.org",
-    "name": "Wikipedia",
-    "tag": "yellow",
-    "file": "wikipedia-org.svg",
-    "format": "svg",
-    "width": 565,
-    "height": 128,
-    "origin_url": "https://www.wikipedia.org/",
-    "method": "site-header",
-    "status": "ok",
-    "notes": ""
   },
   {
     "domain": "x.com",

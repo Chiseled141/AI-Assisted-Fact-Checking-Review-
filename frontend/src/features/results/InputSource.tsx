@@ -6,7 +6,6 @@ import { t } from '../../lib/i18n';
 import { findSource } from '../../lib/sources';
 
 const labelClass = 'text-[13px] font-medium text-orange-700';
-const sampleNoteClass = 'mt-2 text-[13px] text-ink-muted';
 
 function ArticleSource({ check, url }: { check: CheckDetail; url: string }) {
   const href = safeHref(url);
@@ -15,35 +14,34 @@ function ArticleSource({ check, url }: { check: CheckDetail; url: string }) {
   const title = article?.title ?? (href ? new URL(href).hostname : url);
   return (
     <div>
-      <p className={labelClass}>{t('Article checked')}</p>
-      <h2 className="mt-1.5 break-words text-[20px] font-semibold leading-snug tracking-[-0.02em] text-ink">{title}</h2>
-      <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1.5 text-[14px] text-ink-soft">
-        {source && <SourceLogo source={source} decorative={Boolean(article?.publisher)} />}
-        {article?.publisher && <span className="font-medium text-ink">{article.publisher}</span>}
-        {article?.publishedAt && (
-          <time dateTime={article.publishedAt}>{formatCalendarDate(article.publishedAt)}</time>
-        )}
-        {href && (
+      <h2 className="break-words text-[18px] font-semibold leading-snug tracking-[-0.02em] text-ink">
+        {href ? (
           <a
             href={href}
             target="_blank"
             rel="noopener noreferrer nofollow"
-            className="inline-flex items-center gap-0.5 font-medium text-indigo-700 underline decoration-indigo-200 underline-offset-4 transition-colors hover:text-indigo-800 hover:decoration-indigo-700"
+            className="inline-flex items-center gap-1 hover:text-indigo-700"
           >
-            {t('Open article')}
-            <ArrowUpRight className="h-4 w-4" aria-hidden="true" />
-            <span className="sr-only">{t('(opens in a new tab)')}</span>
+            {title}
+            <ArrowUpRight className="h-4 w-4 shrink-0" aria-hidden="true" />
+            <span className="sr-only"> {t('(opens in a new tab)')}</span>
           </a>
+        ) : (
+          title
         )}
-      </div>
-      {!check.claimsMatchInput && (
-        <p className={sampleNoteClass}>{t('This demo did not read this link. The claims below are sample data.')}</p>
+      </h2>
+      {(source || article?.publisher || article?.publishedAt) && (
+        <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-[13px] text-ink-muted">
+          {source && <SourceLogo source={source} decorative={Boolean(article?.publisher)} />}
+          {article?.publisher && <span>{article.publisher}</span>}
+          {article?.publishedAt && <time dateTime={article.publishedAt}>{formatCalendarDate(article.publishedAt)}</time>}
+        </div>
       )}
     </div>
   );
 }
 
-function FileSource({ check, files }: { check: CheckDetail; files: SubmittedFile[] }) {
+function FileSource({ files }: { files: SubmittedFile[] }) {
   return (
     <div>
       <p className={labelClass}>{files.length > 1 ? t('Files checked') : t('File checked')}</p>
@@ -55,7 +53,7 @@ function FileSource({ check, files }: { check: CheckDetail; files: SubmittedFile
               <span className="min-w-0">{file.name}</span>
             </h2>
             <p className="mt-1 text-[14px] text-ink-soft">
-              {formatBytes(file.size)} · {t('Read in your browser, not uploaded')}
+              {formatBytes(file.size)} · {t('Text sent to the server for checking')}
             </p>
             <details className="group mt-2">
               <summary className="inline-flex cursor-pointer list-none items-center gap-1 text-[14px] font-medium text-indigo-700 hover:text-indigo-800 [&::-webkit-details-marker]:hidden">
@@ -69,9 +67,6 @@ function FileSource({ check, files }: { check: CheckDetail; files: SubmittedFile
           </li>
         ))}
       </ul>
-      {!check.claimsMatchInput && (
-        <p className={sampleNoteClass}>{t('This demo did not read these files. The claims below are sample data.')}</p>
-      )}
     </div>
   );
 }
@@ -82,7 +77,7 @@ export function InputSource({ check }: { check: CheckDetail }) {
     check.inputType === 'url' && check.inputUrl ? (
       <ArticleSource check={check} url={check.inputUrl} />
     ) : check.files?.length ? (
-      <FileSource check={check} files={check.files} />
+      <FileSource files={check.files} />
     ) : null;
   return content && <section className="mb-8">{content}</section>;
 }

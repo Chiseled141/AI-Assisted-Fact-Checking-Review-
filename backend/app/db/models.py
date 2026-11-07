@@ -30,6 +30,7 @@ class Check(Base):
     status: Mapped[str] = mapped_column(String(16), default="queued", index=True)
     error_message: Mapped[str | None] = mapped_column(Text)
     judge_ids: Mapped[list] = mapped_column(JSON)
+    progress: Mapped[list | None] = mapped_column(JSON)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow, index=True)
     updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow, onupdate=utcnow)
     completed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
@@ -38,7 +39,7 @@ class Check(Base):
 
 
 class Source(Base):
-    """A fetched page. Shared by every claim that uses it, and judged once per check."""
+    """A fetched page shared by every claim that uses it."""
 
     __tablename__ = "sources"
 
@@ -51,7 +52,6 @@ class Source(Base):
     image_url: Mapped[str | None] = mapped_column(Text)
     text: Mapped[str] = mapped_column(Text)
     retrieved_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
-    analysis: Mapped[dict | None] = mapped_column(JSON)
 
 
 class Claim(Base):
@@ -66,7 +66,13 @@ class Claim(Base):
     checkworthy_score: Mapped[float | None] = mapped_column(Float)
     status: Mapped[str] = mapped_column(String(16), default="assessed")
     unavailable_reason: Mapped[str | None] = mapped_column(Text)
-    fact_check: Mapped[dict | None] = mapped_column(JSON)
+    price_chart: Mapped[dict | None] = mapped_column(JSON)
+    location_map: Mapped[dict | None] = mapped_column(JSON)
+    heat_map: Mapped[dict | None] = mapped_column(JSON)
+    country_map: Mapped[dict | None] = mapped_column(JSON)
+    seat_chart: Mapped[dict | None] = mapped_column(JSON)
+    election_map: Mapped[dict | None] = mapped_column(JSON)
+    rephrased_from: Mapped[str | None] = mapped_column(Text)
 
     check: Mapped[Check] = relationship(back_populates="claims")
     evidence: Mapped[list["Evidence"]] = relationship(order_by="Evidence.position")
@@ -81,6 +87,7 @@ class Evidence(Base):
     source_id: Mapped[str] = mapped_column(ForeignKey("sources.id"))
     position: Mapped[int] = mapped_column(Integer)
     excerpt: Mapped[str] = mapped_column(Text)
+    translations: Mapped[dict | None] = mapped_column(JSON)
     relation: Mapped[str] = mapped_column(String(16), default="contextual")
 
     source: Mapped[Source] = relationship()

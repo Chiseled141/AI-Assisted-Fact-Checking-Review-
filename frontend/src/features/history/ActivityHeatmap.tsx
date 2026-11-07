@@ -157,7 +157,12 @@ export function ActivityHeatmap() {
             ))}
           {days.map((day) => (
             // The padding is the gap between cells, so the hover target has no dead spots.
-            <span key={day.key} data-day={day.key} style={{ gridColumn: day.column + 2, gridRow: day.row + 2 }} className="p-[1.5px]">
+            <span
+              key={day.key}
+              data-day={day.key}
+              style={{ gridColumn: day.column + 2, gridRow: day.row + 2 }}
+              className="p-[1.5px]"
+            >
               <span className={`block aspect-square rounded-[3px] ${levelColor[levelOf(counts?.get(day.key) ?? 0)]}`} />
             </span>
           ))}

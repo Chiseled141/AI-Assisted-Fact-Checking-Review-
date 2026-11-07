@@ -1,10 +1,10 @@
-// CheckService over the FastAPI backend in ../backend. Routes are listed in AGENT.md.
+// CheckService over the FastAPI backend in ../backend. Routes are in backend/app/api/, and at /docs when it runs.
 
 import type { Check, CheckDetail, CreateCheckInput, ListChecksParams } from '../types/models';
 import { t } from '../lib/i18n';
 import type { CheckService } from './contract';
 import { NotFoundError, ValidationError, VersionConflictError } from './errors';
-import { apiUrl } from './mode';
+import { apiUrl } from './api';
 
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
   const response = await fetch(`${apiUrl}${path}`, {
@@ -26,9 +26,9 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
   throw new Error(`Request failed with status ${response.status}`);
 }
 
-/** The backend has no demo scenarios, but the type still expects one. Its fixed messages are in English. */
-function fromServer<T extends Omit<Check, 'scenario'>>(check: T): T & Pick<Check, 'scenario'> {
-  return { ...check, errorMessage: check.errorMessage && t(check.errorMessage), scenario: 'completed' };
+/** Translate fixed server messages while preserving the saved results. */
+function fromServer<T extends Check>(check: T): T {
+  return { ...check, errorMessage: check.errorMessage && t(check.errorMessage) };
 }
 
 function detailFromServer(check: CheckDetail): CheckDetail {
@@ -44,7 +44,7 @@ function detailFromServer(check: CheckDetail): CheckDetail {
 }
 
 export const httpCheckService: CheckService = {
-  async createCheck({ scenario: _scenario, ...input }: CreateCheckInput) {
+  async createCheck(input: CreateCheckInput) {
     const check = await request<Check>('/api/check', { method: 'POST', body: JSON.stringify(input) });
     return fromServer(check);
   },

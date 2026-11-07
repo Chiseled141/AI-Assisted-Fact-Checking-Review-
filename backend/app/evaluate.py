@@ -80,7 +80,7 @@ def evaluate(rows: list[dict], judge_ids: list[str], providers: Providers, setti
     truth: list[str] = []
     answers: dict[str, list[str | None]] = {name: [] for name in names}
     latencies: list[float] = []
-    unavailable = fact_check_hits = 0
+    unavailable = 0
 
     for row in rows:
         with make_session() as session:
@@ -100,9 +100,8 @@ def evaluate(rows: list[dict], judge_ids: list[str], providers: Providers, setti
                 unavailable += 1
             by_judge = {item["judge"]: item["verdict"] for item in (verdict.judges or [])} if verdict else {}
             for name in names:
-                # A fast-path verdict has no judges, so every judge is credited with it.
+                # A verdict made without judges, because no source was found, counts for every judge.
                 answers[name].append(by_judge.get(name) or (verdict.label if verdict and not verdict.judges else None))
-            fact_check_hits += bool(claim and claim.fact_check)
 
     judges = {}
     for name in names:
@@ -120,7 +119,6 @@ def evaluate(rows: list[dict], judge_ids: list[str], providers: Providers, setti
         "unavailable": unavailable,
         "judges": judges,
         "agreement": {"percent": accuracy(first, second), "cohenKappa": cohen_kappa(first, second)},
-        "factCheckHitRate": fact_check_hits / len(rows) if rows else 0.0,
         "latencySeconds": {"p50": percentile(latencies, 0.5), "p95": percentile(latencies, 0.95)},
     }
 

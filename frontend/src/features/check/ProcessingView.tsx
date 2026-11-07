@@ -1,12 +1,8 @@
-import { useMemo } from 'react';
-import { Check as CheckIcon, Info } from 'lucide-react';
-import { demoMode } from '../../services';
-import type { Check } from '../../types/models';
+import type { CheckDetail } from '../../types/models';
 import { PROCESSING_STAGES } from '../../types/models';
 import { formatDateTime, statusLabel } from '../../lib/format';
-import { DemoModeLabel } from '../../components/Badges';
-import { config } from '../../config';
 import { t } from '../../lib/i18n';
+import { TaskGroups } from './TaskList';
 
 const stageHint: Record<(typeof PROCESSING_STAGES)[number], string> = {
   queued: 'Waiting for a worker',
@@ -18,49 +14,22 @@ const stageHint: Record<(typeof PROCESSING_STAGES)[number], string> = {
 
 const TOTAL_STAGES = PROCESSING_STAGES.length;
 
-/** Demo stage timing, used only to pace the segment fill. Unknown stages get a calm default. */
-function stageDurationMs(stage: string): number {
-  return (config.stageDurations as Record<string, number | undefined>)[stage] ?? 1600;
-}
-
-/**
- * The progress screen, read like a short live brief: one stage in focus,
- * finished stages quiet, and upcoming ones faint.
- */
-export function ProcessingView({ check }: { check: Check }) {
-  const currentIndex = Math.max(
-    0,
-    PROCESSING_STAGES.indexOf(check.status as (typeof PROCESSING_STAGES)[number]),
-  );
+/** The progress screen. Everything on it comes from what the backend has saved: nothing is estimated or animated forward. */
+export function ProcessingView({ check }: { check: CheckDetail }) {
+  const currentIndex = Math.max(0, PROCESSING_STAGES.indexOf(check.status as (typeof PROCESSING_STAGES)[number]));
+  const stage = PROCESSING_STAGES[currentIndex];
   const nextStage = PROCESSING_STAGES[currentIndex + 1];
-
-  // Fill the active segment from start to end. The stage advances on its own clock, so offset the
-  // animation by time already spent in this stage — a reload mid-stage still ends the fill on time.
-  const { stageMs, fillDelay } = useMemo(() => {
-    const before = PROCESSING_STAGES.slice(0, currentIndex).reduce(
-      (sum, stage) => sum + stageDurationMs(stage),
-      0,
-    );
-    const duration = stageDurationMs(PROCESSING_STAGES[currentIndex]);
-    const elapsed = Date.now() - new Date(check.createdAt).getTime() - before;
-    return { stageMs: duration, fillDelay: -Math.max(0, Math.min(elapsed, duration)) };
-  }, [currentIndex, check.createdAt]);
+  const tasks = check.progress ?? [];
+  const processed = check.claims.filter((claim) => claim.current || claim.status === 'unavailable').length;
+  const finishing = check.status === 'assessing' && check.claims.length > 0 && processed === check.claims.length;
+  // A link is read before any model is called, so this stage has nothing else to show yet.
+  const readingLink = check.status === 'extracting' && check.inputType === 'url' && tasks.length === 0;
+  const hint = finishing ? 'Finishing visual details' : readingLink ? 'Reading the submitted page' : stageHint[stage];
 
   return (
     <div className="mx-auto w-full max-w-5xl px-4 pb-16 pt-10 sm:px-8 sm:pb-24 sm:pt-16">
       <div className="mx-auto max-w-[640px]">
-        <div className="flex items-center justify-between gap-3">
-          <p className="flex items-center gap-2 text-[13px] font-medium text-brand-600">
-            <span className="relative flex h-2 w-2" aria-hidden="true">
-              <span className="absolute inline-flex h-full w-full rounded-full bg-brand-500 opacity-50 motion-safe:animate-ping" />
-              <span className="relative inline-flex h-2 w-2 rounded-full bg-brand-500" />
-            </span>
-            {t('Live check')}
-          </p>
-          {demoMode && <DemoModeLabel />}
-        </div>
-
-        <h1 className="mt-5 text-[30px] font-medium leading-[1.12] tracking-[-0.03em] text-ink sm:mt-6 sm:text-[40px]">
+        <h1 className="text-[30px] font-medium leading-[1.12] tracking-[-0.03em] text-ink sm:text-[40px]">
           {t('Checking claims')}
         </h1>
         <p className="mt-3 break-words text-[15px] leading-[1.7] text-ink-soft">{check.title}</p>
@@ -72,97 +41,37 @@ export function ProcessingView({ check }: { check: Check }) {
           {t('Current stage: {stage}', { stage: statusLabel[check.status] })}
         </p>
 
-        <div className="mt-9 sm:mt-10">
+        <div className="mt-8">
           <div className="flex items-baseline justify-between gap-4">
-            <p className="text-[13px] text-ink-muted">{t('Check progress')}</p>
-            <p className="text-[13px] tabular-nums text-ink-muted">
+            <p className="text-[17px] font-medium tracking-[-0.01em] text-ink">{statusLabel[stage]}</p>
+            <p className="shrink-0 text-[13px] tabular-nums text-ink-muted">
               {t('Stage {current} of {total}', { current: currentIndex + 1, total: TOTAL_STAGES })}
             </p>
           </div>
           <div className="mt-2.5 flex gap-1.5" aria-hidden="true">
-            {PROCESSING_STAGES.map((stage, index) => {
-              const done = index < currentIndex;
-              const active = index === currentIndex;
-              return (
-                <span
-                  key={stage}
-                  className={`relative h-[3px] flex-1 overflow-hidden rounded-full ${
-                    done ? 'bg-brand-500' : active ? 'bg-brand-100' : 'bg-line'
-                  }`}
-                >
-                  {active && (
-                    <span
-                      className="stage-fill absolute inset-y-0 left-0 rounded-full bg-brand-500"
-                      style={{ animationDuration: `${stageMs}ms`, animationDelay: `${fillDelay}ms` }}
-                    />
-                  )}
-                </span>
-              );
-            })}
+            {PROCESSING_STAGES.map((name, index) => (
+              <span
+                key={name}
+                className={`h-[3px] flex-1 rounded-full ${
+                  index < currentIndex ? 'bg-brand-500' : index === currentIndex ? 'bg-brand-200' : 'bg-line'
+                }`}
+              />
+            ))}
           </div>
+          <p className="mt-3 text-[15px] leading-[1.7] text-ink-soft">{t(hint)}</p>
+          {check.status === 'assessing' && check.claims.length > 0 && (
+            <p className="mt-1 text-xs text-ink-muted">
+              {t('{done} of {total} claims processed', { done: processed, total: check.claims.length })}
+            </p>
+          )}
+          {nextStage && (
+            <p className="mt-1 text-xs text-ink-faint">{t('Up next · {stage}', { stage: statusLabel[nextStage] })}</p>
+          )}
         </div>
 
-        <ol className="mt-7 border-t border-line" aria-label={t('Processing stages')}>
-          {PROCESSING_STAGES.map((stage, index) => {
-            const done = index < currentIndex;
-            const active = index === currentIndex;
-            return (
-              <li
-                key={stage}
-                aria-current={active ? 'step' : undefined}
-                className={`border-b border-line ${active ? 'py-5' : 'py-3.5'}`}
-              >
-                <div className="flex items-center gap-4">
-                  <span
-                    aria-hidden="true"
-                    className={`w-6 shrink-0 font-logo text-[11px] font-medium tracking-[0.12em] ${
-                      active ? 'text-brand-600' : 'text-ink-faint'
-                    }`}
-                  >
-                    {String(index + 1).padStart(2, '0')}
-                  </span>
-                  <p
-                    className={`min-w-0 flex-1 leading-snug tracking-[-0.01em] ${
-                      active
-                        ? 'text-[17px] font-medium text-ink'
-                        : done
-                          ? 'text-[15px] text-ink-muted'
-                          : 'text-[15px] text-ink-faint'
-                    }`}
-                  >
-                    {statusLabel[stage]}
-                    <span className="sr-only">{done ? t(' — done') : active ? t(' — in progress') : t(' — pending')}</span>
-                  </p>
-                  {done ? (
-                    <CheckIcon className="h-4 w-4 shrink-0 text-brand-600" strokeWidth={2.5} aria-hidden="true" />
-                  ) : active ? (
-                    <span className="relative flex h-2 w-2 shrink-0" aria-hidden="true">
-                      <span className="absolute inline-flex h-full w-full rounded-full bg-brand-500 opacity-50 motion-safe:animate-ping" />
-                      <span className="relative inline-flex h-2 w-2 rounded-full bg-brand-500" />
-                    </span>
-                  ) : (
-                    <span className="h-1.5 w-1.5 shrink-0 rounded-full border border-line-strong" aria-hidden="true" />
-                  )}
-                </div>
-                {active && (
-                  <div className="rise-in pl-10">
-                    <p className="mt-1.5 text-[15px] leading-[1.7] text-ink-soft">{t(stageHint[stage])}</p>
-                    {nextStage && (
-                      <p className="mt-1.5 text-xs text-ink-faint">{t('Up next · {stage}', { stage: statusLabel[nextStage] })}</p>
-                    )}
-                  </div>
-                )}
-              </li>
-            );
-          })}
-        </ol>
-
-        {demoMode && (
-          <p className="mt-8 flex items-start gap-2 text-xs leading-[1.7] text-ink-faint">
-            <Info className="mt-0.5 h-3.5 w-3.5 shrink-0" aria-hidden="true" />
-            {t('Simulated processing. No AI model, search, or URL fetch is called.')}
-          </p>
-        )}
+        <div className="mt-6">
+          <TaskGroups tasks={tasks} />
+        </div>
       </div>
     </div>
   );

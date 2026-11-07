@@ -1,51 +1,17 @@
 import { type CSSProperties, type ReactNode, useEffect, useRef, useState } from 'react';
-import { ChevronDown, ExternalLink, ImageIcon, Info, TriangleAlert } from 'lucide-react';
+import { ExternalLink, TriangleAlert } from 'lucide-react';
 import type {
   Claim,
   EvidenceRelation,
   EvidenceSnapshot,
   FreshnessJudgment,
-  PageCapture,
-  SourceAnalysis,
 } from '../../types/models';
 import { safeHref, safeImageSrc } from '../../lib/format';
 import { findSource, isVietnameseSource } from '../../lib/sources';
 import { useMediaQuery } from '../../lib/useMediaQuery';
-import { RelationChip, SourceTrustMark } from '../../components/Badges';
+import { RelationChip } from '../../components/Badges';
 import { SourceLogo } from '../../components/SourceLogo';
-import { judgeColor, RatingChart } from './RatingChart';
-import { judgeLogo } from '../../lib/judges';
-import { demoMode } from '../../services';
 import { getLanguage, t, translated } from '../../lib/i18n';
-
-function CaptureView({ capture, title }: { capture: PageCapture; title: string }) {
-  const [open, setOpen] = useState(false);
-  const src = safeImageSrc(capture.url);
-  if (!src) return null;
-  return (
-    <div>
-      <button
-        type="button"
-        onClick={() => setOpen((v) => !v)}
-        aria-expanded={open}
-        aria-label={t(open ? 'Hide page capture of {title}' : 'Show page capture of {title}', { title })}
-        className="inline-flex min-h-6 items-center gap-1 text-ink-muted underline decoration-line-strong underline-offset-4 transition-colors hover:text-ink"
-      >
-        <ImageIcon className="h-3.5 w-3.5" aria-hidden="true" />
-        {open ? t('Hide page capture') : t('Page capture')}
-      </button>
-      {open && (
-        <img
-          src={src}
-          alt={t('Page capture of {title}', { title })}
-          width={capture.width}
-          height={capture.height}
-          className="rise-in mt-2 w-full border border-line"
-        />
-      )}
-    </div>
-  );
-}
 
 /**
  * The article's lead image behind a card's content. The image comes from the publisher, so it can
@@ -104,15 +70,9 @@ function OpenCardContent({ item, judgment }: { item: EvidenceSnapshot; judgment?
             <span className="min-w-0">{item.publisher ?? hostname}</span>
           </p>
           {source?.about && <p className="mt-0.5 text-xs leading-snug text-[#fff]/90">{t(source.about)}</p>}
-          <p className="mt-1.5 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-[#fff]/90">
-            <SourceTrustMark trust={source?.trust ?? null} onPhoto />
-            {judgment?.status === 'outdated' && (
-              <>
-                <span aria-hidden="true">·</span>
-                <span className="font-semibold text-[#fcd34d]">{t('Outdated')}</span>
-              </>
-            )}
-          </p>
+          {judgment?.status === 'outdated' && (
+            <p className="mt-1.5 text-xs font-semibold text-[#fcd34d]">{t('Outdated')}</p>
+          )}
         </div>
         {href && (
           <a
@@ -146,8 +106,12 @@ function ClosedCardContent({ item, onOpen }: { item: EvidenceSnapshot; onOpen: (
         <RelationChip relation={item.relation} />
       </span>
       <span className="flex rotate-180 flex-col gap-1 self-start text-[#fff] [text-shadow:0_1px_6px_rgb(0_0_0/0.6)] [writing-mode:vertical-rl]">
-        <span className="max-h-[300px] truncate text-[16px] font-medium leading-tight tracking-[-0.01em]">{item.sourceTitle}</span>
-        {item.publisher && <span className="max-h-[300px] truncate text-xs font-semibold leading-tight text-[#a5d8ff]">{item.publisher}</span>}
+        <span className="max-h-[300px] truncate text-[16px] font-medium leading-tight tracking-[-0.01em]">
+          {item.sourceTitle}
+        </span>
+        {item.publisher && (
+          <span className="max-h-[300px] truncate text-xs font-semibold leading-tight text-[#a5d8ff]">{item.publisher}</span>
+        )}
       </span>
     </button>
   );
@@ -165,160 +129,40 @@ const relationTone: Record<EvidenceRelation, string> = {
   contextual: 'text-ink-muted',
 };
 
-/**
- * The longer reading of a source, sliding open below its details. It stays mounted so the height can
- * animate; `visibility` keeps it out of the tab order and away from screen readers while closed.
- */
-function AnalysisPanel({ id, analysis, open }: { id: string; analysis: SourceAnalysis; open: boolean }) {
-  const panel = useRef<HTMLDivElement>(null);
-  const everOpened = useRef(open);
-  everOpened.current ||= open;
-  return (
-    <div
-      id={id}
-      ref={panel}
-      style={{ gridTemplateRows: open ? '1fr' : '0fr', visibility: open ? 'visible' : 'hidden' }}
-      onTransitionEnd={(event) => {
-        if (open && event.target === panel.current && event.propertyName === 'grid-template-rows') {
-          panel.current.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
-        }
-      }}
-      className="grid scroll-mb-6 scroll-mt-20 transition-[grid-template-rows,visibility] duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] motion-reduce:transition-none"
-    >
-      <div className="min-h-0 overflow-hidden">
-        <div className="mt-6 border-t border-line pt-6">
-          {/* The one bold block on the page, like the reference page's dark panels. */}
-          <div className="grid gap-6 rounded-xl bg-indigo-950 p-5 sm:p-8 lg:grid-cols-[minmax(0,7fr)_minmax(0,5fr)] lg:gap-14">
-            <section>
-              <h3 className="text-[13px] font-medium text-orange-300">{t('Analysis')}</h3>
-              <p className="mt-3 text-[20px] font-medium leading-[1.35] tracking-[-0.02em] text-page sm:text-[24px]">
-                {analysis.assessment}
-              </p>
-            </section>
-            <section>
-              <h3 className="text-[13px] font-medium text-orange-300">{t('In the article')}</h3>
-              <ul className="mt-3 space-y-2.5 text-[14px] leading-[1.55] text-page">
-                {analysis.keyPoints.map((point) => (
-                  <li key={point} className="flex gap-2.5 before:font-semibold before:text-orange-300 before:content-['+']">
-                    <span className="min-w-0">{point}</span>
-                  </li>
-                ))}
-              </ul>
-            </section>
-          </div>
-
-          <div className="mt-8 grid gap-8 lg:grid-cols-[minmax(0,7fr)_minmax(0,5fr)] lg:gap-14">
-            <section>
-              <h3 className="text-[20px] font-semibold tracking-[-0.02em] text-ink">
-                {t('How both AI models rated this source')}
-              </h3>
-              <div className="mt-3">
-                <RatingChart notes={analysis.judgeNotes} showChart={everOpened.current} />
-              </div>
-            </section>
-            <section>
-              <h3 className="text-[20px] font-semibold tracking-[-0.02em] text-ink">{t('Comments from both AI models')}</h3>
-              <ul className="mt-4 space-y-5">
-                {analysis.judgeNotes.map(({ judge, note }, index) => (
-                  <li key={judge}>
-                    <span
-                      className="inline-flex items-center gap-1.5 rounded py-1 pl-1 pr-2 text-[13px] font-semibold leading-none text-on-primary"
-                      style={{ backgroundColor: judgeColor[index] }}
-                    >
-                      {/* On white, because some labs' logos are dark and others are in color. */}
-                      {judgeLogo(judge) && (
-                        <img src={judgeLogo(judge)} alt="" className="h-[18px] w-[18px] shrink-0 rounded-[3px] bg-white p-0.5" draggable={false} />
-                      )}
-                      {judge}
-                    </span>
-                    <p className="mt-2 text-[15px] leading-[1.6] text-ink-soft">{note}</p>
-                  </li>
-                ))}
-              </ul>
-            </section>
-          </div>
-          <p className="mt-6 flex items-start gap-1.5 text-[13px] text-ink-muted">
-            <Info className="mt-0.5 h-3.5 w-3.5 shrink-0" aria-hidden="true" />
-            {demoMode
-              ? t('Demo: the analysis, scores and comments are simulated, not produced by a real AI model.')
-              : t('Written by the AI models from this page’s text. They can be wrong, so check the source.')}
-          </p>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-/** What the source says and how it relates to the claim. */
-function SourceDetail({
-  item,
-  judgment,
-  className = '',
-}: {
+/** The saved passage and its relation to the claim, without a second AI assessment. */
+function SourceDetail({ item, judgment, className = '' }: {
   item: EvidenceSnapshot;
   judgment?: FreshnessJudgment;
   className?: string;
 }) {
-  // Kept when another source opens, so the analysis stays open while moving between sources.
-  const [analysisOpen, setAnalysisOpen] = useState(false);
   const source = findSource(item.url);
-  const analysisId = `source-analysis-${item.id}`;
+  // The quote always stays as the source wrote it. A translation only ever appears beside it.
+  const translation = item.translations?.[getLanguage()];
   return (
     <div className={className}>
-      {/* Same columns as the analysis panel below, so the two line up. */}
-      <div key={item.id} className="rise-in grid gap-4 lg:grid-cols-[minmax(0,7fr)_minmax(0,5fr)] lg:gap-14">
-        <div>
-          {source?.trust === 'red' && (
-            <p className="mb-3 flex items-start gap-1.5 text-[13px] text-rose-700">
-              <TriangleAlert className="mt-px h-3.5 w-3.5 shrink-0" aria-hidden="true" />
-              {t('This source is rated unreliable, so it should not be treated as evidence.')}
-            </p>
-          )}
-
-          <p className="text-[13px] font-medium text-ink-muted">{t('What this source says')}</p>
-          <blockquote className="mt-2 text-[22px] font-semibold leading-[1.2] tracking-[-0.025em] text-ink sm:text-[28px]">
-            <span className="sr-only">{t('Saved excerpt:')} </span>“{item.excerpt}”
-          </blockquote>
-          <p className={`mt-2 text-[18px] italic leading-snug tracking-[-0.01em] sm:text-[22px] ${relationTone[item.relation]}`}>
-            {relationSentence[item.relation]}
-          </p>
-        </div>
-
-        <div className="space-y-4 lg:pt-6">
-          {item.analysis && <p className="text-[15px] leading-[1.65] text-ink-soft">{item.analysis.summary}</p>}
-
-          {judgment?.reason && judgment.status === 'outdated' && (
-            <p className="text-[13px] text-ink-soft">
-              <span className="font-semibold text-candy">{t('Why outdated:')} </span>
-              {judgment.reason}
-            </p>
-          )}
-
-          {item.analysis && (
-            <button
-              type="button"
-              onClick={() => setAnalysisOpen((v) => !v)}
-              aria-expanded={analysisOpen}
-              aria-controls={analysisId}
-              aria-label={t(analysisOpen ? 'Hide analysis: {title}' : 'See analysis: {title}', { title: item.sourceTitle })}
-              className="press-lift relative inline-flex h-9 items-center gap-1.5 rounded-md bg-indigo-950 px-3 after:absolute after:inset-x-0 after:-inset-y-1 text-[13px] font-medium text-on-primary transition-colors hover:bg-indigo-800"
-            >
-              {analysisOpen ? t('Hide analysis') : t('See analysis')}
-              <ChevronDown
-                className={`h-3.5 w-3.5 transition-transform duration-300 motion-reduce:transition-none ${analysisOpen ? 'rotate-180' : ''}`}
-                aria-hidden="true"
-              />
-            </button>
-          )}
-
-          {item.capture && (
-            <div className="text-[13px]">
-              <CaptureView capture={item.capture} title={item.sourceTitle} />
-            </div>
-          )}
-        </div>
-      </div>
-      {item.analysis && <AnalysisPanel id={analysisId} analysis={item.analysis} open={analysisOpen} />}
+      {source?.trust === 'red' && (
+        <p className="mb-3 flex items-start gap-1.5 text-[13px] text-rose-700">
+          <TriangleAlert className="mt-px h-3.5 w-3.5 shrink-0" aria-hidden="true" />
+          {t('This source is rated unreliable, so it should not be treated as evidence.')}
+        </p>
+      )}
+      <p className="text-[13px] font-medium text-ink-muted">{t('What this source says')}</p>
+      <blockquote className="mt-2 break-words text-[22px] font-semibold leading-[1.2] tracking-[-0.025em] text-ink sm:text-[28px]">
+        <span className="sr-only">{t('Saved excerpt:')} </span>“{item.excerpt}”
+      </blockquote>
+      {translation && (
+        <p className="mt-2 break-words text-[15px] leading-[1.5] text-ink-soft">
+          <span className="font-medium text-ink-muted">{t('Translation:')} </span>{translation}
+        </p>
+      )}
+      <p className={`mt-2 text-[18px] italic leading-snug tracking-[-0.01em] sm:text-[22px] ${relationTone[item.relation]}`}>
+        {relationSentence[item.relation]}
+      </p>
+      {judgment?.reason && judgment.status === 'outdated' && (
+        <p className="mt-3 text-[13px] text-ink-soft">
+          <span className="font-semibold text-candy">{t('Why outdated:')} </span>{judgment.reason}
+        </p>
+      )}
     </div>
   );
 }
@@ -366,7 +210,12 @@ function DeckCardContent({
         <div
           key="open"
           className="press-rise absolute inset-y-0 left-0"
-          style={{ width: `min(${OPEN_CARD_MAX_WIDTH - CARD_BORDERS}px, calc(100cqw - ${closedSpace}px))`, '--press-delay': '120ms' } as CSSProperties}
+          style={
+            {
+              width: `min(${OPEN_CARD_MAX_WIDTH - CARD_BORDERS}px, calc(100cqw - ${closedSpace}px))`,
+              '--press-delay': '120ms',
+            } as CSSProperties
+          }
         >
           <OpenCardContent item={item} judgment={judgment} />
         </div>
