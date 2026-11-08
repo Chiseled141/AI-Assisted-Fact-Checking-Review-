@@ -258,3 +258,24 @@ def test_all_registry_domains_and_pinned_pages_stay_within_the_green_list():
             assert all(within_domains(url, profile["domains"]) for url in pages)
     assert not within_domains("https://sjc.com.vn.evil.example/price", SJC_DOMAINS)
     assert not within_domains("https://nasa.gov/price", SJC_DOMAINS)
+
+
+def test_quick_chat_can_request_two_text_results_without_changing_check_defaults(monkeypatch):
+    from app.search.tavily import TavilySearch
+
+    payloads = []
+
+    def post(url, **kwargs):
+        payloads.append(kwargs['json'])
+        return httpx.Response(200, json={'results': []}, request=httpx.Request('POST', url))
+
+    monkeypatch.setattr(httpx, 'post', post)
+    settings = Settings()
+    provider = TavilySearch(settings)
+    provider.search_hits('quick question', max_results=2, include_images=False)
+    provider.search_hits('normal check')
+    assert payloads[0]['max_results'] == 2 and payloads[0]['include_images'] is False
+    assert payloads[1]['max_results'] == min(20, max(
+        settings.tavily_candidates_per_search, settings.target_publishers_per_claim,
+    ))
+    assert payloads[1]['include_images'] is True

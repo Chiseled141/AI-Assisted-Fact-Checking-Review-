@@ -1,4 +1,5 @@
 import type { Claim } from '../../types/models';
+import { judgesDisagree } from './JudgeComparison';
 import { VerdictIcon } from '../../components/Badges';
 
 interface Props {
@@ -14,7 +15,8 @@ function capitalize(text: string): string {
 /** A claim as a compact tab: its verdict icon and short topic. The full text is in the panel below. */
 export function ClaimCard({ claim, selected, onSelect }: Props) {
   const headingId = `claim-${claim.id}-heading`;
-  const verdict = claim.status === 'assessed' && claim.current ? claim.current.verdict : null;
+  const current = claim.status === 'assessed' ? claim.current : null;
+  const verdict = judgesDisagree(current?.judges) ? 'disagreement' : current?.verdict ?? null;
 
   return (
     <article aria-labelledby={headingId}>

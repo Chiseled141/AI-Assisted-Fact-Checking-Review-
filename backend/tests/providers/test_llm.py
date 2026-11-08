@@ -5,13 +5,13 @@ import httpx
 import pytest
 from openai import NOT_GIVEN, APITimeoutError, RateLimitError
 
-from app.core.config import Settings
+from app.core.config import JudgeOption, Settings
 from app.pipeline.prompts import JudgeAnswer
 from app.providers.llm import NEVER_CHOSE, RATE_LIMITED, TIMED_OUT, LLMError, OpenRouterLLM
 
 
-def _llm_with_replies(replies):
-    llm = OpenRouterLLM(Settings(openrouter_api_key="test"))
+def _llm_with_replies(replies, settings=None):
+    llm = OpenRouterLLM(settings or Settings(openrouter_api_key="test"))
     calls = []
 
     def create(**kwargs):
@@ -38,9 +38,13 @@ def test_llm_records_the_model_that_answered_and_accepts_fenced_json():
     assert calls[0]["response_format"] == {"type": "json_object"}
 
 
-def test_nemotron_omits_unsupported_json_mode_but_still_validates_and_repairs():
-    model = Settings().judges["nemotron-ultra"].model
-    llm, calls = _llm_with_replies(["not json", GOOD])
+def test_a_model_without_json_mode_still_gets_validated_and_repaired():
+    model = "lab/no-json-model"
+    settings = Settings(
+        openrouter_api_key="test",
+        judges={"no-json": JudgeOption(name="No JSON", model=model, supports_json_mode=False)},
+    )
+    llm, calls = _llm_with_replies(["not json", GOOD], settings)
     answer, _ = llm.complete(model, "system", "user", JudgeAnswer)
     assert answer.review == "Unclear."
     assert len(calls) == 2
@@ -48,7 +52,7 @@ def test_nemotron_omits_unsupported_json_mode_but_still_validates_and_repairs():
     assert "matching this schema" in calls[0]["messages"][0]["content"]
     assert all(call["model"] == model and "extra_body" not in call for call in calls)
 
-    llm, _ = _llm_with_replies(["not json", "still not json"])
+    llm, _ = _llm_with_replies(["not json", "still not json"], settings)
     with pytest.raises(LLMError):
         llm.complete(model, "system", "user", JudgeAnswer)
 
@@ -214,3 +218,117 @@ def test_research_timeouts_name_the_cause():
     with pytest.raises(LLMError) as raised:
         llm.research("m", "s", "u", ResearchPicks, lambda query, results_only: "results", 2)
     assert raised.value.public_message == TIMED_OUT
+
+
+def _endpoints(monkeypatch, rows):
+    monkeypatch.setattr('app.providers.llm.httpx.get', lambda *args, **kwargs: httpx.Response(
+        200, json={'data': {'endpoints': rows}}, request=httpx.Request('GET', 'https://openrouter.ai/models/m/endpoints'),
+    ))
+
+
+def test_followup_native_routes_only_to_capable_endpoints_and_keeps_selected_model(monkeypatch):
+    from app.pipeline.prompts import FollowUpAnswer
+
+    _endpoints(monkeypatch, [
+        {'tag': 'anthropic', 'native_tools': {'openrouter:web_search': {'type': 'web_search_20260209'}}},
+        {'tag': 'other-provider', 'native_tools': {}},
+    ])
+    llm, calls = _llm_with_replies([json.dumps({'answer': 'The answer.'})])
+    searches = []
+    answer, _, sources = llm.followup('chosen/model', 'system', 'question', FollowUpAnswer, searches.append)
+    assert answer.answer == 'The answer.' and sources == [] and searches == []
+    assert calls[0]['model'] == 'chosen/model'
+    body = calls[0]['extra_body']
+    assert body['tools'] == [{'type': 'openrouter:web_search', 'parameters': {'engine': 'native', 'max_uses': 1}}]
+    assert body['provider'] == {'only': ['anthropic'], 'allow_fallbacks': False, 'require_parameters': True}
+    assert body['max_tool_calls'] == 1
+
+
+def test_followup_without_native_search_gives_the_same_model_optional_tavily_tool(monkeypatch):
+    from app.pipeline.prompts import FollowUpAnswer
+
+    _endpoints(monkeypatch, [{'tag': 'lab', 'native_tools': {}}])
+    llm, calls = _llm_with_replies([json.dumps({'answer': 'Known without searching.'})])
+    searches = []
+    answer, _, _ = llm.followup('chosen/model', 'system', 'question', FollowUpAnswer, searches.append)
+    assert answer.answer == 'Known without searching.'
+    assert searches == []  # A tool is offered; there is no compulsory search.
+    assert calls[0]['model'] == 'chosen/model'
+    assert calls[0]['tool_choice'] == 'auto'
+    assert calls[0]['tools'][0]['function']['name'] == 'search_sources'
+
+
+def test_followup_selected_model_decides_tavily_query_and_reads_results(monkeypatch):
+    from app.pipeline.prompts import FollowUpAnswer
+
+    _endpoints(monkeypatch, [])
+    llm, _ = _llm_with_replies([])
+    queries, calls = [], []
+
+    def create(**kwargs):
+        calls.append(kwargs)
+        if len(calls) == 1:
+            message = SimpleNamespace(content=None, tool_calls=[SimpleNamespace(
+                id='search-1', function=SimpleNamespace(name='search_sources', arguments='{"query":"party founding date"}'),
+            )])
+        else:
+            assert 'Founded in 1867' in kwargs['messages'][-1]['content']
+            message = SimpleNamespace(content='{"answer":"Founded in 1867.","source_urls":["https://example.org/history"]}')
+        return SimpleNamespace(model=kwargs['model'], choices=[SimpleNamespace(message=message)])
+
+    llm.client.chat.completions.create = create
+
+    def search(query, *args, **kwargs):
+        queries.append(query)
+        return 'Founded in 1867: https://example.org/history'
+
+    answer, reported, _ = llm.followup('chosen/model', 'system', 'question', FollowUpAnswer, search)
+    assert queries == ['party founding date']
+    assert answer.source_urls == ['https://example.org/history']
+    assert reported == 'chosen/model' and all(c['model'] == 'chosen/model' for c in calls)
+
+
+def test_native_search_citations_come_from_annotations_not_invented_urls(monkeypatch):
+    from app.pipeline.prompts import FollowUpAnswer
+
+    _endpoints(monkeypatch, [{'tag': 'provider', 'native_tools': {'openrouter:web_search': {"type": "web"}}}])
+    llm, _ = _llm_with_replies([])
+    llm.client.chat.completions.create = lambda **kwargs: SimpleNamespace(
+        model='chosen/model', choices=[SimpleNamespace(message=SimpleNamespace(
+            content='{"answer":"Answer.","source_urls":["https://invented.example"]}',
+            annotations=[
+                {'type': 'url_citation', 'url_citation': {'url': 'https://real.example/history', 'title': 'Party history'}},
+                {'type': 'url_citation', 'url_citation': {'url': 'https://real.example/history', 'title': 'Duplicate'}},
+                {'type': 'url_citation', 'url_citation': {'url': 'javascript:alert(1)', 'title': 'Unsafe'}},
+            ],
+        ))],
+    )
+    _, _, sources = llm.followup('chosen/model', 'system', 'question', FollowUpAnswer, lambda *_: pytest.fail('No Tavily'))
+    assert sources == [{'url': 'https://real.example/history', 'title': 'Party history'}]
+
+
+def test_native_capability_lookup_failure_does_not_guess_or_make_a_paid_call(monkeypatch):
+    from app.pipeline.prompts import FollowUpAnswer
+
+    def fail(*args, **kwargs):
+        raise httpx.ConnectError('offline')
+
+    monkeypatch.setattr('app.providers.llm.httpx.get', fail)
+    llm, calls = _llm_with_replies([])
+    with pytest.raises(LLMError, match='Could not verify'):
+        llm.followup('chosen/model', 'system', 'question', FollowUpAnswer, lambda *_: pytest.fail('No search'))
+    assert calls == []
+
+
+def test_quick_followup_cannot_fan_out_into_multiple_searches(monkeypatch):
+    from app.pipeline.prompts import FollowUpAnswer
+
+    _endpoints(monkeypatch, [])
+    many = SimpleNamespace(content=None, tool_calls=[_tool_call('needed', '1'), _tool_call('unnecessary', '2')])
+    answer = SimpleNamespace(content='{"answer":"A short answer."}', tool_calls=None)
+    llm, calls = _llm_replying([many, answer])
+    searches = []
+    llm.followup('chosen/model', 'system', 'question', FollowUpAnswer,
+                 lambda query, results_only: searches.append(query) or 'results')
+    assert searches == ['needed']
+    assert calls[-1]['tool_choice'] == 'none'

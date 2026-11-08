@@ -1,3 +1,4 @@
+import { ChartReply } from './ChartReply';
 import { lazy, Suspense, useEffect, useRef, useState } from 'react';
 import type { CountryMapData } from '../../types/models';
 import { formatCalendarDate, safeHref } from '../../lib/format';
@@ -11,7 +12,7 @@ const CountryHistory = lazy(() => import('./CountryHistory'));
 const mapHeight = 460;
 const licenceUrl = 'https://creativecommons.org/licenses/by/4.0/';
 
-export const indicatorTitle = translated<CountryMapData['indicator']>({
+const indicatorTitle = translated<CountryMapData['indicator']>({
   population: 'Population',
   gdp: 'GDP',
   gdp_per_capita: 'GDP per person',
@@ -85,7 +86,8 @@ function rankOf(map: CountryMapData, code: string): { rank: number; count: numbe
  * A national statistic across the world, with the claim's countries highlighted, their figures, and their history.
  * Claims without `countryMap` never reach this, so Highcharts Maps and the map shapes only load when needed.
  */
-export function CountryMap({ map }: { map: CountryMapData }) {
+export function CountryMap({ map, onReply }: { map: CountryMapData; onReply?: (title: string) => void }) {
+  const title = indicatorTitle[map.indicator];
   const states = map.scope === 'us-states';
   const worldOnly: ChosenCountry[] = states ? [] : [{ code: 'world', label: t('World') }];
   const fromClaim = map.selected.map(({ code, named }) => ({ code, label: named }));
@@ -114,9 +116,12 @@ export function CountryMap({ map }: { map: CountryMapData }) {
     <section aria-labelledby="country-map-heading" className="mt-8">
       {/* A white panel, the same as the other charts'. */}
       <div className="rounded-2xl border border-ink bg-white p-4 sm:p-6">
-        <h2 id="country-map-heading" className="text-[24px] font-medium leading-[1.2] tracking-[-0.02em] text-ink">
-          {indicatorTitle[map.indicator]}
-        </h2>
+        <div className="flex items-start justify-between gap-3">
+          <h2 id="country-map-heading" className="text-[24px] font-medium leading-[1.2] tracking-[-0.02em] text-ink">
+            {title}
+          </h2>
+          <ChartReply title={title} onReply={onReply} />
+        </div>
         <p className="mt-1.5 text-sm text-ink-soft">
           {[...map.selected.map(({ named }) => named), String(map.year)].join(' · ')}
         </p>

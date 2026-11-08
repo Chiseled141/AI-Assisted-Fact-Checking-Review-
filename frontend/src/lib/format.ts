@@ -61,10 +61,12 @@ export const relationLabel = translated<EvidenceRelation>({
 export const statusLabel = translated<CheckStatus>({
   queued: 'Queued',
   extracting: 'Extracting claims',
+  awaiting_input: 'Waiting for your answer',
   retrieving: 'Retrieving evidence',
   assessing: 'Assessing claims',
   completed: 'Completed',
   failed: 'Failed',
+  stopped: 'Stopped',
 });
 
 export const inputTypeLabel = translated<InputType>({ text: 'Text', url: 'URL' });

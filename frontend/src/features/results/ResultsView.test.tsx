@@ -64,16 +64,33 @@ describe('Saved results from the backend', () => {
     expect(screen.queryByText(/demo|simulated|sample data/i)).not.toBeInTheDocument();
   });
 
-  it('keeps disagreements visible', async () => {
+  it('shows both verdicts and their own quotes immediately when the judges disagree', async () => {
+    const current = makeRevision();
+    const [first, second] = current.judges!;
+    current.judges = [
+      { ...first, citations: [{ evidenceId: 'evd_test', quote: 'The route opened in March.' }] },
+      { ...second, verdict: 'contradicted', citations: [{ evidenceId: 'evd_test', quote: 'The opening was delayed.' }] },
+    ];
+    serve(makeCheck({ claims: [makeClaim({ current })] }));
+    renderApp('/checks/chk_test');
+    expect(await screen.findByRole('heading', { name: 'AI judges disagree' })).toBeVisible();
+    expect(screen.queryByText('Supported.')).not.toBeInTheDocument();
+    const reviews = screen.getByRole('list', { name: 'AI model reviews' });
+    const [firstReview, secondReview] = Array.from(reviews.children) as HTMLElement[];
+    expect(within(firstReview).getByText('Supported')).toBeVisible();
+    expect(within(firstReview).getByText('The route opened in March.')).toBeVisible();
+    expect(within(secondReview).getByText('Contradicted')).toBeVisible();
+    expect(within(secondReview).getByText('The opening was delayed.')).toBeVisible();
+  });
+
+  it('shows older model reviews without attributing a shared passage to either judge', async () => {
     const current = makeRevision();
     current.judges![1] = { ...current.judges![1], verdict: 'insufficient_evidence' };
     serve(makeCheck({ claims: [makeClaim({ current })] }));
-    const user = userEvent.setup();
     renderApp('/checks/chk_test');
-    await screen.findByRole('heading', { level: 1 });
-    await user.click(screen.getByText('View model reasoning'));
-    expect(screen.getByText('AI judges disagree')).toBeInTheDocument();
-    expect(within(screen.getByRole('list', { name: 'AI model reviews' })).getByText('Insufficient evidence')).toBeInTheDocument();
+    const reviews = await screen.findByRole('list', { name: 'AI model reviews' });
+    expect(screen.queryByText('Citations by model were not saved for this check.')).not.toBeInTheDocument();
+    expect(within(reviews).queryByRole('blockquote')).not.toBeInTheDocument();
   });
 
   it('opens the claim in the URL and supports previous and next', async () => {
@@ -91,8 +108,9 @@ describe('Saved results from the backend', () => {
   it('shows article metadata from the server', async () => {
     serve(makeCheck({ inputType: 'url', inputUrl: 'https://example.org/article', article: { title: 'Submitted article', publisher: 'Test News' } }));
     renderApp('/checks/chk_test');
-    const article = await screen.findByRole('heading', { name: /^Submitted article/ });
-    expect(within(article).getByRole('link')).toHaveAttribute('href', 'https://example.org/article');
+    const article = await screen.findByRole('link', { name: /^Submitted article/ });
+    expect(article).toHaveAttribute('href', 'https://example.org/article');
+    expect(within(article.parentElement!).getByText('Test News')).toBeInTheDocument();
     expect(screen.queryByText(/not read|sample data/i)).not.toBeInTheDocument();
   });
 
@@ -100,9 +118,8 @@ describe('Saved results from the backend', () => {
     serve(makeCheck({ files: [{ name: 'notes.txt', size: 15, text: 'A saved claim.' }] }));
     const user = userEvent.setup();
     renderApp('/checks/chk_test');
-    expect(await screen.findByRole('heading', { name: 'notes.txt' })).toBeInTheDocument();
+    await user.click(await screen.findByText('notes.txt'));
     expect(screen.getByText(/Text sent to the server for checking/)).toBeInTheDocument();
-    await user.click(screen.getByText('File contents'));
     expect(screen.getByText('A saved claim.')).toBeVisible();
   });
 
@@ -111,6 +128,8 @@ describe('Saved results from the backend', () => {
     renderApp('/checks/chk_test');
     await screen.findByText('Opening report');
     expect(screen.getByText('What this source says')).toBeInTheDocument();
+    expect(screen.queryByRole('heading', { name: /^Sources ·/ })).not.toBeInTheDocument();
+    expect(screen.queryByText(/supporting · .* contradicting/)).not.toBeInTheDocument();
     expect(screen.queryByRole('button', { name: /see analysis/i })).not.toBeInTheDocument();
     expect(screen.queryByRole('region', { name: 'Scores for this source' })).not.toBeInTheDocument();
   });
@@ -118,16 +137,24 @@ describe('Saved results from the backend', () => {
   it('does not replace unavailable verification with a verdict', async () => {
     serve(makeCheck({ claims: [makeClaim({ status: 'unavailable', current: null, currentVersion: 0, unavailableReason: 'Evidence could not be retrieved, so there is no verdict.' })] }), []);
     renderApp('/checks/chk_test');
-    expect(await screen.findByText('Verification unavailable.')).toBeInTheDocument();
-    expect(await screen.findByText(/No evidence was retrieved, so there is no verdict/)).toBeInTheDocument();
+    expect(await screen.findByText('Verification interrupted by a technical error.', { selector: 'p' })).toBeInTheDocument();
+    expect(await screen.findByText('Evidence could not be retrieved, so there is no verdict.')).toBeInTheDocument();
     expect(screen.queryByText('Insufficient evidence.')).not.toBeInTheDocument();
+  });
+
+  it('shows insufficient evidence as a verdict after a completed assessment', async () => {
+    const current = makeRevision({ verdict: 'insufficient_evidence', judges: undefined });
+    serve(makeCheck({ claims: [makeClaim({ current })] }), []);
+    renderApp('/checks/chk_test');
+    expect(await screen.findByText('Insufficient evidence.')).toBeVisible();
+    expect(screen.queryByText('Verification interrupted by a technical error.')).not.toBeInTheDocument();
   });
 
   it('does not invent chart data when the backend provides none', async () => {
     serve();
     renderApp('/checks/chk_test');
     await screen.findByRole('heading', { level: 1 });
-    for (const name of ['Bitcoin price', 'Population', 'Daily high temperature', 'Places in this claim']) {
+    for (const name of ['Bitcoin price', 'Population', 'Daily high temperature', 'Places in this claim', 'Incident location']) {
       expect(screen.queryByRole('heading', { name })).not.toBeInTheDocument();
     }
   });
@@ -135,6 +162,7 @@ describe('Saved results from the backend', () => {
   const charts: [string, Partial<Claim>, string][] = [
     ['price', { priceChart: { asset: 'bitcoin', currency: 'USD', source: 'Yahoo Finance', retrievedAt: checkedAt, prices: [[1, 100], [2, 101]], events: [] } }, 'Bitcoin price'],
     ['location', { locationMap: { map: 'us', places: [{ code: 'us-nj', name: 'New Jersey', named: 'New Jersey' }] } }, 'Places in this claim'],
+    ['incident', { incidentMap: { city: 'Hà Nội', roads: ['Nguyễn Trãi'], position: null, bounds: [105.79, 20.98, 105.81, 21], quote: 'Vụ việc xảy ra trên đường Nguyễn Trãi.', publisher: 'Test News', url: 'https://example.org/incident' } }, 'Incident location'],
     ['heat', { heatMap: { metric: 'temperature', area: 'world', areaName: 'World', start: '2024-01-01', end: '2024-01-01', days: ['2024-01-01'], step: 18, source: 'Unit-test climate', retrievedAt: checkedAt, points: [[0, 0, 20]] } }, 'Daily high temperature'],
     ['country', { countryMap: { indicator: 'population', source: 'Unit-test statistics', retrievedAt: checkedAt, year: 2023, years: [2023], values: { vn: [100], th: [70] }, selected: [{ code: 'vn', name: 'Vietnam', named: 'Vietnam' }] } }, 'Population'],
     ['election', { electionMap: { office: 'house', year: 2024, retrievedAt: checkedAt, states: [{ code: 'us-oh', name: 'Ohio', winner: 'Republicans', publisher: 'Test News', url: 'https://example.org/oh', others: [] }] } }, 'US election results by state'],
@@ -145,6 +173,32 @@ describe('Saved results from the backend', () => {
     serve(makeCheck({ claims: [makeClaim(chart)] }));
     renderApp('/checks/chk_test');
     expect(await screen.findByRole('heading', { name: heading })).toBeInTheDocument();
+  });
+
+  it('labels road-level incident locations as approximate and links the source', async () => {
+    const chart = charts.find(([name]) => name === 'incident')![1];
+    serve(makeCheck({ claims: [makeClaim(chart)] }));
+    renderApp('/checks/chk_test');
+    expect(await screen.findByText('Approximate location along the road')).toBeVisible();
+    expect(screen.getByRole('link', { name: 'Test News' })).toHaveAttribute('href', 'https://example.org/incident');
+    expect(screen.getByRole('link', { name: 'Open in Google Maps' })).toBeVisible();
+  });
+
+  it('lists each reported incident area in the map legend', async () => {
+    serve(makeCheck({ claims: [makeClaim({ incidentMap: {
+      city: 'Hà Nội', roads: [], position: null, bounds: [105.81, 20.98, 105.86, 21.03],
+      quote: 'Ngập quanh Hồ Gươm và ở phường Khương Đình.', publisher: 'Test News', url: 'https://example.org/incident',
+      areas: [
+        { name: 'Hồ Gươm', bounds: [105.85, 21.02, 105.86, 21.03] },
+        { name: 'phường Khương Đình', bounds: [105.81, 20.98, 105.82, 21] },
+      ],
+    } })] }));
+    renderApp('/checks/chk_test');
+    const legend = await screen.findByRole('list', { name: 'Map legend' });
+    expect(within(legend).getAllByRole('listitem')).toHaveLength(2);
+    expect(within(legend).getByText('Hồ Gươm')).toBeVisible();
+    expect(within(legend).getByText('phường Khương Đình')).toBeVisible();
+    expect(within(legend).getAllByText('Approximate extent')).toHaveLength(2);
   });
 });
 

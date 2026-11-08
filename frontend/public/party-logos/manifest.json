@@ -1,0 +1,4756 @@
+{
+  "countries": [
+    "US",
+    "GB",
+    "CA",
+    "FR",
+    "DE",
+    "IT",
+    "ES",
+    "PL",
+    "AU",
+    "IN",
+    "JP",
+    "KR",
+    "TW",
+    "ID",
+    "PH",
+    "BR",
+    "MX",
+    "ZA",
+    "TR",
+    "IL"
+  ],
+  "parties": [
+    {
+      "country": "US",
+      "id": "us-democratic-party",
+      "name": "Democratic Party",
+      "aliases": [
+        "Democratic Party",
+        "Democrats",
+        "D",
+        "Dem",
+        "Đảng Dân chủ"
+      ],
+      "website": "https://democrats.org",
+      "retrievedAt": "2026-11-08",
+      "asset": "us-democratic-party.png",
+      "representation": "site-icon",
+      "sourceUrl": "https://democrats.org",
+      "downloadUrl": "https://t3.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=http://democrats.org&size=128",
+      "rights": "Identity artwork belongs to the named party; supplied unmodified for identification."
+    },
+    {
+      "country": "US",
+      "id": "us-republican-party",
+      "name": "Republican Party",
+      "aliases": [
+        "Republican Party",
+        "Republicans",
+        "GOP",
+        "R",
+        "Đảng Cộng hòa"
+      ],
+      "website": "https://gop.com",
+      "retrievedAt": "2026-11-08",
+      "missingAsset": true
+    },
+    {
+      "country": "US",
+      "id": "us-libertarian-party",
+      "name": "Libertarian Party",
+      "aliases": [
+        "Libertarian Party",
+        "Libertarian",
+        "LP"
+      ],
+      "website": "https://lp.org",
+      "retrievedAt": "2026-11-08",
+      "asset": "us-libertarian-party.png",
+      "representation": "site-icon",
+      "sourceUrl": "https://lp.org",
+      "downloadUrl": "https://t3.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=http://lp.org&size=128",
+      "rights": "Identity artwork belongs to the named party; supplied unmodified for identification."
+    },
+    {
+      "country": "US",
+      "id": "us-green-party",
+      "name": "Green Party",
+      "aliases": [
+        "Green Party",
+        "Greens",
+        "GPUS"
+      ],
+      "website": "https://gp.org",
+      "retrievedAt": "2026-11-08",
+      "asset": "us-green-party.png",
+      "representation": "site-icon",
+      "sourceUrl": "https://gp.org",
+      "downloadUrl": "https://t2.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=http://gp.org&size=128",
+      "rights": "Identity artwork belongs to the named party; supplied unmodified for identification."
+    },
+    {
+      "country": "GB",
+      "id": "gb-labour-party",
+      "name": "Labour Party",
+      "aliases": [
+        "Labour Party",
+        "Labour",
+        "Lab"
+      ],
+      "website": "https://labour.org.uk",
+      "retrievedAt": "2026-11-08",
+      "asset": "gb-labour-party.png",
+      "representation": "site-icon",
+      "sourceUrl": "https://labour.org.uk",
+      "downloadUrl": "https://t2.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=http://labour.org.uk&size=128",
+      "rights": "Identity artwork belongs to the named party; supplied unmodified for identification."
+    },
+    {
+      "country": "GB",
+      "id": "gb-conservative-party",
+      "name": "Conservative Party",
+      "aliases": [
+        "Conservative Party",
+        "Conservative",
+        "Conservatives",
+        "Tories",
+        "Con"
+      ],
+      "website": "https://conservatives.com",
+      "retrievedAt": "2026-11-08",
+      "asset": "gb-conservative-party.png",
+      "representation": "site-icon",
+      "sourceUrl": "https://conservatives.com",
+      "downloadUrl": "https://t3.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=http://conservatives.com&size=128",
+      "rights": "Identity artwork belongs to the named party; supplied unmodified for identification."
+    },
+    {
+      "country": "GB",
+      "id": "gb-liberal-democrats",
+      "name": "Liberal Democrats",
+      "aliases": [
+        "Liberal Democrats",
+        "Liberal Democrat",
+        "Lib Dems",
+        "LD"
+      ],
+      "website": "https://libdems.org.uk",
+      "retrievedAt": "2026-11-08",
+      "asset": "gb-liberal-democrats.png",
+      "representation": "site-icon",
+      "sourceUrl": "https://libdems.org.uk",
+      "downloadUrl": "https://t2.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=http://libdems.org.uk&size=128",
+      "rights": "Identity artwork belongs to the named party; supplied unmodified for identification."
+    },
+    {
+      "country": "GB",
+      "id": "gb-scottish-national-party",
+      "name": "Scottish National Party",
+      "aliases": [
+        "Scottish National Party",
+        "SNP"
+      ],
+      "website": "https://snp.org",
+      "retrievedAt": "2026-11-08",
+      "asset": "gb-scottish-national-party.jpg",
+      "representation": "site-icon",
+      "sourceUrl": "https://snp.org",
+      "downloadUrl": "https://t2.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=http://snp.org&size=128",
+      "rights": "Identity artwork belongs to the named party; supplied unmodified for identification."
+    },
+    {
+      "country": "GB",
+      "id": "gb-sinn-fein",
+      "name": "Sinn Féin",
+      "aliases": [
+        "Sinn Féin",
+        "Sinn Fein",
+        "SF"
+      ],
+      "website": "https://sinnfein.ie",
+      "retrievedAt": "2026-11-08",
+      "asset": "gb-sinn-fein.png",
+      "representation": "site-icon",
+      "sourceUrl": "https://sinnfein.ie",
+      "downloadUrl": "https://t2.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=http://sinnfein.ie&size=128",
+      "rights": "Identity artwork belongs to the named party; supplied unmodified for identification."
+    },
+    {
+      "country": "GB",
+      "id": "gb-democratic-unionist-party",
+      "name": "Democratic Unionist Party",
+      "aliases": [
+        "Democratic Unionist Party",
+        "DUP"
+      ],
+      "website": "https://mydup.com",
+      "retrievedAt": "2026-11-08",
+      "asset": "gb-democratic-unionist-party.png",
+      "representation": "site-icon",
+      "sourceUrl": "https://mydup.com",
+      "downloadUrl": "https://t3.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=http://mydup.com&size=128",
+      "rights": "Identity artwork belongs to the named party; supplied unmodified for identification."
+    },
+    {
+      "country": "GB",
+      "id": "gb-reform-uk",
+      "name": "Reform UK",
+      "aliases": [
+        "Reform UK",
+        "Reform"
+      ],
+      "website": "https://reformparty.uk",
+      "retrievedAt": "2026-11-08",
+      "asset": "gb-reform-uk.png",
+      "representation": "site-icon",
+      "sourceUrl": "https://reformparty.uk",
+      "downloadUrl": "https://t1.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=http://reformparty.uk&size=128",
+      "rights": "Identity artwork belongs to the named party; supplied unmodified for identification."
+    },
+    {
+      "country": "GB",
+      "id": "gb-green-party-of-england-and-wales",
+      "name": "Green Party of England and Wales",
+      "aliases": [
+        "Green Party of England and Wales",
+        "Green Party",
+        "Green",
+        "Greens",
+        "GPEW"
+      ],
+      "website": "https://greenparty.org.uk",
+      "retrievedAt": "2026-11-08",
+      "asset": "gb-green-party-of-england-and-wales.png",
+      "representation": "site-icon",
+      "sourceUrl": "https://greenparty.org.uk",
+      "downloadUrl": "https://t0.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=http://greenparty.org.uk&size=128",
+      "rights": "Identity artwork belongs to the named party; supplied unmodified for identification."
+    },
+    {
+      "country": "GB",
+      "id": "gb-plaid-cymru",
+      "name": "Plaid Cymru",
+      "aliases": [
+        "Plaid Cymru",
+        "Plaid",
+        "PC"
+      ],
+      "website": "https://plaid.cymru",
+      "retrievedAt": "2026-11-08",
+      "asset": "gb-plaid-cymru.png",
+      "representation": "site-icon",
+      "sourceUrl": "https://plaid.cymru",
+      "downloadUrl": "https://t0.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=http://plaid.cymru&size=128",
+      "rights": "Identity artwork belongs to the named party; supplied unmodified for identification."
+    },
+    {
+      "country": "GB",
+      "id": "gb-social-democratic-and-labour-party",
+      "name": "Social Democratic and Labour Party",
+      "aliases": [
+        "Social Democratic and Labour Party",
+        "SDLP"
+      ],
+      "website": "https://sdlp.ie",
+      "retrievedAt": "2026-11-08",
+      "missingAsset": true
+    },
+    {
+      "country": "GB",
+      "id": "gb-ulster-unionist-party",
+      "name": "Ulster Unionist Party",
+      "aliases": [
+        "Ulster Unionist Party",
+        "UUP"
+      ],
+      "website": "https://uup.org",
+      "retrievedAt": "2026-11-08",
+      "asset": "gb-ulster-unionist-party.png",
+      "representation": "site-icon",
+      "sourceUrl": "https://uup.org",
+      "downloadUrl": "https://t0.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=http://uup.org&size=128",
+      "rights": "Identity artwork belongs to the named party; supplied unmodified for identification."
+    },
+    {
+      "country": "GB",
+      "id": "gb-alliance-party-of-northern-ireland",
+      "name": "Alliance Party of Northern Ireland",
+      "aliases": [
+        "Alliance Party of Northern Ireland",
+        "Alliance",
+        "Alliance Party",
+        "APNI"
+      ],
+      "website": "https://allianceparty.org",
+      "retrievedAt": "2026-11-08",
+      "missingAsset": true
+    },
+    {
+      "country": "GB",
+      "id": "gb-traditional-unionist-voice",
+      "name": "Traditional Unionist Voice",
+      "aliases": [
+        "Traditional Unionist Voice",
+        "TUV"
+      ],
+      "website": "https://tuv.org.uk",
+      "retrievedAt": "2026-11-08",
+      "asset": "gb-traditional-unionist-voice.png",
+      "representation": "site-icon",
+      "sourceUrl": "https://tuv.org.uk",
+      "downloadUrl": "https://t3.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=http://tuv.org.uk&size=128",
+      "rights": "Identity artwork belongs to the named party; supplied unmodified for identification."
+    },
+    {
+      "country": "GB",
+      "id": "gb-scottish-green-party",
+      "name": "Scottish Green Party",
+      "aliases": [
+        "Scottish Green Party",
+        "Scottish Greens"
+      ],
+      "website": "https://greens.scot",
+      "retrievedAt": "2026-11-08",
+      "missingAsset": true
+    },
+    {
+      "country": "CA",
+      "id": "ca-liberal-party-of-canada",
+      "name": "Liberal Party of Canada",
+      "aliases": [
+        "Liberal Party of Canada",
+        "Liberal Party",
+        "Liberal",
+        "Liberals",
+        "LPC",
+        "PLC",
+        "Parti libéral du Canada"
+      ],
+      "website": "https://liberal.ca",
+      "retrievedAt": "2026-11-08",
+      "asset": "ca-liberal-party-of-canada.jpg",
+      "representation": "logo",
+      "sourceUrl": "https://www.elections.ca/content.aspx?section=pol&dir=par&document=index&lang=e",
+      "downloadUrl": "https://www.elections.ca/pol/par/images/lib.jpg",
+      "rights": "Identity artwork belongs to the named party; supplied unmodified for identification."
+    },
+    {
+      "country": "CA",
+      "id": "ca-conservative-party-of-canada",
+      "name": "Conservative Party of Canada",
+      "aliases": [
+        "Conservative Party of Canada",
+        "Conservative",
+        "Conservative Party",
+        "Conservatives",
+        "CPC",
+        "Parti conservateur du Canada"
+      ],
+      "website": "https://conservative.ca",
+      "retrievedAt": "2026-11-08",
+      "asset": "ca-conservative-party-of-canada.gif",
+      "representation": "logo",
+      "sourceUrl": "https://www.elections.ca/content.aspx?section=pol&dir=par&document=index&lang=e",
+      "downloadUrl": "https://www.elections.ca/pol/par/images/cp.gif",
+      "rights": "Identity artwork belongs to the named party; supplied unmodified for identification."
+    },
+    {
+      "country": "CA",
+      "id": "ca-bloc-quebecois",
+      "name": "Bloc Québécois",
+      "aliases": [
+        "Bloc Québécois",
+        "Bloc Quebecois",
+        "Bloc",
+        "BQ"
+      ],
+      "website": "https://blocquebecois.org",
+      "retrievedAt": "2026-11-08",
+      "asset": "ca-bloc-quebecois.gif",
+      "representation": "logo",
+      "sourceUrl": "https://www.elections.ca/content.aspx?section=pol&dir=par&document=index&lang=e",
+      "downloadUrl": "https://www.elections.ca/pol/par/images/bloc.gif",
+      "rights": "Identity artwork belongs to the named party; supplied unmodified for identification."
+    },
+    {
+      "country": "CA",
+      "id": "ca-new-democratic-party",
+      "name": "New Democratic Party",
+      "aliases": [
+        "New Democratic Party",
+        "New Democrat",
+        "New Democrats",
+        "NDP",
+        "NPD",
+        "Nouveau Parti démocratique"
+      ],
+      "website": "https://ndp.ca",
+      "retrievedAt": "2026-11-08",
+      "asset": "ca-new-democratic-party.gif",
+      "representation": "logo",
+      "sourceUrl": "https://www.elections.ca/content.aspx?section=pol&dir=par&document=index&lang=e",
+      "downloadUrl": "https://www.elections.ca/pol/par/images/ndp.gif",
+      "rights": "Identity artwork belongs to the named party; supplied unmodified for identification."
+    },
+    {
+      "country": "CA",
+      "id": "ca-green-party-of-canada",
+      "name": "Green Party of Canada",
+      "aliases": [
+        "Green Party of Canada",
+        "Green",
+        "Green Party",
+        "Greens",
+        "GPC",
+        "Parti vert du Canada"
+      ],
+      "website": "https://greenparty.ca",
+      "retrievedAt": "2026-11-08",
+      "asset": "ca-green-party-of-canada.gif",
+      "representation": "logo",
+      "sourceUrl": "https://www.elections.ca/content.aspx?section=pol&dir=par&document=index&lang=e",
+      "downloadUrl": "https://www.elections.ca/pol/par/images/green.gif",
+      "rights": "Identity artwork belongs to the named party; supplied unmodified for identification."
+    },
+    {
+      "country": "CA",
+      "id": "ca-people-s-party-of-canada",
+      "name": "People's Party of Canada",
+      "aliases": [
+        "People's Party of Canada",
+        "People’s Party of Canada",
+        "PPC"
+      ],
+      "website": "https://peoplespartyofcanada.ca",
+      "retrievedAt": "2026-11-08",
+      "asset": "ca-people-s-party-of-canada.jpg",
+      "representation": "logo",
+      "sourceUrl": "https://www.elections.ca/content.aspx?section=pol&dir=par&document=index&lang=e",
+      "downloadUrl": "https://www.elections.ca/pol/par/images/PPC2_BI.jpg",
+      "rights": "Identity artwork belongs to the named party; supplied unmodified for identification."
+    },
+    {
+      "country": "FR",
+      "id": "fr-renaissance",
+      "name": "Renaissance",
+      "aliases": [
+        "Renaissance",
+        "RE",
+        "La République En Marche",
+        "LREM",
+        "En Marche"
+      ],
+      "website": "https://parti-renaissance.fr",
+      "retrievedAt": "2026-11-08",
+      "asset": "fr-renaissance.png",
+      "representation": "site-icon",
+      "sourceUrl": "https://parti-renaissance.fr",
+      "downloadUrl": "https://t1.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=http://parti-renaissance.fr&size=128",
+      "rights": "Identity artwork belongs to the named party; supplied unmodified for identification."
+    },
+    {
+      "country": "FR",
+      "id": "fr-national-rally",
+      "name": "National Rally",
+      "aliases": [
+        "National Rally",
+        "Rassemblement national",
+        "RN"
+      ],
+      "website": "https://rassemblementnational.fr",
+      "retrievedAt": "2026-11-08",
+      "asset": "fr-national-rally.png",
+      "representation": "site-icon",
+      "sourceUrl": "https://rassemblementnational.fr",
+      "downloadUrl": "https://t2.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=http://rassemblementnational.fr&size=128",
+      "rights": "Identity artwork belongs to the named party; supplied unmodified for identification."
+    },
+    {
+      "country": "FR",
+      "id": "fr-la-france-insoumise",
+      "name": "La France Insoumise",
+      "aliases": [
+        "La France Insoumise",
+        "LFI",
+        "France Insoumise"
+      ],
+      "website": "https://lafranceinsoumise.fr",
+      "retrievedAt": "2026-11-08",
+      "asset": "fr-la-france-insoumise.png",
+      "representation": "site-icon",
+      "sourceUrl": "https://lafranceinsoumise.fr",
+      "downloadUrl": "https://t2.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=http://lafranceinsoumise.fr&size=128",
+      "rights": "Identity artwork belongs to the named party; supplied unmodified for identification."
+    },
+    {
+      "country": "FR",
+      "id": "fr-socialist-party",
+      "name": "Socialist Party",
+      "aliases": [
+        "Socialist Party",
+        "Parti socialiste",
+        "PS"
+      ],
+      "website": "https://parti-socialiste.fr",
+      "retrievedAt": "2026-11-08",
+      "asset": "fr-socialist-party.png",
+      "representation": "site-icon",
+      "sourceUrl": "https://parti-socialiste.fr",
+      "downloadUrl": "https://t0.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=http://parti-socialiste.fr&size=128",
+      "rights": "Identity artwork belongs to the named party; supplied unmodified for identification."
+    },
+    {
+      "country": "FR",
+      "id": "fr-the-republicans",
+      "name": "The Republicans",
+      "aliases": [
+        "The Republicans",
+        "Les Républicains",
+        "LR"
+      ],
+      "website": "https://republicains.fr",
+      "retrievedAt": "2026-11-08",
+      "asset": "fr-the-republicans.jpg",
+      "representation": "site-icon",
+      "sourceUrl": "https://republicains.fr",
+      "downloadUrl": "https://t3.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=http://republicains.fr&size=128",
+      "rights": "Identity artwork belongs to the named party; supplied unmodified for identification."
+    },
+    {
+      "country": "FR",
+      "id": "fr-the-ecologists",
+      "name": "The Ecologists",
+      "aliases": [
+        "The Ecologists",
+        "Les Écologistes",
+        "Europe Ecology The Greens",
+        "EELV",
+        "Greens"
+      ],
+      "website": "https://lesecologistes.fr",
+      "retrievedAt": "2026-11-08",
+      "asset": "fr-the-ecologists.png",
+      "representation": "site-icon",
+      "sourceUrl": "https://lesecologistes.fr",
+      "downloadUrl": "https://icons.duckduckgo.com/ip3/lesecologistes.fr.ico",
+      "rights": "Identity artwork belongs to the named party; supplied unmodified for identification."
+    },
+    {
+      "country": "FR",
+      "id": "fr-french-communist-party",
+      "name": "French Communist Party",
+      "aliases": [
+        "French Communist Party",
+        "Parti communiste français",
+        "PCF"
+      ],
+      "website": "https://pcf.fr",
+      "retrievedAt": "2026-11-08",
+      "asset": "fr-french-communist-party.png",
+      "representation": "site-icon",
+      "sourceUrl": "https://pcf.fr",
+      "downloadUrl": "https://icons.duckduckgo.com/ip3/pcf.fr.ico",
+      "rights": "Identity artwork belongs to the named party; supplied unmodified for identification."
+    },
+    {
+      "country": "FR",
+      "id": "fr-democratic-movement",
+      "name": "Democratic Movement",
+      "aliases": [
+        "Democratic Movement",
+        "Mouvement démocrate",
+        "MoDem"
+      ],
+      "website": "https://mouvementdemocrate.fr",
+      "retrievedAt": "2026-11-08",
+      "asset": "fr-democratic-movement.png",
+      "representation": "site-icon",
+      "sourceUrl": "https://mouvementdemocrate.fr",
+      "downloadUrl": "https://t1.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=http://mouvementdemocrate.fr&size=128",
+      "rights": "Identity artwork belongs to the named party; supplied unmodified for identification."
+    },
+    {
+      "country": "FR",
+      "id": "fr-horizons",
+      "name": "Horizons",
+      "aliases": [
+        "Horizons",
+        "HOR"
+      ],
+      "website": "https://horizonsleparti.fr",
+      "retrievedAt": "2026-11-08",
+      "asset": "fr-horizons.png",
+      "representation": "site-icon",
+      "sourceUrl": "https://horizonsleparti.fr",
+      "downloadUrl": "https://t3.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=http://horizonsleparti.fr&size=128",
+      "rights": "Identity artwork belongs to the named party; supplied unmodified for identification."
+    },
+    {
+      "country": "FR",
+      "id": "fr-union-of-democrats-and-independents",
+      "name": "Union of Democrats and Independents",
+      "aliases": [
+        "Union of Democrats and Independents",
+        "UDI"
+      ],
+      "website": "https://parti-udi.fr",
+      "retrievedAt": "2026-11-08",
+      "asset": "fr-union-of-democrats-and-independents.png",
+      "representation": "site-icon",
+      "sourceUrl": "https://parti-udi.fr",
+      "downloadUrl": "https://t0.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=http://parti-udi.fr&size=128",
+      "rights": "Identity artwork belongs to the named party; supplied unmodified for identification."
+    },
+    {
+      "country": "FR",
+      "id": "fr-radical-party-of-the-left",
+      "name": "Radical Party of the Left",
+      "aliases": [
+        "Radical Party of the Left",
+        "Parti radical de gauche",
+        "PRG"
+      ],
+      "website": "https://partiradicaldegauche.fr",
+      "retrievedAt": "2026-11-08",
+      "asset": "fr-radical-party-of-the-left.png",
+      "representation": "site-icon",
+      "sourceUrl": "https://www.partiradicaldegauche.fr/",
+      "downloadUrl": "https://www.partiradicaldegauche.fr/wp-content/uploads/2021/05/cropped-prg-centre-gauche-favicon-32x32.png",
+      "rights": "Identity artwork belongs to the named party."
+    },
+    {
+      "country": "FR",
+      "id": "fr-debout-la-france",
+      "name": "Debout la France",
+      "aliases": [
+        "Debout la France",
+        "DLF"
+      ],
+      "website": "https://debout-la-france.fr",
+      "retrievedAt": "2026-11-08",
+      "asset": "fr-debout-la-france.png",
+      "representation": "site-icon",
+      "sourceUrl": "https://debout-la-france.fr",
+      "downloadUrl": "https://t0.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=http://debout-la-france.fr&size=128",
+      "rights": "Identity artwork belongs to the named party; supplied unmodified for identification."
+    },
+    {
+      "country": "FR",
+      "id": "fr-reconquete",
+      "name": "Reconquête",
+      "aliases": [
+        "Reconquête",
+        "Reconquete"
+      ],
+      "website": "https://reconquete.fr",
+      "retrievedAt": "2026-11-08",
+      "asset": "fr-reconquete.png",
+      "representation": "site-icon",
+      "sourceUrl": "https://reconquete.fr",
+      "downloadUrl": "https://t2.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=http://reconquete.fr&size=128",
+      "rights": "Identity artwork belongs to the named party; supplied unmodified for identification."
+    },
+    {
+      "country": "FR",
+      "id": "fr-union-of-the-right-for-the-republic",
+      "name": "Union of the Right for the Republic",
+      "aliases": [
+        "Union of the Right for the Republic",
+        "UDR"
+      ],
+      "website": "https://udr.fr",
+      "retrievedAt": "2026-11-08",
+      "asset": "fr-union-of-the-right-for-the-republic.png",
+      "representation": "site-icon",
+      "sourceUrl": "https://udr.fr",
+      "downloadUrl": "https://t2.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=http://udr.fr&size=128",
+      "rights": "Identity artwork belongs to the named party; supplied unmodified for identification."
+    },
+    {
+      "country": "FR",
+      "id": "fr-generation-s",
+      "name": "Génération.s",
+      "aliases": [
+        "Génération.s",
+        "Generations"
+      ],
+      "website": "https://generation-s.fr",
+      "retrievedAt": "2026-11-08",
+      "asset": "fr-generation-s.png",
+      "representation": "site-icon",
+      "sourceUrl": "https://generation-s.fr",
+      "downloadUrl": "https://t0.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=http://generation-s.fr&size=128",
+      "rights": "Identity artwork belongs to the named party; supplied unmodified for identification."
+    },
+    {
+      "country": "FR",
+      "id": "fr-place-publique",
+      "name": "Place Publique",
+      "aliases": [
+        "Place Publique",
+        "PP"
+      ],
+      "website": "https://place-publique.eu",
+      "retrievedAt": "2026-11-08",
+      "asset": "fr-place-publique.png",
+      "representation": "site-icon",
+      "sourceUrl": "https://place-publique.eu",
+      "downloadUrl": "https://t1.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=http://place-publique.eu&size=128",
+      "rights": "Identity artwork belongs to the named party; supplied unmodified for identification."
+    },
+    {
+      "country": "FR",
+      "id": "fr-new-anticapitalist-party",
+      "name": "New Anticapitalist Party",
+      "aliases": [
+        "New Anticapitalist Party",
+        "NPA"
+      ],
+      "website": "https://nouveaupartianticapitaliste.org",
+      "retrievedAt": "2026-11-08",
+      "missingAsset": true
+    },
+    {
+      "country": "FR",
+      "id": "fr-workers-struggle",
+      "name": "Workers' Struggle",
+      "aliases": [
+        "Workers' Struggle",
+        "Lutte Ouvrière",
+        "LO"
+      ],
+      "website": "https://lutte-ouvriere.org",
+      "retrievedAt": "2026-11-08",
+      "asset": "fr-workers-struggle.png",
+      "representation": "site-icon",
+      "sourceUrl": "https://lutte-ouvriere.org",
+      "downloadUrl": "https://icons.duckduckgo.com/ip3/lutte-ouvriere.org.ico",
+      "rights": "Identity artwork belongs to the named party; supplied unmodified for identification."
+    },
+    {
+      "country": "DE",
+      "id": "de-christian-democratic-union",
+      "name": "Christian Democratic Union",
+      "aliases": [
+        "Christian Democratic Union",
+        "Christian Democratic Union of Germany",
+        "CDU"
+      ],
+      "website": "https://cdu.de",
+      "retrievedAt": "2026-11-08",
+      "asset": "de-christian-democratic-union.png",
+      "representation": "site-icon",
+      "sourceUrl": "https://cdu.de",
+      "downloadUrl": "https://t1.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=http://cdu.de&size=128",
+      "rights": "Identity artwork belongs to the named party; supplied unmodified for identification."
+    },
+    {
+      "country": "DE",
+      "id": "de-christian-social-union",
+      "name": "Christian Social Union",
+      "aliases": [
+        "Christian Social Union",
+        "Christian Social Union in Bavaria",
+        "CSU"
+      ],
+      "website": "https://csu.de",
+      "retrievedAt": "2026-11-08",
+      "asset": "de-christian-social-union.png",
+      "representation": "site-icon",
+      "sourceUrl": "https://csu.de",
+      "downloadUrl": "https://t1.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=http://csu.de&size=128",
+      "rights": "Identity artwork belongs to the named party; supplied unmodified for identification."
+    },
+    {
+      "country": "DE",
+      "id": "de-social-democratic-party",
+      "name": "Social Democratic Party",
+      "aliases": [
+        "Social Democratic Party",
+        "Social Democratic Party of Germany",
+        "SPD",
+        "Sozialdemokratische Partei Deutschlands"
+      ],
+      "website": "https://spd.de",
+      "retrievedAt": "2026-11-08",
+      "asset": "de-social-democratic-party.png",
+      "representation": "site-icon",
+      "sourceUrl": "https://spd.de",
+      "downloadUrl": "https://t2.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=http://spd.de&size=128",
+      "rights": "Identity artwork belongs to the named party; supplied unmodified for identification."
+    },
+    {
+      "country": "DE",
+      "id": "de-alternative-for-germany",
+      "name": "Alternative for Germany",
+      "aliases": [
+        "Alternative for Germany",
+        "Alternative für Deutschland",
+        "AfD"
+      ],
+      "website": "https://afd.de",
+      "retrievedAt": "2026-11-08",
+      "asset": "de-alternative-for-germany.png",
+      "representation": "site-icon",
+      "sourceUrl": "https://afd.de",
+      "downloadUrl": "https://t0.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=http://afd.de&size=128",
+      "rights": "Identity artwork belongs to the named party; supplied unmodified for identification."
+    },
+    {
+      "country": "DE",
+      "id": "de-alliance-90-the-greens",
+      "name": "Alliance 90/The Greens",
+      "aliases": [
+        "Alliance 90/The Greens",
+        "Bündnis 90/Die Grünen",
+        "Alliance 90 The Greens",
+        "Greens",
+        "Green Party",
+        "Grüne"
+      ],
+      "website": "https://gruene.de",
+      "retrievedAt": "2026-11-08",
+      "asset": "de-alliance-90-the-greens.png",
+      "representation": "site-icon",
+      "sourceUrl": "https://gruene.de",
+      "downloadUrl": "https://t2.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=http://gruene.de&size=128",
+      "rights": "Identity artwork belongs to the named party; supplied unmodified for identification."
+    },
+    {
+      "country": "DE",
+      "id": "de-the-left",
+      "name": "The Left",
+      "aliases": [
+        "The Left",
+        "Die Linke",
+        "Linke"
+      ],
+      "website": "https://die-linke.de",
+      "retrievedAt": "2026-11-08",
+      "asset": "de-the-left.png",
+      "representation": "site-icon",
+      "sourceUrl": "https://die-linke.de",
+      "downloadUrl": "https://t1.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=http://die-linke.de&size=128",
+      "rights": "Identity artwork belongs to the named party; supplied unmodified for identification."
+    },
+    {
+      "country": "DE",
+      "id": "de-free-democratic-party",
+      "name": "Free Democratic Party",
+      "aliases": [
+        "Free Democratic Party",
+        "FDP",
+        "Freie Demokratische Partei"
+      ],
+      "website": "https://fdp.de",
+      "retrievedAt": "2026-11-08",
+      "asset": "de-free-democratic-party.png",
+      "representation": "site-icon",
+      "sourceUrl": "https://fdp.de",
+      "downloadUrl": "https://t1.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=http://fdp.de&size=128",
+      "rights": "Identity artwork belongs to the named party; supplied unmodified for identification."
+    },
+    {
+      "country": "DE",
+      "id": "de-bundnis-sahra-wagenknecht",
+      "name": "Bündnis Sahra Wagenknecht",
+      "aliases": [
+        "Bündnis Sahra Wagenknecht",
+        "BSW"
+      ],
+      "website": "https://bsw-vg.de",
+      "retrievedAt": "2026-11-08",
+      "asset": "de-bundnis-sahra-wagenknecht.png",
+      "representation": "site-icon",
+      "sourceUrl": "https://bsw-vg.de",
+      "downloadUrl": "https://t0.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=http://bsw-vg.de&size=128",
+      "rights": "Identity artwork belongs to the named party; supplied unmodified for identification."
+    },
+    {
+      "country": "DE",
+      "id": "de-south-schleswig-voters-association",
+      "name": "South Schleswig Voters' Association",
+      "aliases": [
+        "South Schleswig Voters' Association",
+        "SSW"
+      ],
+      "website": "https://ssw.de",
+      "retrievedAt": "2026-11-08",
+      "asset": "de-south-schleswig-voters-association.png",
+      "representation": "site-icon",
+      "sourceUrl": "https://ssw.de",
+      "downloadUrl": "https://t3.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=http://ssw.de&size=128",
+      "rights": "Identity artwork belongs to the named party; supplied unmodified for identification."
+    },
+    {
+      "country": "DE",
+      "id": "de-free-voters",
+      "name": "Free Voters",
+      "aliases": [
+        "Free Voters",
+        "Freie Wähler",
+        "FW"
+      ],
+      "website": "https://freiewaehler.eu",
+      "retrievedAt": "2026-11-08",
+      "asset": "de-free-voters.png",
+      "representation": "site-icon",
+      "sourceUrl": "https://freiewaehler.eu",
+      "downloadUrl": "https://t1.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=http://freiewaehler.eu&size=128",
+      "rights": "Identity artwork belongs to the named party; supplied unmodified for identification."
+    },
+    {
+      "country": "IT",
+      "id": "it-brothers-of-italy",
+      "name": "Brothers of Italy",
+      "aliases": [
+        "Brothers of Italy",
+        "Fratelli d'Italia",
+        "FdI"
+      ],
+      "website": "https://fratelli-italia.it",
+      "retrievedAt": "2026-11-08",
+      "asset": "it-brothers-of-italy.png",
+      "representation": "site-icon",
+      "sourceUrl": "https://fratelli-italia.it",
+      "downloadUrl": "https://t2.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=http://fratelli-italia.it&size=128",
+      "rights": "Identity artwork belongs to the named party; supplied unmodified for identification."
+    },
+    {
+      "country": "IT",
+      "id": "it-democratic-party",
+      "name": "Democratic Party",
+      "aliases": [
+        "Democratic Party",
+        "Partito Democratico",
+        "PD"
+      ],
+      "website": "https://partitodemocratico.it",
+      "retrievedAt": "2026-11-08",
+      "asset": "it-democratic-party.jpg",
+      "representation": "site-icon",
+      "sourceUrl": "https://partitodemocratico.it",
+      "downloadUrl": "https://t2.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=http://partitodemocratico.it&size=128",
+      "rights": "Identity artwork belongs to the named party; supplied unmodified for identification."
+    },
+    {
+      "country": "IT",
+      "id": "it-five-star-movement",
+      "name": "Five Star Movement",
+      "aliases": [
+        "Five Star Movement",
+        "Movimento 5 Stelle",
+        "M5S",
+        "5 Star Movement"
+      ],
+      "website": "https://movimento5stelle.eu",
+      "retrievedAt": "2026-11-08",
+      "asset": "it-five-star-movement.png",
+      "representation": "site-icon",
+      "sourceUrl": "https://movimento5stelle.eu",
+      "downloadUrl": "https://t2.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=http://movimento5stelle.eu&size=128",
+      "rights": "Identity artwork belongs to the named party; supplied unmodified for identification."
+    },
+    {
+      "country": "IT",
+      "id": "it-lega",
+      "name": "Lega",
+      "aliases": [
+        "Lega",
+        "League",
+        "Lega Nord",
+        "Northern League"
+      ],
+      "website": "https://legaonline.it",
+      "retrievedAt": "2026-11-08",
+      "asset": "it-lega.png",
+      "representation": "site-icon",
+      "sourceUrl": "https://legaonline.it",
+      "downloadUrl": "https://t2.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=http://legaonline.it&size=128",
+      "rights": "Identity artwork belongs to the named party; supplied unmodified for identification."
+    },
+    {
+      "country": "IT",
+      "id": "it-forza-italia",
+      "name": "Forza Italia",
+      "aliases": [
+        "Forza Italia",
+        "FI"
+      ],
+      "website": "https://forzaitalia.it",
+      "retrievedAt": "2026-11-08",
+      "asset": "it-forza-italia.png",
+      "representation": "site-icon",
+      "sourceUrl": "https://forzaitalia.it",
+      "downloadUrl": "https://t2.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=http://forzaitalia.it&size=128",
+      "rights": "Identity artwork belongs to the named party; supplied unmodified for identification."
+    },
+    {
+      "country": "IT",
+      "id": "it-italian-left",
+      "name": "Italian Left",
+      "aliases": [
+        "Italian Left",
+        "Sinistra Italiana",
+        "SI"
+      ],
+      "website": "https://sinistraitaliana.si",
+      "retrievedAt": "2026-11-08",
+      "missingAsset": true
+    },
+    {
+      "country": "IT",
+      "id": "it-green-europe",
+      "name": "Green Europe",
+      "aliases": [
+        "Green Europe",
+        "Europa Verde",
+        "EV"
+      ],
+      "website": "https://europaverde.it",
+      "retrievedAt": "2026-11-08",
+      "asset": "it-green-europe.png",
+      "representation": "site-icon",
+      "sourceUrl": "https://europaverde.it",
+      "downloadUrl": "https://t0.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=http://europaverde.it&size=128",
+      "rights": "Identity artwork belongs to the named party; supplied unmodified for identification."
+    },
+    {
+      "country": "IT",
+      "id": "it-action",
+      "name": "Action",
+      "aliases": [
+        "Action",
+        "Azione"
+      ],
+      "website": "https://azione.it",
+      "retrievedAt": "2026-11-08",
+      "asset": "it-action.png",
+      "representation": "site-icon",
+      "sourceUrl": "https://azione.it",
+      "downloadUrl": "https://t0.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=http://azione.it&size=128",
+      "rights": "Identity artwork belongs to the named party; supplied unmodified for identification."
+    },
+    {
+      "country": "IT",
+      "id": "it-italia-viva",
+      "name": "Italia Viva",
+      "aliases": [
+        "Italia Viva",
+        "IV"
+      ],
+      "website": "https://italiaviva.it",
+      "retrievedAt": "2026-11-08",
+      "missingAsset": true
+    },
+    {
+      "country": "IT",
+      "id": "it-more-europe",
+      "name": "More Europe",
+      "aliases": [
+        "More Europe",
+        "+Europe",
+        "+Europa",
+        "Più Europa"
+      ],
+      "website": "https://piueuropa.eu",
+      "retrievedAt": "2026-11-08",
+      "asset": "it-more-europe.png",
+      "representation": "site-icon",
+      "sourceUrl": "https://piueuropa.eu",
+      "downloadUrl": "https://t2.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=http://piueuropa.eu&size=128",
+      "rights": "Identity artwork belongs to the named party; supplied unmodified for identification."
+    },
+    {
+      "country": "IT",
+      "id": "it-we-moderates",
+      "name": "We Moderates",
+      "aliases": [
+        "We Moderates",
+        "Noi Moderati",
+        "NM"
+      ],
+      "website": "https://noimoderati.it",
+      "retrievedAt": "2026-11-08",
+      "asset": "it-we-moderates.png",
+      "representation": "site-icon",
+      "sourceUrl": "https://noimoderati.it",
+      "downloadUrl": "https://t2.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=http://noimoderati.it&size=128",
+      "rights": "Identity artwork belongs to the named party; supplied unmodified for identification."
+    },
+    {
+      "country": "IT",
+      "id": "it-south-tyrolean-people-s-party",
+      "name": "South Tyrolean People's Party",
+      "aliases": [
+        "South Tyrolean People's Party",
+        "Südtiroler Volkspartei",
+        "SVP"
+      ],
+      "website": "https://svp.eu",
+      "retrievedAt": "2026-11-08",
+      "asset": "it-south-tyrolean-people-s-party.png",
+      "representation": "site-icon",
+      "sourceUrl": "https://svp.eu",
+      "downloadUrl": "https://t0.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=http://svp.eu&size=128",
+      "rights": "Identity artwork belongs to the named party; supplied unmodified for identification."
+    },
+    {
+      "country": "IT",
+      "id": "it-italian-socialist-party",
+      "name": "Italian Socialist Party",
+      "aliases": [
+        "Italian Socialist Party",
+        "Partito Socialista Italiano",
+        "PSI"
+      ],
+      "website": "https://partitosocialista.it",
+      "retrievedAt": "2026-11-08",
+      "asset": "it-italian-socialist-party.png",
+      "representation": "site-icon",
+      "sourceUrl": "https://partitosocialista.it",
+      "downloadUrl": "https://t0.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=http://partitosocialista.it&size=128",
+      "rights": "Identity artwork belongs to the named party; supplied unmodified for identification."
+    },
+    {
+      "country": "ES",
+      "id": "es-people-s-party",
+      "name": "People's Party",
+      "aliases": [
+        "People's Party",
+        "Partido Popular",
+        "PP"
+      ],
+      "website": "https://pp.es",
+      "retrievedAt": "2026-11-08",
+      "asset": "es-people-s-party.png",
+      "representation": "site-icon",
+      "sourceUrl": "https://pp.es",
+      "downloadUrl": "https://t3.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=http://pp.es&size=128",
+      "rights": "Identity artwork belongs to the named party; supplied unmodified for identification."
+    },
+    {
+      "country": "ES",
+      "id": "es-spanish-socialist-workers-party",
+      "name": "Spanish Socialist Workers' Party",
+      "aliases": [
+        "Spanish Socialist Workers' Party",
+        "Partido Socialista Obrero Español",
+        "PSOE"
+      ],
+      "website": "https://psoe.es",
+      "retrievedAt": "2026-11-08",
+      "asset": "es-spanish-socialist-workers-party.png",
+      "representation": "site-icon",
+      "sourceUrl": "https://psoe.es",
+      "downloadUrl": "https://t2.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=http://psoe.es&size=128",
+      "rights": "Identity artwork belongs to the named party; supplied unmodified for identification."
+    },
+    {
+      "country": "ES",
+      "id": "es-vox",
+      "name": "Vox",
+      "aliases": [
+        "Vox",
+        "VOX"
+      ],
+      "website": "https://voxespana.es",
+      "retrievedAt": "2026-11-08",
+      "asset": "es-vox.png",
+      "representation": "site-icon",
+      "sourceUrl": "https://voxespana.es",
+      "downloadUrl": "https://t1.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=http://voxespana.es&size=128",
+      "rights": "Identity artwork belongs to the named party; supplied unmodified for identification."
+    },
+    {
+      "country": "ES",
+      "id": "es-sumar",
+      "name": "Sumar",
+      "aliases": [
+        "Sumar",
+        "Sumar Movement"
+      ],
+      "website": "https://movimientosumar.es",
+      "retrievedAt": "2026-11-08",
+      "asset": "es-sumar.png",
+      "representation": "site-icon",
+      "sourceUrl": "https://movimientosumar.es",
+      "downloadUrl": "https://t1.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=http://movimientosumar.es&size=128",
+      "rights": "Identity artwork belongs to the named party; supplied unmodified for identification."
+    },
+    {
+      "country": "ES",
+      "id": "es-podemos",
+      "name": "Podemos",
+      "aliases": [
+        "Podemos",
+        "We Can"
+      ],
+      "website": "https://podemos.info",
+      "retrievedAt": "2026-11-08",
+      "asset": "es-podemos.png",
+      "representation": "site-icon",
+      "sourceUrl": "https://podemos.info",
+      "downloadUrl": "https://t1.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=http://podemos.info&size=128",
+      "rights": "Identity artwork belongs to the named party; supplied unmodified for identification."
+    },
+    {
+      "country": "ES",
+      "id": "es-united-left",
+      "name": "United Left",
+      "aliases": [
+        "United Left",
+        "Izquierda Unida",
+        "IU"
+      ],
+      "website": "https://izquierdaunida.org",
+      "retrievedAt": "2026-11-08",
+      "asset": "es-united-left.png",
+      "representation": "site-icon",
+      "sourceUrl": "https://izquierdaunida.org",
+      "downloadUrl": "https://t1.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=http://izquierdaunida.org&size=128",
+      "rights": "Identity artwork belongs to the named party; supplied unmodified for identification."
+    },
+    {
+      "country": "ES",
+      "id": "es-communist-party-of-spain",
+      "name": "Communist Party of Spain",
+      "aliases": [
+        "Communist Party of Spain",
+        "Partido Comunista de España",
+        "PCE"
+      ],
+      "website": "https://pce.es",
+      "retrievedAt": "2026-11-08",
+      "asset": "es-communist-party-of-spain.jpg",
+      "representation": "site-icon",
+      "sourceUrl": "https://pce.es",
+      "downloadUrl": "https://t3.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=http://pce.es&size=128",
+      "rights": "Identity artwork belongs to the named party; supplied unmodified for identification."
+    },
+    {
+      "country": "ES",
+      "id": "es-republican-left-of-catalonia",
+      "name": "Republican Left of Catalonia",
+      "aliases": [
+        "Republican Left of Catalonia",
+        "Esquerra Republicana de Catalunya",
+        "ERC"
+      ],
+      "website": "https://esquerra.cat",
+      "retrievedAt": "2026-11-08",
+      "asset": "es-republican-left-of-catalonia.png",
+      "representation": "site-icon",
+      "sourceUrl": "https://esquerra.cat",
+      "downloadUrl": "https://t2.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=http://esquerra.cat&size=128",
+      "rights": "Identity artwork belongs to the named party; supplied unmodified for identification."
+    },
+    {
+      "country": "ES",
+      "id": "es-together-for-catalonia",
+      "name": "Together for Catalonia",
+      "aliases": [
+        "Together for Catalonia",
+        "Junts per Catalunya",
+        "Junts",
+        "JxCat"
+      ],
+      "website": "https://junts.cat",
+      "retrievedAt": "2026-11-08",
+      "missingAsset": true
+    },
+    {
+      "country": "ES",
+      "id": "es-basque-nationalist-party",
+      "name": "Basque Nationalist Party",
+      "aliases": [
+        "Basque Nationalist Party",
+        "EAJ-PNV",
+        "PNV"
+      ],
+      "website": "https://eaj-pnv.eus",
+      "retrievedAt": "2026-11-08",
+      "asset": "es-basque-nationalist-party.png",
+      "representation": "site-icon",
+      "sourceUrl": "https://eaj-pnv.eus",
+      "downloadUrl": "https://t2.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=http://eaj-pnv.eus&size=128",
+      "rights": "Identity artwork belongs to the named party; supplied unmodified for identification."
+    },
+    {
+      "country": "ES",
+      "id": "es-eh-bildu",
+      "name": "EH Bildu",
+      "aliases": [
+        "EH Bildu",
+        "Euskal Herria Bildu",
+        "Bildu"
+      ],
+      "website": "https://ehbildu.eus",
+      "retrievedAt": "2026-11-08",
+      "asset": "es-eh-bildu.png",
+      "representation": "site-icon",
+      "sourceUrl": "https://ehbildu.eus",
+      "downloadUrl": "https://t1.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=http://ehbildu.eus&size=128",
+      "rights": "Identity artwork belongs to the named party; supplied unmodified for identification."
+    },
+    {
+      "country": "ES",
+      "id": "es-galician-nationalist-bloc",
+      "name": "Galician Nationalist Bloc",
+      "aliases": [
+        "Galician Nationalist Bloc",
+        "Bloque Nacionalista Galego",
+        "BNG"
+      ],
+      "website": "https://bng.gal",
+      "retrievedAt": "2026-11-08",
+      "asset": "es-galician-nationalist-bloc.png",
+      "representation": "site-icon",
+      "sourceUrl": "https://bng.gal",
+      "downloadUrl": "https://t1.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=http://bng.gal&size=128",
+      "rights": "Identity artwork belongs to the named party; supplied unmodified for identification."
+    },
+    {
+      "country": "ES",
+      "id": "es-canarian-coalition",
+      "name": "Canarian Coalition",
+      "aliases": [
+        "Canarian Coalition",
+        "Coalición Canaria",
+        "CC"
+      ],
+      "website": "https://coalicioncanaria.org",
+      "retrievedAt": "2026-11-08",
+      "asset": "es-canarian-coalition.png",
+      "representation": "site-icon",
+      "sourceUrl": "https://coalicioncanaria.org",
+      "downloadUrl": "https://t1.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=http://coalicioncanaria.org&size=128",
+      "rights": "Identity artwork belongs to the named party; supplied unmodified for identification."
+    },
+    {
+      "country": "ES",
+      "id": "es-navarrese-people-s-union",
+      "name": "Navarrese People's Union",
+      "aliases": [
+        "Navarrese People's Union",
+        "Unión del Pueblo Navarro",
+        "UPN"
+      ],
+      "website": "https://upn.org",
+      "retrievedAt": "2026-11-08",
+      "asset": "es-navarrese-people-s-union.png",
+      "representation": "site-icon",
+      "sourceUrl": "https://upn.org",
+      "downloadUrl": "https://t3.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=http://upn.org&size=128",
+      "rights": "Identity artwork belongs to the named party; supplied unmodified for identification."
+    },
+    {
+      "country": "ES",
+      "id": "es-compromis",
+      "name": "Compromís",
+      "aliases": [
+        "Compromís",
+        "Compromis"
+      ],
+      "website": "https://compromis.net",
+      "retrievedAt": "2026-11-08",
+      "asset": "es-compromis.png",
+      "representation": "site-icon",
+      "sourceUrl": "https://compromis.net",
+      "downloadUrl": "https://t3.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=http://compromis.net&size=128",
+      "rights": "Identity artwork belongs to the named party; supplied unmodified for identification."
+    },
+    {
+      "country": "ES",
+      "id": "es-mes-per-mallorca",
+      "name": "Més per Mallorca",
+      "aliases": [
+        "Més per Mallorca",
+        "Més"
+      ],
+      "website": "https://mespermallorca.cat",
+      "retrievedAt": "2026-11-08",
+      "asset": "es-mes-per-mallorca.jpg",
+      "representation": "site-icon",
+      "sourceUrl": "https://mespermallorca.cat",
+      "downloadUrl": "https://t3.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=http://mespermallorca.cat&size=128",
+      "rights": "Identity artwork belongs to the named party; supplied unmodified for identification."
+    },
+    {
+      "country": "ES",
+      "id": "es-chunta-aragonesista",
+      "name": "Chunta Aragonesista",
+      "aliases": [
+        "Chunta Aragonesista",
+        "CHA"
+      ],
+      "website": "https://chunta.org",
+      "retrievedAt": "2026-11-08",
+      "asset": "es-chunta-aragonesista.png",
+      "representation": "site-icon",
+      "sourceUrl": "https://chunta.org",
+      "downloadUrl": "https://t3.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=http://chunta.org&size=128",
+      "rights": "Identity artwork belongs to the named party; supplied unmodified for identification."
+    },
+    {
+      "country": "ES",
+      "id": "es-mas-pais",
+      "name": "Más País",
+      "aliases": [
+        "Más País",
+        "Mas Pais"
+      ],
+      "website": "https://maspais.es",
+      "retrievedAt": "2026-11-08",
+      "asset": "es-mas-pais.png",
+      "representation": "site-icon",
+      "sourceUrl": "https://maspais.es",
+      "downloadUrl": "https://t0.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=http://maspais.es&size=128",
+      "rights": "Identity artwork belongs to the named party; supplied unmodified for identification."
+    },
+    {
+      "country": "ES",
+      "id": "es-catalunya-en-comu",
+      "name": "Catalunya en Comú",
+      "aliases": [
+        "Catalunya en Comú",
+        "CatComú"
+      ],
+      "website": "https://catalunyaencomu.cat",
+      "retrievedAt": "2026-11-08",
+      "asset": "es-catalunya-en-comu.png",
+      "representation": "site-icon",
+      "sourceUrl": "https://catalunyaencomu.cat",
+      "downloadUrl": "https://t2.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=http://catalunyaencomu.cat&size=128",
+      "rights": "Identity artwork belongs to the named party; supplied unmodified for identification."
+    },
+    {
+      "country": "PL",
+      "id": "pl-law-and-justice",
+      "name": "Law and Justice",
+      "aliases": [
+        "Law and Justice",
+        "Prawo i Sprawiedliwość",
+        "PiS"
+      ],
+      "website": "https://pis.org.pl",
+      "retrievedAt": "2026-11-08",
+      "asset": "pl-law-and-justice.jpg",
+      "representation": "site-icon",
+      "sourceUrl": "https://pis.org.pl",
+      "downloadUrl": "https://t1.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=http://pis.org.pl&size=128",
+      "rights": "Identity artwork belongs to the named party; supplied unmodified for identification."
+    },
+    {
+      "country": "PL",
+      "id": "pl-civic-platform",
+      "name": "Civic Platform",
+      "aliases": [
+        "Civic Platform",
+        "Platforma Obywatelska",
+        "PO"
+      ],
+      "website": "https://platforma.org",
+      "retrievedAt": "2026-11-08",
+      "asset": "pl-civic-platform.png",
+      "representation": "site-icon",
+      "sourceUrl": "https://platforma.org",
+      "downloadUrl": "https://t0.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=http://platforma.org&size=128",
+      "rights": "Identity artwork belongs to the named party; supplied unmodified for identification."
+    },
+    {
+      "country": "PL",
+      "id": "pl-poland-2050",
+      "name": "Poland 2050",
+      "aliases": [
+        "Poland 2050",
+        "Polska 2050"
+      ],
+      "website": "https://polska2050.pl",
+      "retrievedAt": "2026-11-08",
+      "asset": "pl-poland-2050.png",
+      "representation": "site-icon",
+      "sourceUrl": "https://polska2050.pl",
+      "downloadUrl": "https://t2.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=http://polska2050.pl&size=128",
+      "rights": "Identity artwork belongs to the named party; supplied unmodified for identification."
+    },
+    {
+      "country": "PL",
+      "id": "pl-polish-people-s-party",
+      "name": "Polish People's Party",
+      "aliases": [
+        "Polish People's Party",
+        "Polskie Stronnictwo Ludowe",
+        "PSL"
+      ],
+      "website": "https://psl.pl",
+      "retrievedAt": "2026-11-08",
+      "asset": "pl-polish-people-s-party.png",
+      "representation": "site-icon",
+      "sourceUrl": "https://psl.pl",
+      "downloadUrl": "https://t1.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=http://psl.pl&size=128",
+      "rights": "Identity artwork belongs to the named party; supplied unmodified for identification."
+    },
+    {
+      "country": "PL",
+      "id": "pl-new-left",
+      "name": "New Left",
+      "aliases": [
+        "New Left",
+        "Nowa Lewica",
+        "Lewica",
+        "The Left"
+      ],
+      "website": "https://lewica.org.pl",
+      "retrievedAt": "2026-11-08",
+      "asset": "pl-new-left.png",
+      "representation": "site-icon",
+      "sourceUrl": "https://lewica.org.pl",
+      "downloadUrl": "https://t0.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=http://lewica.org.pl&size=128",
+      "rights": "Identity artwork belongs to the named party; supplied unmodified for identification."
+    },
+    {
+      "country": "PL",
+      "id": "pl-left-together",
+      "name": "Left Together",
+      "aliases": [
+        "Left Together",
+        "Razem",
+        "Together"
+      ],
+      "website": "https://partiarazem.pl",
+      "retrievedAt": "2026-11-08",
+      "asset": "pl-left-together.png",
+      "representation": "site-icon",
+      "sourceUrl": "https://partiarazem.pl",
+      "downloadUrl": "https://t3.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=http://partiarazem.pl&size=128",
+      "rights": "Identity artwork belongs to the named party; supplied unmodified for identification."
+    },
+    {
+      "country": "PL",
+      "id": "pl-new-hope",
+      "name": "New Hope",
+      "aliases": [
+        "New Hope",
+        "Nowa Nadzieja"
+      ],
+      "website": "https://wolnosc.pl",
+      "retrievedAt": "2026-11-08",
+      "asset": "pl-new-hope.png",
+      "representation": "site-icon",
+      "sourceUrl": "https://wolnosc.pl",
+      "downloadUrl": "https://t2.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=http://wolnosc.pl&size=128",
+      "rights": "Identity artwork belongs to the named party; supplied unmodified for identification."
+    },
+    {
+      "country": "PL",
+      "id": "pl-national-movement",
+      "name": "National Movement",
+      "aliases": [
+        "National Movement",
+        "Ruch Narodowy",
+        "RN"
+      ],
+      "website": "https://ruchnarodowy.net",
+      "retrievedAt": "2026-11-08",
+      "asset": "pl-national-movement.png",
+      "representation": "site-icon",
+      "sourceUrl": "https://ruchnarodowy.net",
+      "downloadUrl": "https://icons.duckduckgo.com/ip3/ruchnarodowy.net.ico",
+      "rights": "Identity artwork belongs to the named party; supplied unmodified for identification."
+    },
+    {
+      "country": "PL",
+      "id": "pl-confederation-of-the-polish-crown",
+      "name": "Confederation of the Polish Crown",
+      "aliases": [
+        "Confederation of the Polish Crown",
+        "Konfederacja Korony Polskiej",
+        "KKP"
+      ],
+      "website": "https://konfederacjakoronypolskiej.pl",
+      "retrievedAt": "2026-11-08",
+      "asset": "pl-confederation-of-the-polish-crown.png",
+      "representation": "site-icon",
+      "sourceUrl": "https://konfederacjakoronypolskiej.pl",
+      "downloadUrl": "https://t0.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=http://konfederacjakoronypolskiej.pl&size=128",
+      "rights": "Identity artwork belongs to the named party; supplied unmodified for identification."
+    },
+    {
+      "country": "PL",
+      "id": "pl-modern",
+      "name": "Modern",
+      "aliases": [
+        "Modern",
+        "Nowoczesna"
+      ],
+      "website": "https://nowoczesna.org",
+      "retrievedAt": "2026-11-08",
+      "asset": "pl-modern.jpg",
+      "representation": "site-icon",
+      "sourceUrl": "https://nowoczesna.org",
+      "downloadUrl": "https://t2.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=http://nowoczesna.org&size=128",
+      "rights": "Identity artwork belongs to the named party; supplied unmodified for identification."
+    },
+    {
+      "country": "PL",
+      "id": "pl-the-greens",
+      "name": "The Greens",
+      "aliases": [
+        "The Greens",
+        "Partia Zieloni",
+        "Greens",
+        "Zieloni"
+      ],
+      "website": "https://partiazieloni.pl",
+      "retrievedAt": "2026-11-08",
+      "asset": "pl-the-greens.png",
+      "representation": "site-icon",
+      "sourceUrl": "https://partiazieloni.pl",
+      "downloadUrl": "https://t1.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=http://partiazieloni.pl&size=128",
+      "rights": "Identity artwork belongs to the named party; supplied unmodified for identification."
+    },
+    {
+      "country": "AU",
+      "id": "au-australian-labor-party",
+      "name": "Australian Labor Party",
+      "aliases": [
+        "Australian Labor Party",
+        "Labor Party",
+        "Labor",
+        "ALP"
+      ],
+      "website": "https://alp.org.au",
+      "retrievedAt": "2026-11-08",
+      "asset": "au-australian-labor-party.png",
+      "representation": "site-icon",
+      "sourceUrl": "https://alp.org.au",
+      "downloadUrl": "https://t0.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=http://alp.org.au&size=128",
+      "rights": "Identity artwork belongs to the named party; supplied unmodified for identification."
+    },
+    {
+      "country": "AU",
+      "id": "au-liberal-party-of-australia",
+      "name": "Liberal Party of Australia",
+      "aliases": [
+        "Liberal Party of Australia",
+        "Liberal Party",
+        "Liberal",
+        "Liberals"
+      ],
+      "website": "https://liberal.org.au",
+      "retrievedAt": "2026-11-08",
+      "asset": "au-liberal-party-of-australia.png",
+      "representation": "site-icon",
+      "sourceUrl": "https://liberal.org.au",
+      "downloadUrl": "https://t2.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=http://liberal.org.au&size=128",
+      "rights": "Identity artwork belongs to the named party; supplied unmodified for identification."
+    },
+    {
+      "country": "AU",
+      "id": "au-national-party-of-australia",
+      "name": "National Party of Australia",
+      "aliases": [
+        "National Party of Australia",
+        "National Party",
+        "Nationals"
+      ],
+      "website": "https://nationals.org.au",
+      "retrievedAt": "2026-11-08",
+      "asset": "au-national-party-of-australia.jpg",
+      "representation": "site-icon",
+      "sourceUrl": "https://nationals.org.au",
+      "downloadUrl": "https://t1.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=http://nationals.org.au&size=128",
+      "rights": "Identity artwork belongs to the named party; supplied unmodified for identification."
+    },
+    {
+      "country": "AU",
+      "id": "au-australian-greens",
+      "name": "Australian Greens",
+      "aliases": [
+        "Australian Greens",
+        "Greens",
+        "Green Party"
+      ],
+      "website": "https://greens.org.au",
+      "retrievedAt": "2026-11-08",
+      "asset": "au-australian-greens.png",
+      "representation": "site-icon",
+      "sourceUrl": "https://greens.org.au",
+      "downloadUrl": "https://t0.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=http://greens.org.au&size=128",
+      "rights": "Identity artwork belongs to the named party; supplied unmodified for identification."
+    },
+    {
+      "country": "AU",
+      "id": "au-pauline-hanson-s-one-nation",
+      "name": "Pauline Hanson's One Nation",
+      "aliases": [
+        "Pauline Hanson's One Nation",
+        "One Nation",
+        "PHON"
+      ],
+      "website": "https://onenation.org.au",
+      "retrievedAt": "2026-11-08",
+      "missingAsset": true,
+      "reviewNote": "Site icon is a portrait or successor mark, not this party logo."
+    },
+    {
+      "country": "AU",
+      "id": "au-katter-s-australian-party",
+      "name": "Katter's Australian Party",
+      "aliases": [
+        "Katter's Australian Party",
+        "KAP"
+      ],
+      "website": "https://kap.org.au",
+      "retrievedAt": "2026-11-08",
+      "asset": "au-katter-s-australian-party.png",
+      "representation": "site-icon",
+      "sourceUrl": "https://kap.org.au",
+      "downloadUrl": "https://t2.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=http://kap.org.au&size=128",
+      "rights": "Identity artwork belongs to the named party; supplied unmodified for identification."
+    },
+    {
+      "country": "AU",
+      "id": "au-centre-alliance",
+      "name": "Centre Alliance",
+      "aliases": [
+        "Centre Alliance",
+        "CA"
+      ],
+      "website": "https://centrealliance.org.au",
+      "retrievedAt": "2026-11-08",
+      "missingAsset": true
+    },
+    {
+      "country": "AU",
+      "id": "au-jacqui-lambie-network",
+      "name": "Jacqui Lambie Network",
+      "aliases": [
+        "Jacqui Lambie Network",
+        "JLN"
+      ],
+      "website": "https://lambienetwork.com.au",
+      "retrievedAt": "2026-11-08",
+      "missingAsset": true,
+      "reviewNote": "Site icon is a portrait or successor mark, not this party logo."
+    },
+    {
+      "country": "AU",
+      "id": "au-united-australia-party",
+      "name": "United Australia Party",
+      "aliases": [
+        "United Australia Party",
+        "UAP"
+      ],
+      "website": "https://unitedaustraliaparty.org.au",
+      "retrievedAt": "2026-11-08",
+      "asset": "au-united-australia-party.jpg",
+      "representation": "site-icon",
+      "sourceUrl": "https://unitedaustraliaparty.org.au",
+      "downloadUrl": "https://t1.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=http://unitedaustraliaparty.org.au&size=128",
+      "rights": "Identity artwork belongs to the named party; supplied unmodified for identification."
+    },
+    {
+      "country": "AU",
+      "id": "au-country-liberal-party",
+      "name": "Country Liberal Party",
+      "aliases": [
+        "Country Liberal Party",
+        "Country Liberals",
+        "CLP"
+      ],
+      "website": "https://clp.org.au",
+      "retrievedAt": "2026-11-08",
+      "asset": "au-country-liberal-party.png",
+      "representation": "site-icon",
+      "sourceUrl": "https://clp.org.au",
+      "downloadUrl": "https://t2.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=http://clp.org.au&size=128",
+      "rights": "Identity artwork belongs to the named party; supplied unmodified for identification."
+    },
+    {
+      "country": "AU",
+      "id": "au-david-pocock",
+      "name": "David Pocock",
+      "aliases": [
+        "David Pocock",
+        "David Pocock party"
+      ],
+      "website": "https://davidpocock.com.au",
+      "retrievedAt": "2026-11-08",
+      "asset": "au-david-pocock.png",
+      "representation": "site-icon",
+      "sourceUrl": "https://davidpocock.com.au",
+      "downloadUrl": "https://t1.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=http://davidpocock.com.au&size=128",
+      "rights": "Identity artwork belongs to the named party; supplied unmodified for identification."
+    },
+    {
+      "country": "IN",
+      "id": "in-bharatiya-janata-party",
+      "name": "Bharatiya Janata Party",
+      "aliases": [
+        "Bharatiya Janata Party",
+        "BJP"
+      ],
+      "website": "https://bjp.org",
+      "retrievedAt": "2026-11-08",
+      "asset": "in-bharatiya-janata-party.png",
+      "representation": "site-icon",
+      "sourceUrl": "https://bjp.org",
+      "downloadUrl": "https://t0.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=http://bjp.org&size=128",
+      "rights": "Identity artwork belongs to the named party; supplied unmodified for identification."
+    },
+    {
+      "country": "IN",
+      "id": "in-indian-national-congress",
+      "name": "Indian National Congress",
+      "aliases": [
+        "Indian National Congress",
+        "Congress",
+        "INC"
+      ],
+      "website": "https://inc.in",
+      "retrievedAt": "2026-11-08",
+      "asset": "in-indian-national-congress.png",
+      "representation": "site-icon",
+      "sourceUrl": "https://inc.in",
+      "downloadUrl": "https://t1.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=http://inc.in&size=128",
+      "rights": "Identity artwork belongs to the named party; supplied unmodified for identification."
+    },
+    {
+      "country": "IN",
+      "id": "in-samajwadi-party",
+      "name": "Samajwadi Party",
+      "aliases": [
+        "Samajwadi Party",
+        "SP"
+      ],
+      "website": "https://samajwadiparty.in",
+      "retrievedAt": "2026-11-08",
+      "asset": "in-samajwadi-party.png",
+      "representation": "site-icon",
+      "sourceUrl": "https://samajwadiparty.in",
+      "downloadUrl": "https://t0.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=http://samajwadiparty.in&size=128",
+      "rights": "Identity artwork belongs to the named party; supplied unmodified for identification."
+    },
+    {
+      "country": "IN",
+      "id": "in-all-india-trinamool-congress",
+      "name": "All India Trinamool Congress",
+      "aliases": [
+        "All India Trinamool Congress",
+        "Trinamool Congress",
+        "TMC",
+        "AITC"
+      ],
+      "website": "https://aitcofficial.org",
+      "retrievedAt": "2026-11-08",
+      "asset": "in-all-india-trinamool-congress.png",
+      "representation": "site-icon",
+      "sourceUrl": "https://aitcofficial.org",
+      "downloadUrl": "https://t0.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=http://aitcofficial.org&size=128",
+      "rights": "Identity artwork belongs to the named party; supplied unmodified for identification."
+    },
+    {
+      "country": "IN",
+      "id": "in-dravida-munnetra-kazhagam",
+      "name": "Dravida Munnetra Kazhagam",
+      "aliases": [
+        "Dravida Munnetra Kazhagam",
+        "DMK"
+      ],
+      "website": "https://dmk.in",
+      "retrievedAt": "2026-11-08",
+      "asset": "in-dravida-munnetra-kazhagam.png",
+      "representation": "site-icon",
+      "sourceUrl": "https://dmk.in",
+      "downloadUrl": "https://t2.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=http://dmk.in&size=128",
+      "rights": "Identity artwork belongs to the named party; supplied unmodified for identification."
+    },
+    {
+      "country": "IN",
+      "id": "in-telugu-desam-party",
+      "name": "Telugu Desam Party",
+      "aliases": [
+        "Telugu Desam Party",
+        "TDP"
+      ],
+      "website": "https://telugudesam.org",
+      "retrievedAt": "2026-11-08",
+      "asset": "in-telugu-desam-party.png",
+      "representation": "site-icon",
+      "sourceUrl": "https://telugudesam.org",
+      "downloadUrl": "https://t3.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=http://telugudesam.org&size=128",
+      "rights": "Identity artwork belongs to the named party; supplied unmodified for identification."
+    },
+    {
+      "country": "IN",
+      "id": "in-janata-dal-united",
+      "name": "Janata Dal (United)",
+      "aliases": [
+        "Janata Dal (United)",
+        "JD(U)",
+        "JDU",
+        "Janata Dal United"
+      ],
+      "website": "https://janatadalunited.online",
+      "retrievedAt": "2026-11-08",
+      "missingAsset": true
+    },
+    {
+      "country": "IN",
+      "id": "in-shiv-sena-uddhav-balasaheb-thackeray",
+      "name": "Shiv Sena (Uddhav Balasaheb Thackeray)",
+      "aliases": [
+        "Shiv Sena (Uddhav Balasaheb Thackeray)",
+        "Shiv Sena UBT",
+        "SS(UBT)",
+        "Shiv Sena Uddhav Balasaheb Thackeray"
+      ],
+      "website": "https://shivsena.in",
+      "retrievedAt": "2026-11-08",
+      "missingAsset": true
+    },
+    {
+      "country": "IN",
+      "id": "in-shiv-sena",
+      "name": "Shiv Sena",
+      "aliases": [
+        "Shiv Sena",
+        "SHS",
+        "SS"
+      ],
+      "website": "https://shivsena.com",
+      "retrievedAt": "2026-11-08",
+      "missingAsset": true
+    },
+    {
+      "country": "IN",
+      "id": "in-nationalist-congress-party-sharadchandra-pawar",
+      "name": "Nationalist Congress Party – Sharadchandra Pawar",
+      "aliases": [
+        "Nationalist Congress Party – Sharadchandra Pawar",
+        "NCP(SP)",
+        "NCP-SP",
+        "Nationalist Congress Party Sharadchandra Pawar"
+      ],
+      "website": "https://ncpsp.org",
+      "retrievedAt": "2026-11-08",
+      "missingAsset": true
+    },
+    {
+      "country": "IN",
+      "id": "in-nationalist-congress-party",
+      "name": "Nationalist Congress Party",
+      "aliases": [
+        "Nationalist Congress Party",
+        "NCP"
+      ],
+      "website": "https://ncponline.in",
+      "retrievedAt": "2026-11-08",
+      "asset": "in-nationalist-congress-party.jpg",
+      "representation": "site-icon",
+      "sourceUrl": "https://ncponline.in",
+      "downloadUrl": "https://t2.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=http://ncponline.in&size=128",
+      "rights": "Identity artwork belongs to the named party; supplied unmodified for identification."
+    },
+    {
+      "country": "IN",
+      "id": "in-lok-janshakti-party-ram-vilas",
+      "name": "Lok Janshakti Party (Ram Vilas)",
+      "aliases": [
+        "Lok Janshakti Party (Ram Vilas)",
+        "LJP(RV)",
+        "Lok Janshakti Party Ram Vilas"
+      ],
+      "website": "https://ljprv.com",
+      "retrievedAt": "2026-11-08",
+      "missingAsset": true
+    },
+    {
+      "country": "IN",
+      "id": "in-ysr-congress-party",
+      "name": "YSR Congress Party",
+      "aliases": [
+        "YSR Congress Party",
+        "YSRCP",
+        "Yuvajana Sramika Rythu Congress Party"
+      ],
+      "website": "https://ysrscongress.com",
+      "retrievedAt": "2026-11-08",
+      "missingAsset": true
+    },
+    {
+      "country": "IN",
+      "id": "in-rashtriya-janata-dal",
+      "name": "Rashtriya Janata Dal",
+      "aliases": [
+        "Rashtriya Janata Dal",
+        "RJD"
+      ],
+      "website": "https://rjd.co.in",
+      "retrievedAt": "2026-11-08",
+      "asset": "in-rashtriya-janata-dal.png",
+      "representation": "site-icon",
+      "sourceUrl": "https://rjd.co.in",
+      "downloadUrl": "https://t1.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=http://rjd.co.in&size=128",
+      "rights": "Identity artwork belongs to the named party; supplied unmodified for identification."
+    },
+    {
+      "country": "IN",
+      "id": "in-communist-party-of-india-marxist",
+      "name": "Communist Party of India (Marxist)",
+      "aliases": [
+        "Communist Party of India (Marxist)",
+        "CPI(M)",
+        "CPIM"
+      ],
+      "website": "https://cpim.org",
+      "retrievedAt": "2026-11-08",
+      "asset": "in-communist-party-of-india-marxist.png",
+      "representation": "site-icon",
+      "sourceUrl": "https://cpim.org",
+      "downloadUrl": "https://t3.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=http://cpim.org&size=128",
+      "rights": "Identity artwork belongs to the named party; supplied unmodified for identification."
+    },
+    {
+      "country": "IN",
+      "id": "in-communist-party-of-india",
+      "name": "Communist Party of India",
+      "aliases": [
+        "Communist Party of India",
+        "CPI"
+      ],
+      "website": "https://communistparty.in",
+      "retrievedAt": "2026-11-08",
+      "missingAsset": true
+    },
+    {
+      "country": "IN",
+      "id": "in-aam-aadmi-party",
+      "name": "Aam Aadmi Party",
+      "aliases": [
+        "Aam Aadmi Party",
+        "AAP"
+      ],
+      "website": "https://aamaadmiparty.org",
+      "retrievedAt": "2026-11-08",
+      "asset": "in-aam-aadmi-party.jpg",
+      "representation": "site-icon",
+      "sourceUrl": "https://aamaadmiparty.org",
+      "downloadUrl": "https://t1.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=http://aamaadmiparty.org&size=128",
+      "rights": "Identity artwork belongs to the named party; supplied unmodified for identification."
+    },
+    {
+      "country": "IN",
+      "id": "in-jharkhand-mukti-morcha",
+      "name": "Jharkhand Mukti Morcha",
+      "aliases": [
+        "Jharkhand Mukti Morcha",
+        "JMM"
+      ],
+      "website": "https://jharkhandmuktimorcha.org",
+      "retrievedAt": "2026-11-08",
+      "asset": "in-jharkhand-mukti-morcha.png",
+      "representation": "site-icon",
+      "sourceUrl": "https://jharkhandmuktimorcha.org",
+      "downloadUrl": "https://jharkhandmuktimorcha.org/wp-includes/images/w-logo-gray-white-bg.png",
+      "rights": "Identity artwork belongs to the named party; supplied unmodified for identification."
+    },
+    {
+      "country": "IN",
+      "id": "in-indian-union-muslim-league",
+      "name": "Indian Union Muslim League",
+      "aliases": [
+        "Indian Union Muslim League",
+        "IUML"
+      ],
+      "website": "https://iuml.com",
+      "retrievedAt": "2026-11-08",
+      "missingAsset": true
+    },
+    {
+      "country": "IN",
+      "id": "in-jammu-and-kashmir-national-conference",
+      "name": "Jammu and Kashmir National Conference",
+      "aliases": [
+        "Jammu and Kashmir National Conference",
+        "JKNC",
+        "National Conference"
+      ],
+      "website": "https://jknc.co.in",
+      "retrievedAt": "2026-11-08",
+      "asset": "in-jammu-and-kashmir-national-conference.jpg",
+      "representation": "site-icon",
+      "sourceUrl": "https://jknc.co.in",
+      "downloadUrl": "https://t1.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=http://jknc.co.in&size=128",
+      "rights": "Identity artwork belongs to the named party; supplied unmodified for identification."
+    },
+    {
+      "country": "IN",
+      "id": "in-communist-party-of-india-marxistleninist-liberation",
+      "name": "Communist Party of India (Marxist–Leninist) Liberation",
+      "aliases": [
+        "Communist Party of India (Marxist–Leninist) Liberation",
+        "CPI(ML)L",
+        "CPI(ML) Liberation"
+      ],
+      "website": "https://cpiml.net",
+      "retrievedAt": "2026-11-08",
+      "asset": "in-communist-party-of-india-marxistleninist-liberation.png",
+      "representation": "site-icon",
+      "sourceUrl": "https://cpiml.net",
+      "downloadUrl": "https://t1.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=http://cpiml.net&size=128",
+      "rights": "Identity artwork belongs to the named party; supplied unmodified for identification."
+    },
+    {
+      "country": "IN",
+      "id": "in-janata-dal-secular",
+      "name": "Janata Dal (Secular)",
+      "aliases": [
+        "Janata Dal (Secular)",
+        "JD(S)",
+        "JDS",
+        "Janata Dal Secular"
+      ],
+      "website": "https://janatadalsecular.in",
+      "retrievedAt": "2026-11-08",
+      "missingAsset": true
+    },
+    {
+      "country": "IN",
+      "id": "in-viduthalai-chiruthaigal-katchi",
+      "name": "Viduthalai Chiruthaigal Katchi",
+      "aliases": [
+        "Viduthalai Chiruthaigal Katchi",
+        "VCK"
+      ],
+      "website": "https://vck.in",
+      "retrievedAt": "2026-11-08",
+      "asset": "in-viduthalai-chiruthaigal-katchi.png",
+      "representation": "site-icon",
+      "sourceUrl": "https://vck.in",
+      "downloadUrl": "https://t0.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=http://vck.in&size=128",
+      "rights": "Identity artwork belongs to the named party; supplied unmodified for identification."
+    },
+    {
+      "country": "IN",
+      "id": "in-janasena-party",
+      "name": "Janasena Party",
+      "aliases": [
+        "Janasena Party",
+        "Jana Sena Party",
+        "JSP"
+      ],
+      "website": "https://janasenaparty.org",
+      "retrievedAt": "2026-11-08",
+      "asset": "in-janasena-party.png",
+      "representation": "site-icon",
+      "sourceUrl": "https://janasenaparty.org",
+      "downloadUrl": "https://t2.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=http://janasenaparty.org&size=128",
+      "rights": "Identity artwork belongs to the named party; supplied unmodified for identification."
+    },
+    {
+      "country": "IN",
+      "id": "in-rashtriya-lok-dal",
+      "name": "Rashtriya Lok Dal",
+      "aliases": [
+        "Rashtriya Lok Dal",
+        "RLD"
+      ],
+      "website": "https://rashtriyalokdal.com",
+      "retrievedAt": "2026-11-08",
+      "missingAsset": true
+    },
+    {
+      "country": "IN",
+      "id": "in-apna-dal-sonelal",
+      "name": "Apna Dal (Sonelal)",
+      "aliases": [
+        "Apna Dal (Sonelal)",
+        "AD(S)",
+        "Apna Dal Sonelal"
+      ],
+      "website": "https://apnadal.org",
+      "retrievedAt": "2026-11-08",
+      "missingAsset": true
+    },
+    {
+      "country": "IN",
+      "id": "in-all-india-majlis-e-ittehadul-muslimeen",
+      "name": "All India Majlis-e-Ittehadul Muslimeen",
+      "aliases": [
+        "All India Majlis-e-Ittehadul Muslimeen",
+        "AIMIM"
+      ],
+      "website": "https://aimim.org",
+      "retrievedAt": "2026-11-08",
+      "asset": "in-all-india-majlis-e-ittehadul-muslimeen.png",
+      "representation": "site-icon",
+      "sourceUrl": "https://aimim.org",
+      "downloadUrl": "https://t1.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=http://aimim.org&size=128",
+      "rights": "Identity artwork belongs to the named party; supplied unmodified for identification."
+    },
+    {
+      "country": "IN",
+      "id": "in-all-india-anna-dravida-munnetra-kazhagam",
+      "name": "All India Anna Dravida Munnetra Kazhagam",
+      "aliases": [
+        "All India Anna Dravida Munnetra Kazhagam",
+        "AIADMK"
+      ],
+      "website": "https://aiadmk.com",
+      "retrievedAt": "2026-11-08",
+      "asset": "in-all-india-anna-dravida-munnetra-kazhagam.png",
+      "representation": "site-icon",
+      "sourceUrl": "https://aiadmk.com",
+      "downloadUrl": "https://t1.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=http://aiadmk.com&size=128",
+      "rights": "Identity artwork belongs to the named party; supplied unmodified for identification."
+    },
+    {
+      "country": "IN",
+      "id": "in-bahujan-samaj-party",
+      "name": "Bahujan Samaj Party",
+      "aliases": [
+        "Bahujan Samaj Party",
+        "BSP"
+      ],
+      "website": "https://bspindia.org",
+      "retrievedAt": "2026-11-08",
+      "missingAsset": true
+    },
+    {
+      "country": "IN",
+      "id": "in-bharat-rashtra-samithi",
+      "name": "Bharat Rashtra Samithi",
+      "aliases": [
+        "Bharat Rashtra Samithi",
+        "BRS",
+        "Telangana Rashtra Samithi",
+        "TRS"
+      ],
+      "website": "https://brsparty.org",
+      "retrievedAt": "2026-11-08",
+      "missingAsset": true
+    },
+    {
+      "country": "IN",
+      "id": "in-pattali-makkal-katchi",
+      "name": "Pattali Makkal Katchi",
+      "aliases": [
+        "Pattali Makkal Katchi",
+        "PMK"
+      ],
+      "website": "https://pmkparty.in",
+      "retrievedAt": "2026-11-08",
+      "missingAsset": true
+    },
+    {
+      "country": "IN",
+      "id": "in-asom-gana-parishad",
+      "name": "Asom Gana Parishad",
+      "aliases": [
+        "Asom Gana Parishad",
+        "AGP"
+      ],
+      "website": "https://agpassam.org",
+      "retrievedAt": "2026-11-08",
+      "asset": "in-asom-gana-parishad.jpg",
+      "representation": "site-icon",
+      "sourceUrl": "https://agpassam.org",
+      "downloadUrl": "https://t2.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=http://agpassam.org&size=128",
+      "rights": "Identity artwork belongs to the named party; supplied unmodified for identification."
+    },
+    {
+      "country": "IN",
+      "id": "in-united-people-s-party-liberal",
+      "name": "United People's Party Liberal",
+      "aliases": [
+        "United People's Party Liberal",
+        "UPPL"
+      ],
+      "website": "https://upplofficial.org",
+      "retrievedAt": "2026-11-08",
+      "asset": "in-united-people-s-party-liberal.png",
+      "representation": "site-icon",
+      "sourceUrl": "https://upplofficial.org",
+      "downloadUrl": "https://t1.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=http://upplofficial.org&size=128",
+      "rights": "Identity artwork belongs to the named party; supplied unmodified for identification."
+    },
+    {
+      "country": "IN",
+      "id": "in-sikkim-krantikari-morcha",
+      "name": "Sikkim Krantikari Morcha",
+      "aliases": [
+        "Sikkim Krantikari Morcha",
+        "SKM"
+      ],
+      "website": "https://skmvoice.org",
+      "retrievedAt": "2026-11-08",
+      "missingAsset": true
+    },
+    {
+      "country": "IN",
+      "id": "in-zoram-people-s-movement",
+      "name": "Zoram People's Movement",
+      "aliases": [
+        "Zoram People's Movement",
+        "ZPM"
+      ],
+      "website": "https://zpm.org.in",
+      "retrievedAt": "2026-11-08",
+      "missingAsset": true
+    },
+    {
+      "country": "IN",
+      "id": "in-voice-of-the-people-party",
+      "name": "Voice of the People Party",
+      "aliases": [
+        "Voice of the People Party",
+        "VPP"
+      ],
+      "website": "https://vppmeghalaya.com",
+      "retrievedAt": "2026-11-08",
+      "missingAsset": true
+    },
+    {
+      "country": "IN",
+      "id": "in-shiromani-akali-dal",
+      "name": "Shiromani Akali Dal",
+      "aliases": [
+        "Shiromani Akali Dal",
+        "SAD"
+      ],
+      "website": "https://shiromaniakalidal.com",
+      "retrievedAt": "2026-11-08",
+      "missingAsset": true
+    },
+    {
+      "country": "IN",
+      "id": "in-aazad-samaj-party-kanshi-ram",
+      "name": "Aazad Samaj Party (Kanshi Ram)",
+      "aliases": [
+        "Aazad Samaj Party (Kanshi Ram)",
+        "ASP(KR)",
+        "Aazad Samaj Party"
+      ],
+      "website": "https://aazadsamajparty.com",
+      "retrievedAt": "2026-11-08",
+      "asset": "in-aazad-samaj-party-kanshi-ram.png",
+      "representation": "site-icon",
+      "sourceUrl": "https://aazadsamajparty.com",
+      "downloadUrl": "https://t2.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=http://aazadsamajparty.com&size=128",
+      "rights": "Identity artwork belongs to the named party; supplied unmodified for identification."
+    },
+    {
+      "country": "IN",
+      "id": "in-rashtriya-loktantrik-party",
+      "name": "Rashtriya Loktantrik Party",
+      "aliases": [
+        "Rashtriya Loktantrik Party",
+        "RLP"
+      ],
+      "website": "https://rlpindia.com",
+      "retrievedAt": "2026-11-08",
+      "asset": "in-rashtriya-loktantrik-party.ico",
+      "representation": "site-icon",
+      "sourceUrl": "https://rlpindia.com",
+      "downloadUrl": "https://icons.duckduckgo.com/ip3/rlpindia.com.ico",
+      "rights": "Identity artwork belongs to the named party; supplied unmodified for identification."
+    },
+    {
+      "country": "IN",
+      "id": "in-bharat-adivasi-party",
+      "name": "Bharat Adivasi Party",
+      "aliases": [
+        "Bharat Adivasi Party",
+        "BAP"
+      ],
+      "website": "https://bharatadivasiparty.org",
+      "retrievedAt": "2026-11-08",
+      "missingAsset": true
+    },
+    {
+      "country": "IN",
+      "id": "in-marumalarchi-dravida-munnetra-kazhagam",
+      "name": "Marumalarchi Dravida Munnetra Kazhagam",
+      "aliases": [
+        "Marumalarchi Dravida Munnetra Kazhagam",
+        "MDMK"
+      ],
+      "website": "https://mdmk.org.in",
+      "retrievedAt": "2026-11-08",
+      "asset": "in-marumalarchi-dravida-munnetra-kazhagam.jpg",
+      "representation": "site-icon",
+      "sourceUrl": "https://mdmk.org.in",
+      "downloadUrl": "https://t3.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=http://mdmk.org.in&size=128",
+      "rights": "Identity artwork belongs to the named party; supplied unmodified for identification."
+    },
+    {
+      "country": "IN",
+      "id": "in-revolutionary-socialist-party",
+      "name": "Revolutionary Socialist Party",
+      "aliases": [
+        "Revolutionary Socialist Party",
+        "RSP"
+      ],
+      "website": "https://rsp.org.in",
+      "retrievedAt": "2026-11-08",
+      "asset": "in-revolutionary-socialist-party.jpg",
+      "representation": "site-icon",
+      "sourceUrl": "https://rsp.org.in",
+      "downloadUrl": "https://t2.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=http://rsp.org.in&size=128",
+      "rights": "Identity artwork belongs to the named party; supplied unmodified for identification."
+    },
+    {
+      "country": "IN",
+      "id": "in-kerala-congress",
+      "name": "Kerala Congress",
+      "aliases": [
+        "Kerala Congress",
+        "KC"
+      ],
+      "website": "https://keralacongress.org",
+      "retrievedAt": "2026-11-08",
+      "asset": "in-kerala-congress.png",
+      "representation": "site-icon",
+      "sourceUrl": "https://keralacongress.org",
+      "downloadUrl": "https://icons.duckduckgo.com/ip3/keralacongress.org.ico",
+      "rights": "Identity artwork belongs to the named party; supplied unmodified for identification."
+    },
+    {
+      "country": "IN",
+      "id": "in-national-people-s-party",
+      "name": "National People's Party",
+      "aliases": [
+        "National People's Party",
+        "NPP"
+      ],
+      "website": "https://nppindia.in",
+      "retrievedAt": "2026-11-08",
+      "asset": "in-national-people-s-party.png",
+      "representation": "site-icon",
+      "sourceUrl": "https://nppindia.in",
+      "downloadUrl": "https://t3.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=http://nppindia.in&size=128",
+      "rights": "Identity artwork belongs to the named party; supplied unmodified for identification."
+    },
+    {
+      "country": "IN",
+      "id": "in-naga-people-s-front",
+      "name": "Naga People's Front",
+      "aliases": [
+        "Naga People's Front",
+        "NPF"
+      ],
+      "website": "https://npfweb.org",
+      "retrievedAt": "2026-11-08",
+      "asset": "in-naga-people-s-front.jpg",
+      "representation": "site-icon",
+      "sourceUrl": "https://npfweb.org",
+      "downloadUrl": "https://t2.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=http://npfweb.org&size=128",
+      "rights": "Identity artwork belongs to the named party; supplied unmodified for identification."
+    },
+    {
+      "country": "IN",
+      "id": "in-nationalist-democratic-progressive-party",
+      "name": "Nationalist Democratic Progressive Party",
+      "aliases": [
+        "Nationalist Democratic Progressive Party",
+        "NDPP"
+      ],
+      "website": "https://ndpp.org",
+      "retrievedAt": "2026-11-08",
+      "missingAsset": true
+    },
+    {
+      "country": "IN",
+      "id": "in-sikkim-democratic-front",
+      "name": "Sikkim Democratic Front",
+      "aliases": [
+        "Sikkim Democratic Front",
+        "SDF"
+      ],
+      "website": "https://sikkimdemocraticfront.org",
+      "retrievedAt": "2026-11-08",
+      "missingAsset": true
+    },
+    {
+      "country": "JP",
+      "id": "jp-liberal-democratic-party",
+      "name": "Liberal Democratic Party",
+      "aliases": [
+        "Liberal Democratic Party",
+        "LDP",
+        "自由民主党",
+        "自民党"
+      ],
+      "website": "https://jimin.jp",
+      "retrievedAt": "2026-11-08",
+      "missingAsset": true
+    },
+    {
+      "country": "JP",
+      "id": "jp-constitutional-democratic-party",
+      "name": "Constitutional Democratic Party",
+      "aliases": [
+        "Constitutional Democratic Party",
+        "CDP",
+        "Constitutional Democratic Party of Japan",
+        "立憲民主党"
+      ],
+      "website": "https://cdp-japan.jp",
+      "retrievedAt": "2026-11-08",
+      "asset": "jp-constitutional-democratic-party.png",
+      "representation": "site-icon",
+      "sourceUrl": "https://cdp-japan.jp",
+      "downloadUrl": "https://t3.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=http://cdp-japan.jp&size=128",
+      "rights": "Identity artwork belongs to the named party; supplied unmodified for identification."
+    },
+    {
+      "country": "JP",
+      "id": "jp-japan-innovation-party",
+      "name": "Japan Innovation Party",
+      "aliases": [
+        "Japan Innovation Party",
+        "Nippon Ishin no Kai",
+        "Ishin",
+        "JIP",
+        "日本維新の会"
+      ],
+      "website": "https://o-ishin.jp",
+      "retrievedAt": "2026-11-08",
+      "asset": "jp-japan-innovation-party.png",
+      "representation": "site-icon",
+      "sourceUrl": "https://o-ishin.jp",
+      "downloadUrl": "https://t2.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=http://o-ishin.jp&size=128",
+      "rights": "Identity artwork belongs to the named party; supplied unmodified for identification."
+    },
+    {
+      "country": "JP",
+      "id": "jp-democratic-party-for-the-people",
+      "name": "Democratic Party for the People",
+      "aliases": [
+        "Democratic Party for the People",
+        "DPP",
+        "国民民主党"
+      ],
+      "website": "https://new-kokumin.jp",
+      "retrievedAt": "2026-11-08",
+      "asset": "jp-democratic-party-for-the-people.png",
+      "representation": "site-icon",
+      "sourceUrl": "https://new-kokumin.jp",
+      "downloadUrl": "https://t3.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=http://new-kokumin.jp&size=128",
+      "rights": "Identity artwork belongs to the named party; supplied unmodified for identification."
+    },
+    {
+      "country": "JP",
+      "id": "jp-komeito",
+      "name": "Komeito",
+      "aliases": [
+        "Komeito",
+        "公明党"
+      ],
+      "website": "https://komei.or.jp",
+      "retrievedAt": "2026-11-08",
+      "asset": "jp-komeito.png",
+      "representation": "site-icon",
+      "sourceUrl": "https://komei.or.jp",
+      "downloadUrl": "https://t0.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=http://komei.or.jp&size=128",
+      "rights": "Identity artwork belongs to the named party; supplied unmodified for identification."
+    },
+    {
+      "country": "JP",
+      "id": "jp-reiwa-shinsengumi",
+      "name": "Reiwa Shinsengumi",
+      "aliases": [
+        "Reiwa Shinsengumi",
+        "Reiwa",
+        "れいわ新選組"
+      ],
+      "website": "https://reiwa-shinsengumi.com",
+      "retrievedAt": "2026-11-08",
+      "asset": "jp-reiwa-shinsengumi.jpg",
+      "representation": "site-icon",
+      "sourceUrl": "https://reiwa-shinsengumi.com",
+      "downloadUrl": "https://t3.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=http://reiwa-shinsengumi.com&size=128",
+      "rights": "Identity artwork belongs to the named party; supplied unmodified for identification."
+    },
+    {
+      "country": "JP",
+      "id": "jp-japanese-communist-party",
+      "name": "Japanese Communist Party",
+      "aliases": [
+        "Japanese Communist Party",
+        "JCP",
+        "日本共産党"
+      ],
+      "website": "https://jcp.or.jp",
+      "retrievedAt": "2026-11-08",
+      "missingAsset": true
+    },
+    {
+      "country": "JP",
+      "id": "jp-sanseito",
+      "name": "Sanseitō",
+      "aliases": [
+        "Sanseitō",
+        "Sanseito",
+        "参政党"
+      ],
+      "website": "https://sanseito.jp",
+      "retrievedAt": "2026-11-08",
+      "asset": "jp-sanseito.png",
+      "representation": "site-icon",
+      "sourceUrl": "https://sanseito.jp",
+      "downloadUrl": "https://t2.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=http://sanseito.jp&size=128",
+      "rights": "Identity artwork belongs to the named party; supplied unmodified for identification."
+    },
+    {
+      "country": "JP",
+      "id": "jp-conservative-party-of-japan",
+      "name": "Conservative Party of Japan",
+      "aliases": [
+        "Conservative Party of Japan",
+        "CPJ",
+        "日本保守党"
+      ],
+      "website": "https://hoshuto.jp",
+      "retrievedAt": "2026-11-08",
+      "asset": "jp-conservative-party-of-japan.png",
+      "representation": "site-icon",
+      "sourceUrl": "https://hoshuto.jp",
+      "downloadUrl": "https://t3.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=http://hoshuto.jp&size=128",
+      "rights": "Identity artwork belongs to the named party; supplied unmodified for identification."
+    },
+    {
+      "country": "JP",
+      "id": "jp-social-democratic-party",
+      "name": "Social Democratic Party",
+      "aliases": [
+        "Social Democratic Party",
+        "SDP",
+        "社会民主党"
+      ],
+      "website": "https://sdp.or.jp",
+      "retrievedAt": "2026-11-08",
+      "asset": "jp-social-democratic-party.png",
+      "representation": "site-icon",
+      "sourceUrl": "https://sdp.or.jp",
+      "downloadUrl": "https://t3.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=http://sdp.or.jp&size=128",
+      "rights": "Identity artwork belongs to the named party; supplied unmodified for identification."
+    },
+    {
+      "country": "JP",
+      "id": "jp-team-mirai",
+      "name": "Team Mirai",
+      "aliases": [
+        "Team Mirai",
+        "チームみらい"
+      ],
+      "website": "https://team-mir.ai",
+      "retrievedAt": "2026-11-08",
+      "asset": "jp-team-mirai.png",
+      "representation": "site-icon",
+      "sourceUrl": "https://team-mir.ai",
+      "downloadUrl": "https://t1.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=http://team-mir.ai&size=128",
+      "rights": "Identity artwork belongs to the named party; supplied unmodified for identification."
+    },
+    {
+      "country": "JP",
+      "id": "jp-nhk-party",
+      "name": "NHK Party",
+      "aliases": [
+        "NHK Party",
+        "Party to Protect the People from NHK",
+        "N国"
+      ],
+      "website": "https://syoha.jp",
+      "retrievedAt": "2026-11-08",
+      "missingAsset": true
+    },
+    {
+      "country": "KR",
+      "id": "kr-democratic-party-of-korea",
+      "name": "Democratic Party of Korea",
+      "aliases": [
+        "Democratic Party of Korea",
+        "Democratic Party",
+        "DPK",
+        "더불어민주당"
+      ],
+      "website": "https://theminjoo.kr",
+      "retrievedAt": "2026-11-08",
+      "asset": "kr-democratic-party-of-korea.jpg",
+      "representation": "site-icon",
+      "sourceUrl": "https://theminjoo.kr",
+      "downloadUrl": "https://t3.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=http://theminjoo.kr&size=128",
+      "rights": "Identity artwork belongs to the named party; supplied unmodified for identification."
+    },
+    {
+      "country": "KR",
+      "id": "kr-people-power-party",
+      "name": "People Power Party",
+      "aliases": [
+        "People Power Party",
+        "People Power",
+        "PPP",
+        "국민의힘"
+      ],
+      "website": "https://peoplepowerparty.kr",
+      "retrievedAt": "2026-11-08",
+      "asset": "kr-people-power-party.png",
+      "representation": "site-icon",
+      "sourceUrl": "https://peoplepowerparty.kr",
+      "downloadUrl": "https://t0.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=http://peoplepowerparty.kr&size=128",
+      "rights": "Identity artwork belongs to the named party; supplied unmodified for identification."
+    },
+    {
+      "country": "KR",
+      "id": "kr-rebuilding-korea-party",
+      "name": "Rebuilding Korea Party",
+      "aliases": [
+        "Rebuilding Korea Party",
+        "RKP",
+        "조국혁신당"
+      ],
+      "website": "https://rebuildingkoreaparty.kr",
+      "retrievedAt": "2026-11-08",
+      "asset": "kr-rebuilding-korea-party.ico",
+      "representation": "site-icon",
+      "sourceUrl": "https://rebuildingkoreaparty.kr",
+      "downloadUrl": "https://rebuildingkoreaparty.kr/favicon.ico",
+      "rights": "Identity artwork belongs to the named party."
+    },
+    {
+      "country": "KR",
+      "id": "kr-reform-party",
+      "name": "Reform Party",
+      "aliases": [
+        "Reform Party",
+        "New Reform Party",
+        "RP",
+        "개혁신당"
+      ],
+      "website": "https://reformparty.kr",
+      "retrievedAt": "2026-11-08",
+      "asset": "kr-reform-party.png",
+      "representation": "site-icon",
+      "sourceUrl": "https://reformparty.kr",
+      "downloadUrl": "https://t1.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=http://reformparty.kr&size=128",
+      "rights": "Identity artwork belongs to the named party; supplied unmodified for identification."
+    },
+    {
+      "country": "KR",
+      "id": "kr-progressive-party",
+      "name": "Progressive Party",
+      "aliases": [
+        "Progressive Party",
+        "Jinbo Party",
+        "진보당"
+      ],
+      "website": "https://jinboparty.com",
+      "retrievedAt": "2026-11-08",
+      "asset": "kr-progressive-party.png",
+      "representation": "site-icon",
+      "sourceUrl": "https://jinboparty.com",
+      "downloadUrl": "https://t2.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=http://jinboparty.com&size=128",
+      "rights": "Identity artwork belongs to the named party; supplied unmodified for identification."
+    },
+    {
+      "country": "KR",
+      "id": "kr-basic-income-party",
+      "name": "Basic Income Party",
+      "aliases": [
+        "Basic Income Party",
+        "BIP",
+        "기본소득당"
+      ],
+      "website": "https://basicincomeparty.kr",
+      "retrievedAt": "2026-11-08",
+      "asset": "kr-basic-income-party.png",
+      "representation": "site-icon",
+      "sourceUrl": "https://basicincomeparty.kr",
+      "downloadUrl": "https://t3.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=http://basicincomeparty.kr&size=128",
+      "rights": "Identity artwork belongs to the named party; supplied unmodified for identification."
+    },
+    {
+      "country": "KR",
+      "id": "kr-social-democratic-party",
+      "name": "Social Democratic Party",
+      "aliases": [
+        "Social Democratic Party",
+        "SDP",
+        "사회민주당"
+      ],
+      "website": "https://sdpk.kr",
+      "retrievedAt": "2026-11-08",
+      "missingAsset": true
+    },
+    {
+      "country": "KR",
+      "id": "kr-justice-party",
+      "name": "Justice Party",
+      "aliases": [
+        "Justice Party",
+        "JP",
+        "정의당"
+      ],
+      "website": "https://justice21.org",
+      "retrievedAt": "2026-11-08",
+      "asset": "kr-justice-party.png",
+      "representation": "site-icon",
+      "sourceUrl": "https://justice21.org",
+      "downloadUrl": "https://t0.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=http://justice21.org&size=128",
+      "rights": "Identity artwork belongs to the named party; supplied unmodified for identification."
+    },
+    {
+      "country": "TW",
+      "id": "tw-democratic-progressive-party",
+      "name": "Democratic Progressive Party",
+      "aliases": [
+        "Democratic Progressive Party",
+        "DPP",
+        "民主進步黨",
+        "民進黨"
+      ],
+      "website": "https://dpp.org.tw",
+      "retrievedAt": "2026-11-08",
+      "missingAsset": true
+    },
+    {
+      "country": "TW",
+      "id": "tw-kuomintang",
+      "name": "Kuomintang",
+      "aliases": [
+        "Kuomintang",
+        "KMT",
+        "Chinese Nationalist Party",
+        "中國國民黨",
+        "國民黨"
+      ],
+      "website": "https://kmt.org.tw",
+      "retrievedAt": "2026-11-08",
+      "asset": "tw-kuomintang.png",
+      "representation": "site-icon",
+      "sourceUrl": "https://kmt.org.tw",
+      "downloadUrl": "https://t1.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=http://kmt.org.tw&size=128",
+      "rights": "Identity artwork belongs to the named party; supplied unmodified for identification."
+    },
+    {
+      "country": "TW",
+      "id": "tw-taiwan-people-s-party",
+      "name": "Taiwan People's Party",
+      "aliases": [
+        "Taiwan People's Party",
+        "TPP",
+        "台灣民眾黨",
+        "臺灣民眾黨"
+      ],
+      "website": "https://tpp.org.tw",
+      "retrievedAt": "2026-11-08",
+      "asset": "tw-taiwan-people-s-party.png",
+      "representation": "site-icon",
+      "sourceUrl": "https://tpp.org.tw",
+      "downloadUrl": "https://t2.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=http://tpp.org.tw&size=128",
+      "rights": "Identity artwork belongs to the named party; supplied unmodified for identification."
+    },
+    {
+      "country": "TW",
+      "id": "tw-new-power-party",
+      "name": "New Power Party",
+      "aliases": [
+        "New Power Party",
+        "NPP",
+        "時代力量"
+      ],
+      "website": "https://newpowerparty.tw",
+      "retrievedAt": "2026-11-08",
+      "asset": "tw-new-power-party.png",
+      "representation": "site-icon",
+      "sourceUrl": "https://newpowerparty.tw",
+      "downloadUrl": "https://t2.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=http://newpowerparty.tw&size=128",
+      "rights": "Identity artwork belongs to the named party; supplied unmodified for identification."
+    },
+    {
+      "country": "TW",
+      "id": "tw-taiwan-statebuilding-party",
+      "name": "Taiwan Statebuilding Party",
+      "aliases": [
+        "Taiwan Statebuilding Party",
+        "TSP",
+        "台灣基進"
+      ],
+      "website": "https://statebuilding.tw",
+      "retrievedAt": "2026-11-08",
+      "asset": "tw-taiwan-statebuilding-party.png",
+      "representation": "site-icon",
+      "sourceUrl": "https://statebuilding.tw",
+      "downloadUrl": "https://t1.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=http://statebuilding.tw&size=128",
+      "rights": "Identity artwork belongs to the named party; supplied unmodified for identification."
+    },
+    {
+      "country": "TW",
+      "id": "tw-people-first-party",
+      "name": "People First Party",
+      "aliases": [
+        "People First Party",
+        "PFP",
+        "親民黨"
+      ],
+      "website": "https://pfp.org.tw",
+      "retrievedAt": "2026-11-08",
+      "missingAsset": true
+    },
+    {
+      "country": "TW",
+      "id": "tw-taiwan-solidarity-union",
+      "name": "Taiwan Solidarity Union",
+      "aliases": [
+        "Taiwan Solidarity Union",
+        "TSU",
+        "台灣團結聯盟"
+      ],
+      "website": "https://tsu.org.tw",
+      "retrievedAt": "2026-11-08",
+      "asset": "tw-taiwan-solidarity-union.png",
+      "representation": "site-icon",
+      "sourceUrl": "https://tsu.org.tw",
+      "downloadUrl": "https://t2.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=http://tsu.org.tw&size=128",
+      "rights": "Identity artwork belongs to the named party; supplied unmodified for identification."
+    },
+    {
+      "country": "ID",
+      "id": "id-indonesian-democratic-party-of-struggle",
+      "name": "Indonesian Democratic Party of Struggle",
+      "aliases": [
+        "Indonesian Democratic Party of Struggle",
+        "PDI-P",
+        "PDIP",
+        "PDI Perjuangan",
+        "Partai Demokrasi Indonesia Perjuangan"
+      ],
+      "website": "https://pdiperjuangan.id",
+      "retrievedAt": "2026-11-08",
+      "asset": "id-indonesian-democratic-party-of-struggle.jpg",
+      "representation": "site-icon",
+      "sourceUrl": "https://pdiperjuangan.id",
+      "downloadUrl": "https://pdiperjuangan.id/api/files_pdip/setting/pIEKHFkob61750787451.png",
+      "rights": "Identity artwork belongs to the named party."
+    },
+    {
+      "country": "ID",
+      "id": "id-golkar",
+      "name": "Golkar",
+      "aliases": [
+        "Golkar",
+        "Party of Functional Groups",
+        "Partai Golongan Karya"
+      ],
+      "website": "https://partaigolkar.com",
+      "retrievedAt": "2026-11-08",
+      "missingAsset": true
+    },
+    {
+      "country": "ID",
+      "id": "id-gerindra-party",
+      "name": "Gerindra Party",
+      "aliases": [
+        "Gerindra Party",
+        "Gerindra",
+        "Great Indonesia Movement Party"
+      ],
+      "website": "https://gerindra.id",
+      "retrievedAt": "2026-11-08",
+      "asset": "id-gerindra-party.png",
+      "representation": "site-icon",
+      "sourceUrl": "https://gerindra.id",
+      "downloadUrl": "https://t3.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=http://gerindra.id&size=128",
+      "rights": "Identity artwork belongs to the named party; supplied unmodified for identification."
+    },
+    {
+      "country": "ID",
+      "id": "id-national-awakening-party",
+      "name": "National Awakening Party",
+      "aliases": [
+        "National Awakening Party",
+        "PKB",
+        "Partai Kebangkitan Bangsa"
+      ],
+      "website": "https://pkb.id",
+      "retrievedAt": "2026-11-08",
+      "asset": "id-national-awakening-party.png",
+      "representation": "site-icon",
+      "sourceUrl": "https://pkb.id",
+      "downloadUrl": "https://t1.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=http://pkb.id&size=128",
+      "rights": "Identity artwork belongs to the named party; supplied unmodified for identification."
+    },
+    {
+      "country": "ID",
+      "id": "id-nasdem-party",
+      "name": "NasDem Party",
+      "aliases": [
+        "NasDem Party",
+        "Nasdem",
+        "Partai NasDem"
+      ],
+      "website": "https://partainasdem.id",
+      "retrievedAt": "2026-11-08",
+      "asset": "id-nasdem-party.jpg",
+      "representation": "site-icon",
+      "sourceUrl": "https://partainasdem.id",
+      "downloadUrl": "https://t2.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=http://partainasdem.id&size=128",
+      "rights": "Identity artwork belongs to the named party; supplied unmodified for identification."
+    },
+    {
+      "country": "ID",
+      "id": "id-prosperous-justice-party",
+      "name": "Prosperous Justice Party",
+      "aliases": [
+        "Prosperous Justice Party",
+        "PKS",
+        "Partai Keadilan Sejahtera"
+      ],
+      "website": "https://pks.id",
+      "retrievedAt": "2026-11-08",
+      "asset": "id-prosperous-justice-party.png",
+      "representation": "site-icon",
+      "sourceUrl": "https://pks.id",
+      "downloadUrl": "https://t1.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=http://pks.id&size=128",
+      "rights": "Identity artwork belongs to the named party; supplied unmodified for identification."
+    },
+    {
+      "country": "ID",
+      "id": "id-democratic-party",
+      "name": "Democratic Party",
+      "aliases": [
+        "Democratic Party",
+        "Demokrat",
+        "Partai Demokrat",
+        "PD"
+      ],
+      "website": "https://demokrat.or.id",
+      "retrievedAt": "2026-11-08",
+      "asset": "id-democratic-party.png",
+      "representation": "site-icon",
+      "sourceUrl": "https://demokrat.or.id",
+      "downloadUrl": "https://t2.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=http://demokrat.or.id&size=128",
+      "rights": "Identity artwork belongs to the named party; supplied unmodified for identification."
+    },
+    {
+      "country": "ID",
+      "id": "id-national-mandate-party",
+      "name": "National Mandate Party",
+      "aliases": [
+        "National Mandate Party",
+        "PAN",
+        "Partai Amanat Nasional"
+      ],
+      "website": "https://pan.or.id",
+      "retrievedAt": "2026-11-08",
+      "asset": "id-national-mandate-party.png",
+      "representation": "site-icon",
+      "sourceUrl": "https://pan.or.id",
+      "downloadUrl": "https://t1.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=http://pan.or.id&size=128",
+      "rights": "Identity artwork belongs to the named party; supplied unmodified for identification."
+    },
+    {
+      "country": "ID",
+      "id": "id-united-development-party",
+      "name": "United Development Party",
+      "aliases": [
+        "United Development Party",
+        "PPP",
+        "Partai Persatuan Pembangunan"
+      ],
+      "website": "https://ppp.or.id",
+      "retrievedAt": "2026-11-08",
+      "asset": "id-united-development-party.jpg",
+      "representation": "site-icon",
+      "sourceUrl": "https://ppp.or.id",
+      "downloadUrl": "https://t0.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=http://ppp.or.id&size=128",
+      "rights": "Identity artwork belongs to the named party; supplied unmodified for identification."
+    },
+    {
+      "country": "ID",
+      "id": "id-indonesian-solidarity-party",
+      "name": "Indonesian Solidarity Party",
+      "aliases": [
+        "Indonesian Solidarity Party",
+        "PSI",
+        "Partai Solidaritas Indonesia"
+      ],
+      "website": "https://psi.id",
+      "retrievedAt": "2026-11-08",
+      "asset": "id-indonesian-solidarity-party.jpg",
+      "representation": "site-icon",
+      "sourceUrl": "https://psi.id",
+      "downloadUrl": "https://t0.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=http://psi.id&size=128",
+      "rights": "Identity artwork belongs to the named party; supplied unmodified for identification."
+    },
+    {
+      "country": "ID",
+      "id": "id-perindo-party",
+      "name": "Perindo Party",
+      "aliases": [
+        "Perindo Party",
+        "Perindo",
+        "Partai Persatuan Indonesia"
+      ],
+      "website": "https://partaiperindo.com",
+      "retrievedAt": "2026-11-08",
+      "asset": "id-perindo-party.png",
+      "representation": "site-icon",
+      "sourceUrl": "https://partaiperindo.com",
+      "downloadUrl": "https://t2.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=http://partaiperindo.com&size=128",
+      "rights": "Identity artwork belongs to the named party; supplied unmodified for identification."
+    },
+    {
+      "country": "ID",
+      "id": "id-people-s-conscience-party",
+      "name": "People's Conscience Party",
+      "aliases": [
+        "People's Conscience Party",
+        "Hanura",
+        "Partai Hati Nurani Rakyat"
+      ],
+      "website": "https://hanura.or.id",
+      "retrievedAt": "2026-11-08",
+      "asset": "id-people-s-conscience-party.png",
+      "representation": "site-icon",
+      "sourceUrl": "https://hanura.or.id",
+      "downloadUrl": "https://t3.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=http://hanura.or.id&size=128",
+      "rights": "Identity artwork belongs to the named party; supplied unmodified for identification."
+    },
+    {
+      "country": "ID",
+      "id": "id-crescent-star-party",
+      "name": "Crescent Star Party",
+      "aliases": [
+        "Crescent Star Party",
+        "PBB",
+        "Partai Bulan Bintang"
+      ],
+      "website": "https://partaibulanbintang.or.id",
+      "retrievedAt": "2026-11-08",
+      "asset": "id-crescent-star-party.png",
+      "representation": "site-icon",
+      "sourceUrl": "https://partaibulanbintang.or.id",
+      "downloadUrl": "https://t1.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=http://partaibulanbintang.or.id&size=128",
+      "rights": "Identity artwork belongs to the named party; supplied unmodified for identification."
+    },
+    {
+      "country": "ID",
+      "id": "id-gelora-party",
+      "name": "Gelora Party",
+      "aliases": [
+        "Gelora Party",
+        "Gelora"
+      ],
+      "website": "https://partaigelora.id",
+      "retrievedAt": "2026-11-08",
+      "asset": "id-gelora-party.png",
+      "representation": "site-icon",
+      "sourceUrl": "https://partaigelora.id",
+      "downloadUrl": "https://t3.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=http://partaigelora.id&size=128",
+      "rights": "Identity artwork belongs to the named party; supplied unmodified for identification."
+    },
+    {
+      "country": "PH",
+      "id": "ph-lakascmd",
+      "name": "Lakas–CMD",
+      "aliases": [
+        "Lakas–CMD",
+        "Lakas",
+        "Lakas CMD",
+        "Lakas Christian Muslim Democrats"
+      ],
+      "website": "https://lakas-cmd.com",
+      "retrievedAt": "2026-11-08",
+      "missingAsset": true
+    },
+    {
+      "country": "PH",
+      "id": "ph-national-unity-party",
+      "name": "National Unity Party",
+      "aliases": [
+        "National Unity Party",
+        "NUP"
+      ],
+      "website": "https://nup.org.ph",
+      "retrievedAt": "2026-11-08",
+      "missingAsset": true
+    },
+    {
+      "country": "PH",
+      "id": "ph-nationalist-people-s-coalition",
+      "name": "Nationalist People's Coalition",
+      "aliases": [
+        "Nationalist People's Coalition",
+        "NPC"
+      ],
+      "website": "https://npcparty.org",
+      "retrievedAt": "2026-11-08",
+      "asset": "ph-nationalist-people-s-coalition.jpg",
+      "representation": "site-icon",
+      "sourceUrl": "https://npcparty.org",
+      "downloadUrl": "https://t2.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=http://npcparty.org&size=128",
+      "rights": "Identity artwork belongs to the named party; supplied unmodified for identification."
+    },
+    {
+      "country": "PH",
+      "id": "ph-nacionalista-party",
+      "name": "Nacionalista Party",
+      "aliases": [
+        "Nacionalista Party",
+        "NP",
+        "Nacionalista"
+      ],
+      "website": "https://nacionalistaparty.com",
+      "retrievedAt": "2026-11-08",
+      "asset": "ph-nacionalista-party.png",
+      "representation": "site-icon",
+      "sourceUrl": "https://nacionalistaparty.com",
+      "downloadUrl": "https://t2.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=http://nacionalistaparty.com&size=128",
+      "rights": "Identity artwork belongs to the named party; supplied unmodified for identification."
+    },
+    {
+      "country": "PH",
+      "id": "ph-partido-federal-ng-pilipinas",
+      "name": "Partido Federal ng Pilipinas",
+      "aliases": [
+        "Partido Federal ng Pilipinas",
+        "PFP"
+      ],
+      "website": "https://pederalismo.org.ph",
+      "retrievedAt": "2026-11-08",
+      "missingAsset": true
+    },
+    {
+      "country": "PH",
+      "id": "ph-pdplaban",
+      "name": "PDP–Laban",
+      "aliases": [
+        "PDP–Laban",
+        "PDP Laban",
+        "PDP",
+        "Partido Demokratiko Pilipino"
+      ],
+      "website": "https://pdplaban.org.ph",
+      "retrievedAt": "2026-11-08",
+      "asset": "ph-pdplaban.png",
+      "representation": "site-icon",
+      "sourceUrl": "https://pdplaban.org.ph",
+      "downloadUrl": "https://t2.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=http://pdplaban.org.ph&size=128",
+      "rights": "Identity artwork belongs to the named party; supplied unmodified for identification."
+    },
+    {
+      "country": "PH",
+      "id": "ph-liberal-party",
+      "name": "Liberal Party",
+      "aliases": [
+        "Liberal Party",
+        "LP",
+        "Liberals"
+      ],
+      "website": "https://liberal.ph",
+      "retrievedAt": "2026-11-08",
+      "missingAsset": true
+    },
+    {
+      "country": "PH",
+      "id": "ph-akbayan",
+      "name": "Akbayan",
+      "aliases": [
+        "Akbayan",
+        "Akbayan Citizens' Action Party"
+      ],
+      "website": "https://akbayan.org.ph",
+      "retrievedAt": "2026-11-08",
+      "asset": "ph-akbayan.jpg",
+      "representation": "site-icon",
+      "sourceUrl": "https://akbayan.org.ph",
+      "downloadUrl": "https://t2.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=http://akbayan.org.ph&size=128",
+      "rights": "Identity artwork belongs to the named party; supplied unmodified for identification."
+    },
+    {
+      "country": "PH",
+      "id": "ph-pwersa-ng-masang-pilipino",
+      "name": "Pwersa ng Masang Pilipino",
+      "aliases": [
+        "Pwersa ng Masang Pilipino",
+        "PMP"
+      ],
+      "website": "https://pmp.org.ph",
+      "retrievedAt": "2026-11-08",
+      "missingAsset": true
+    },
+    {
+      "country": "PH",
+      "id": "ph-aksyon-demokratiko",
+      "name": "Aksyon Demokratiko",
+      "aliases": [
+        "Aksyon Demokratiko",
+        "Aksyon"
+      ],
+      "website": "https://aksyon.org.ph",
+      "retrievedAt": "2026-11-08",
+      "missingAsset": true
+    },
+    {
+      "country": "PH",
+      "id": "ph-laban-ng-demokratikong-pilipino",
+      "name": "Laban ng Demokratikong Pilipino",
+      "aliases": [
+        "Laban ng Demokratikong Pilipino",
+        "LDP"
+      ],
+      "website": "https://ldp.org.ph",
+      "retrievedAt": "2026-11-08",
+      "missingAsset": true
+    },
+    {
+      "country": "PH",
+      "id": "ph-makabayan",
+      "name": "Makabayan",
+      "aliases": [
+        "Makabayan",
+        "Makabayang Koalisyon ng Mamamayan"
+      ],
+      "website": "https://makabayan.ph",
+      "retrievedAt": "2026-11-08",
+      "missingAsset": true
+    },
+    {
+      "country": "PH",
+      "id": "ph-gabriela-women-s-party",
+      "name": "Gabriela Women's Party",
+      "aliases": [
+        "Gabriela Women's Party",
+        "GABRIELA",
+        "Gabriela"
+      ],
+      "website": "https://gabrielawomensparty.net",
+      "retrievedAt": "2026-11-08",
+      "missingAsset": true
+    },
+    {
+      "country": "PH",
+      "id": "ph-act-teachers-partylist",
+      "name": "ACT Teachers Partylist",
+      "aliases": [
+        "ACT Teachers Partylist",
+        "ACT Teachers"
+      ],
+      "website": "https://act-teachers.com",
+      "retrievedAt": "2026-11-08",
+      "missingAsset": true
+    },
+    {
+      "country": "PH",
+      "id": "ph-kabataan",
+      "name": "Kabataan",
+      "aliases": [
+        "Kabataan",
+        "Kabataan Partylist"
+      ],
+      "website": "https://kabataanpartylist.com",
+      "retrievedAt": "2026-11-08",
+      "missingAsset": true
+    },
+    {
+      "country": "PH",
+      "id": "ph-bayan-muna",
+      "name": "Bayan Muna",
+      "aliases": [
+        "Bayan Muna",
+        "BM"
+      ],
+      "website": "https://bayanmuna.com.ph",
+      "retrievedAt": "2026-11-08",
+      "asset": "ph-bayan-muna.png",
+      "representation": "site-icon",
+      "sourceUrl": "https://bayanmuna.com.ph",
+      "downloadUrl": "https://t3.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=http://bayanmuna.com.ph&size=128",
+      "rights": "Identity artwork belongs to the named party; supplied unmodified for identification."
+    },
+    {
+      "country": "PH",
+      "id": "ph-tingog-sinirangan",
+      "name": "Tingog Sinirangan",
+      "aliases": [
+        "Tingog Sinirangan",
+        "Tingog"
+      ],
+      "website": "https://tingogpartylist.ph",
+      "retrievedAt": "2026-11-08",
+      "missingAsset": true
+    },
+    {
+      "country": "PH",
+      "id": "ph-ako-bicol",
+      "name": "Ako Bicol",
+      "aliases": [
+        "Ako Bicol",
+        "AKB"
+      ],
+      "website": "https://akobicol.com",
+      "retrievedAt": "2026-11-08",
+      "missingAsset": true
+    },
+    {
+      "country": "PH",
+      "id": "ph-4ps-party-list",
+      "name": "4Ps Party-list",
+      "aliases": [
+        "4Ps Party-list",
+        "4Ps"
+      ],
+      "website": "https://4pspartylist.org",
+      "retrievedAt": "2026-11-08",
+      "missingAsset": true
+    },
+    {
+      "country": "PH",
+      "id": "ph-duterte-youth",
+      "name": "Duterte Youth",
+      "aliases": [
+        "Duterte Youth",
+        "Duterte Youth Partylist"
+      ],
+      "website": "https://duterteyouth.com",
+      "retrievedAt": "2026-11-08",
+      "missingAsset": true
+    },
+    {
+      "country": "BR",
+      "id": "br-workers-party",
+      "name": "Workers' Party",
+      "aliases": [
+        "Workers' Party",
+        "Partido dos Trabalhadores",
+        "PT"
+      ],
+      "website": "https://pt.org.br",
+      "retrievedAt": "2026-11-08",
+      "asset": "br-workers-party.png",
+      "representation": "site-icon",
+      "sourceUrl": "https://pt.org.br",
+      "downloadUrl": "https://t1.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=http://pt.org.br&size=128",
+      "rights": "Identity artwork belongs to the named party; supplied unmodified for identification."
+    },
+    {
+      "country": "BR",
+      "id": "br-liberal-party",
+      "name": "Liberal Party",
+      "aliases": [
+        "Liberal Party",
+        "Partido Liberal",
+        "PL"
+      ],
+      "website": "https://partidoliberal.org.br",
+      "retrievedAt": "2026-11-08",
+      "missingAsset": true
+    },
+    {
+      "country": "BR",
+      "id": "br-brazil-union",
+      "name": "Brazil Union",
+      "aliases": [
+        "Brazil Union",
+        "União Brasil",
+        "União",
+        "UNIÃO",
+        "UB"
+      ],
+      "website": "https://uniaobrasil.org.br",
+      "retrievedAt": "2026-11-08",
+      "asset": "br-brazil-union.png",
+      "representation": "site-icon",
+      "sourceUrl": "https://uniaobrasil.org.br",
+      "downloadUrl": "https://t3.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=http://uniaobrasil.org.br&size=128",
+      "rights": "Identity artwork belongs to the named party; supplied unmodified for identification."
+    },
+    {
+      "country": "BR",
+      "id": "br-progressistas",
+      "name": "Progressistas",
+      "aliases": [
+        "Progressistas",
+        "PP",
+        "Progressives"
+      ],
+      "website": "https://progressistas.org.br",
+      "retrievedAt": "2026-11-08",
+      "asset": "br-progressistas.png",
+      "representation": "site-icon",
+      "sourceUrl": "https://progressistas.org.br",
+      "downloadUrl": "https://t0.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=http://progressistas.org.br&size=128",
+      "rights": "Identity artwork belongs to the named party; supplied unmodified for identification."
+    },
+    {
+      "country": "BR",
+      "id": "br-brazilian-democratic-movement",
+      "name": "Brazilian Democratic Movement",
+      "aliases": [
+        "Brazilian Democratic Movement",
+        "Movimento Democrático Brasileiro",
+        "MDB"
+      ],
+      "website": "https://mdb.org.br",
+      "retrievedAt": "2026-11-08",
+      "missingAsset": true
+    },
+    {
+      "country": "BR",
+      "id": "br-social-democratic-party",
+      "name": "Social Democratic Party",
+      "aliases": [
+        "Social Democratic Party",
+        "Partido Social Democrático",
+        "PSD"
+      ],
+      "website": "https://psd.org.br",
+      "retrievedAt": "2026-11-08",
+      "asset": "br-social-democratic-party.png",
+      "representation": "site-icon",
+      "sourceUrl": "https://psd.org.br",
+      "downloadUrl": "https://t1.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=http://psd.org.br&size=128",
+      "rights": "Identity artwork belongs to the named party; supplied unmodified for identification."
+    },
+    {
+      "country": "BR",
+      "id": "br-republicans",
+      "name": "Republicans",
+      "aliases": [
+        "Republicans",
+        "Republicanos"
+      ],
+      "website": "https://republicanos10.org.br",
+      "retrievedAt": "2026-11-08",
+      "asset": "br-republicans.png",
+      "representation": "site-icon",
+      "sourceUrl": "https://republicanos10.org.br",
+      "downloadUrl": "https://t0.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=http://republicanos10.org.br&size=128",
+      "rights": "Identity artwork belongs to the named party; supplied unmodified for identification."
+    },
+    {
+      "country": "BR",
+      "id": "br-brazilian-socialist-party",
+      "name": "Brazilian Socialist Party",
+      "aliases": [
+        "Brazilian Socialist Party",
+        "Partido Socialista Brasileiro",
+        "PSB"
+      ],
+      "website": "https://psb40.org.br",
+      "retrievedAt": "2026-11-08",
+      "asset": "br-brazilian-socialist-party.png",
+      "representation": "site-icon",
+      "sourceUrl": "https://psb40.org.br",
+      "downloadUrl": "https://t0.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=http://psb40.org.br&size=128",
+      "rights": "Identity artwork belongs to the named party; supplied unmodified for identification."
+    },
+    {
+      "country": "BR",
+      "id": "br-democratic-labour-party",
+      "name": "Democratic Labour Party",
+      "aliases": [
+        "Democratic Labour Party",
+        "Partido Democrático Trabalhista",
+        "PDT"
+      ],
+      "website": "https://pdt.org.br",
+      "retrievedAt": "2026-11-08",
+      "asset": "br-democratic-labour-party.jpg",
+      "representation": "site-icon",
+      "sourceUrl": "https://pdt.org.br",
+      "downloadUrl": "https://t0.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=http://pdt.org.br&size=128",
+      "rights": "Identity artwork belongs to the named party; supplied unmodified for identification."
+    },
+    {
+      "country": "BR",
+      "id": "br-brazilian-social-democracy-party",
+      "name": "Brazilian Social Democracy Party",
+      "aliases": [
+        "Brazilian Social Democracy Party",
+        "Partido da Social Democracia Brasileira",
+        "PSDB"
+      ],
+      "website": "https://psdb.org.br",
+      "retrievedAt": "2026-11-08",
+      "asset": "br-brazilian-social-democracy-party.png",
+      "representation": "site-icon",
+      "sourceUrl": "https://www.psdb.org.br/",
+      "downloadUrl": "https://www.psdb.org.br/wp-content/uploads/2023/12/cropped-favicon_site-32x32.png",
+      "rights": "Identity artwork belongs to the named party."
+    },
+    {
+      "country": "BR",
+      "id": "br-podemos",
+      "name": "Podemos",
+      "aliases": [
+        "Podemos",
+        "PODE"
+      ],
+      "website": "https://podemos.org.br",
+      "retrievedAt": "2026-11-08",
+      "asset": "br-podemos.png",
+      "representation": "site-icon",
+      "sourceUrl": "https://podemos.org.br",
+      "downloadUrl": "https://t2.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=http://podemos.org.br&size=128",
+      "rights": "Identity artwork belongs to the named party; supplied unmodified for identification."
+    },
+    {
+      "country": "BR",
+      "id": "br-socialism-and-liberty-party",
+      "name": "Socialism and Liberty Party",
+      "aliases": [
+        "Socialism and Liberty Party",
+        "Partido Socialismo e Liberdade",
+        "PSOL"
+      ],
+      "website": "https://psol50.org.br",
+      "retrievedAt": "2026-11-08",
+      "asset": "br-socialism-and-liberty-party.png",
+      "representation": "site-icon",
+      "sourceUrl": "https://psol50.org.br",
+      "downloadUrl": "https://t0.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=http://psol50.org.br&size=128",
+      "rights": "Identity artwork belongs to the named party; supplied unmodified for identification."
+    },
+    {
+      "country": "BR",
+      "id": "br-avante",
+      "name": "Avante",
+      "aliases": [
+        "Avante",
+        "AVANTE"
+      ],
+      "website": "https://avante70.org.br",
+      "retrievedAt": "2026-11-08",
+      "asset": "br-avante.jpg",
+      "representation": "site-icon",
+      "sourceUrl": "https://avante70.org.br",
+      "downloadUrl": "https://t1.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=http://avante70.org.br&size=128",
+      "rights": "Identity artwork belongs to the named party; supplied unmodified for identification."
+    },
+    {
+      "country": "BR",
+      "id": "br-solidarity",
+      "name": "Solidarity",
+      "aliases": [
+        "Solidarity",
+        "Solidariedade",
+        "SD"
+      ],
+      "website": "https://solidariedade.org.br",
+      "retrievedAt": "2026-11-08",
+      "asset": "br-solidarity.png",
+      "representation": "site-icon",
+      "sourceUrl": "https://solidariedade.org.br",
+      "downloadUrl": "https://t1.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=http://solidariedade.org.br&size=128",
+      "rights": "Identity artwork belongs to the named party; supplied unmodified for identification."
+    },
+    {
+      "country": "BR",
+      "id": "br-communist-party-of-brazil",
+      "name": "Communist Party of Brazil",
+      "aliases": [
+        "Communist Party of Brazil",
+        "Partido Comunista do Brasil",
+        "PCdoB"
+      ],
+      "website": "https://pcdob.org.br",
+      "retrievedAt": "2026-11-08",
+      "asset": "br-communist-party-of-brazil.png",
+      "representation": "site-icon",
+      "sourceUrl": "https://pcdob.org.br",
+      "downloadUrl": "https://t0.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=http://pcdob.org.br&size=128",
+      "rights": "Identity artwork belongs to the named party; supplied unmodified for identification."
+    },
+    {
+      "country": "BR",
+      "id": "br-green-party",
+      "name": "Green Party",
+      "aliases": [
+        "Green Party",
+        "Partido Verde",
+        "PV"
+      ],
+      "website": "https://pv.org.br",
+      "retrievedAt": "2026-11-08",
+      "asset": "br-green-party.png",
+      "representation": "site-icon",
+      "sourceUrl": "https://pv.org.br",
+      "downloadUrl": "https://t1.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=http://pv.org.br&size=128",
+      "rights": "Identity artwork belongs to the named party; supplied unmodified for identification."
+    },
+    {
+      "country": "BR",
+      "id": "br-cidadania",
+      "name": "Cidadania",
+      "aliases": [
+        "Cidadania",
+        "CIDADANIA"
+      ],
+      "website": "https://cidadania23.org.br",
+      "retrievedAt": "2026-11-08",
+      "missingAsset": true
+    },
+    {
+      "country": "BR",
+      "id": "br-new-party",
+      "name": "New Party",
+      "aliases": [
+        "New Party",
+        "Partido Novo",
+        "NOVO"
+      ],
+      "website": "https://novo.org.br",
+      "retrievedAt": "2026-11-08",
+      "asset": "br-new-party.png",
+      "representation": "site-icon",
+      "sourceUrl": "https://novo.org.br",
+      "downloadUrl": "https://t1.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=http://novo.org.br&size=128",
+      "rights": "Identity artwork belongs to the named party; supplied unmodified for identification."
+    },
+    {
+      "country": "BR",
+      "id": "br-sustainability-network",
+      "name": "Sustainability Network",
+      "aliases": [
+        "Sustainability Network",
+        "Rede Sustentabilidade",
+        "REDE"
+      ],
+      "website": "https://redesustentabilidade.org.br",
+      "retrievedAt": "2026-11-08",
+      "asset": "br-sustainability-network.png",
+      "representation": "site-icon",
+      "sourceUrl": "https://redesustentabilidade.org.br",
+      "downloadUrl": "https://icons.duckduckgo.com/ip3/redesustentabilidade.org.br.ico",
+      "rights": "Identity artwork belongs to the named party; supplied unmodified for identification."
+    },
+    {
+      "country": "BR",
+      "id": "br-agir",
+      "name": "Agir",
+      "aliases": [
+        "Agir",
+        "AGIR"
+      ],
+      "website": "https://agir36.com.br",
+      "retrievedAt": "2026-11-08",
+      "missingAsset": true
+    },
+    {
+      "country": "BR",
+      "id": "br-brazilian-labour-renewal-party",
+      "name": "Brazilian Labour Renewal Party",
+      "aliases": [
+        "Brazilian Labour Renewal Party",
+        "Partido Renovador Trabalhista Brasileiro",
+        "PRTB"
+      ],
+      "website": "https://prtb.org.br",
+      "retrievedAt": "2026-11-08",
+      "asset": "br-brazilian-labour-renewal-party.jpg",
+      "representation": "site-icon",
+      "sourceUrl": "https://prtb.org.br",
+      "downloadUrl": "https://t0.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=http://prtb.org.br&size=128",
+      "rights": "Identity artwork belongs to the named party; supplied unmodified for identification."
+    },
+    {
+      "country": "BR",
+      "id": "br-democratic-renewal-party",
+      "name": "Democratic Renewal Party",
+      "aliases": [
+        "Democratic Renewal Party",
+        "Partido Renovação Democrática",
+        "PRD"
+      ],
+      "website": "https://prd25.org.br",
+      "retrievedAt": "2026-11-08",
+      "asset": "br-democratic-renewal-party.jpg",
+      "representation": "site-icon",
+      "sourceUrl": "https://prd25.org.br",
+      "downloadUrl": "https://t0.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=http://prd25.org.br&size=128",
+      "rights": "Identity artwork belongs to the named party; supplied unmodified for identification."
+    },
+    {
+      "country": "MX",
+      "id": "mx-morena",
+      "name": "Morena",
+      "aliases": [
+        "Morena",
+        "National Regeneration Movement",
+        "MORENA"
+      ],
+      "website": "https://morena.org",
+      "retrievedAt": "2026-11-08",
+      "asset": "mx-morena.png",
+      "representation": "site-icon",
+      "sourceUrl": "https://morena.org",
+      "downloadUrl": "https://t3.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=http://morena.org&size=128",
+      "rights": "Identity artwork belongs to the named party; supplied unmodified for identification."
+    },
+    {
+      "country": "MX",
+      "id": "mx-national-action-party",
+      "name": "National Action Party",
+      "aliases": [
+        "National Action Party",
+        "Partido Acción Nacional",
+        "PAN"
+      ],
+      "website": "https://pan.org.mx",
+      "retrievedAt": "2026-11-08",
+      "asset": "mx-national-action-party.png",
+      "representation": "site-icon",
+      "sourceUrl": "https://pan.org.mx",
+      "downloadUrl": "https://t3.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=http://pan.org.mx&size=128",
+      "rights": "Identity artwork belongs to the named party; supplied unmodified for identification."
+    },
+    {
+      "country": "MX",
+      "id": "mx-institutional-revolutionary-party",
+      "name": "Institutional Revolutionary Party",
+      "aliases": [
+        "Institutional Revolutionary Party",
+        "Partido Revolucionario Institucional",
+        "PRI"
+      ],
+      "website": "https://pri.org.mx",
+      "retrievedAt": "2026-11-08",
+      "asset": "mx-institutional-revolutionary-party.png",
+      "representation": "site-icon",
+      "sourceUrl": "https://pri.org.mx",
+      "downloadUrl": "https://t2.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=http://pri.org.mx&size=128",
+      "rights": "Identity artwork belongs to the named party; supplied unmodified for identification."
+    },
+    {
+      "country": "MX",
+      "id": "mx-ecologist-green-party-of-mexico",
+      "name": "Ecologist Green Party of Mexico",
+      "aliases": [
+        "Ecologist Green Party of Mexico",
+        "Partido Verde Ecologista de México",
+        "PVEM"
+      ],
+      "website": "https://partidoverde.org.mx",
+      "retrievedAt": "2026-11-08",
+      "asset": "mx-ecologist-green-party-of-mexico.png",
+      "representation": "site-icon",
+      "sourceUrl": "https://partidoverde.org.mx",
+      "downloadUrl": "https://t0.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=http://partidoverde.org.mx&size=128",
+      "rights": "Identity artwork belongs to the named party; supplied unmodified for identification."
+    },
+    {
+      "country": "MX",
+      "id": "mx-labor-party",
+      "name": "Labor Party",
+      "aliases": [
+        "Labor Party",
+        "Partido del Trabajo",
+        "PT"
+      ],
+      "website": "https://partidodeltrabajo.org.mx",
+      "retrievedAt": "2026-11-08",
+      "missingAsset": true
+    },
+    {
+      "country": "MX",
+      "id": "mx-citizens-movement",
+      "name": "Citizens' Movement",
+      "aliases": [
+        "Citizens' Movement",
+        "Movimiento Ciudadano",
+        "MC"
+      ],
+      "website": "https://movimientociudadano.mx",
+      "retrievedAt": "2026-11-08",
+      "asset": "mx-citizens-movement.png",
+      "representation": "site-icon",
+      "sourceUrl": "https://movimientociudadano.mx",
+      "downloadUrl": "https://t0.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=http://movimientociudadano.mx&size=128",
+      "rights": "Identity artwork belongs to the named party; supplied unmodified for identification."
+    },
+    {
+      "country": "MX",
+      "id": "mx-party-of-the-democratic-revolution",
+      "name": "Party of the Democratic Revolution",
+      "aliases": [
+        "Party of the Democratic Revolution",
+        "Partido de la Revolución Democrática",
+        "PRD"
+      ],
+      "website": "https://prd.org.mx",
+      "retrievedAt": "2026-11-08",
+      "missingAsset": true
+    },
+    {
+      "country": "MX",
+      "id": "mx-new-alliance-party",
+      "name": "New Alliance Party",
+      "aliases": [
+        "New Alliance Party",
+        "Nueva Alianza",
+        "PANAL"
+      ],
+      "website": "https://nuevaalianza.org.mx",
+      "retrievedAt": "2026-11-08",
+      "missingAsset": true
+    },
+    {
+      "country": "ZA",
+      "id": "za-african-national-congress",
+      "name": "African National Congress",
+      "aliases": [
+        "African National Congress",
+        "ANC"
+      ],
+      "website": "https://anc1912.org.za",
+      "retrievedAt": "2026-11-08",
+      "asset": "za-african-national-congress.png",
+      "representation": "site-icon",
+      "sourceUrl": "https://anc1912.org.za",
+      "downloadUrl": "https://t0.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=http://anc1912.org.za&size=128",
+      "rights": "Identity artwork belongs to the named party; supplied unmodified for identification."
+    },
+    {
+      "country": "ZA",
+      "id": "za-democratic-alliance",
+      "name": "Democratic Alliance",
+      "aliases": [
+        "Democratic Alliance",
+        "DA"
+      ],
+      "website": "https://da.org.za",
+      "retrievedAt": "2026-11-08",
+      "asset": "za-democratic-alliance.png",
+      "representation": "site-icon",
+      "sourceUrl": "https://da.org.za",
+      "downloadUrl": "https://t2.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=http://da.org.za&size=128",
+      "rights": "Identity artwork belongs to the named party; supplied unmodified for identification."
+    },
+    {
+      "country": "ZA",
+      "id": "za-umkhonto-wesizwe",
+      "name": "uMkhonto weSizwe",
+      "aliases": [
+        "uMkhonto weSizwe",
+        "MK",
+        "MK Party",
+        "uMkhonto we Sizwe"
+      ],
+      "website": "https://mkparty.org.za",
+      "retrievedAt": "2026-11-08",
+      "asset": "za-umkhonto-wesizwe.png",
+      "representation": "site-icon",
+      "sourceUrl": "https://mkparty.org.za",
+      "downloadUrl": "https://t3.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=http://mkparty.org.za&size=128",
+      "rights": "Identity artwork belongs to the named party; supplied unmodified for identification."
+    },
+    {
+      "country": "ZA",
+      "id": "za-economic-freedom-fighters",
+      "name": "Economic Freedom Fighters",
+      "aliases": [
+        "Economic Freedom Fighters",
+        "EFF"
+      ],
+      "website": "https://effonline.org",
+      "retrievedAt": "2026-11-08",
+      "asset": "za-economic-freedom-fighters.png",
+      "representation": "site-icon",
+      "sourceUrl": "https://effonline.org",
+      "downloadUrl": "https://t1.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=http://effonline.org&size=128",
+      "rights": "Identity artwork belongs to the named party; supplied unmodified for identification."
+    },
+    {
+      "country": "ZA",
+      "id": "za-inkatha-freedom-party",
+      "name": "Inkatha Freedom Party",
+      "aliases": [
+        "Inkatha Freedom Party",
+        "IFP"
+      ],
+      "website": "https://ifp.org.za",
+      "retrievedAt": "2026-11-08",
+      "asset": "za-inkatha-freedom-party.png",
+      "representation": "site-icon",
+      "sourceUrl": "https://ifp.org.za",
+      "downloadUrl": "https://t3.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=http://ifp.org.za&size=128",
+      "rights": "Identity artwork belongs to the named party; supplied unmodified for identification."
+    },
+    {
+      "country": "ZA",
+      "id": "za-patriotic-alliance",
+      "name": "Patriotic Alliance",
+      "aliases": [
+        "Patriotic Alliance",
+        "PA"
+      ],
+      "website": "https://mypa.org.za",
+      "retrievedAt": "2026-11-08",
+      "missingAsset": true
+    },
+    {
+      "country": "ZA",
+      "id": "za-freedom-front-plus",
+      "name": "Freedom Front Plus",
+      "aliases": [
+        "Freedom Front Plus",
+        "FF+",
+        "Vryheidsfront Plus",
+        "VF Plus"
+      ],
+      "website": "https://vfplus.org.za",
+      "retrievedAt": "2026-11-08",
+      "asset": "za-freedom-front-plus.png",
+      "representation": "site-icon",
+      "sourceUrl": "https://vfplus.org.za",
+      "downloadUrl": "https://t1.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=http://vfplus.org.za&size=128",
+      "rights": "Identity artwork belongs to the named party; supplied unmodified for identification."
+    },
+    {
+      "country": "ZA",
+      "id": "za-actionsa",
+      "name": "ActionSA",
+      "aliases": [
+        "ActionSA",
+        "Action SA"
+      ],
+      "website": "https://actionsa.org.za",
+      "retrievedAt": "2026-11-08",
+      "asset": "za-actionsa.png",
+      "representation": "site-icon",
+      "sourceUrl": "https://actionsa.org.za",
+      "downloadUrl": "https://t2.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=http://actionsa.org.za&size=128",
+      "rights": "Identity artwork belongs to the named party; supplied unmodified for identification."
+    },
+    {
+      "country": "ZA",
+      "id": "za-african-christian-democratic-party",
+      "name": "African Christian Democratic Party",
+      "aliases": [
+        "African Christian Democratic Party",
+        "ACDP"
+      ],
+      "website": "https://acdp.org.za",
+      "retrievedAt": "2026-11-08",
+      "asset": "za-african-christian-democratic-party.png",
+      "representation": "site-icon",
+      "sourceUrl": "https://acdp.org.za",
+      "downloadUrl": "https://t0.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=http://acdp.org.za&size=128",
+      "rights": "Identity artwork belongs to the named party; supplied unmodified for identification."
+    },
+    {
+      "country": "ZA",
+      "id": "za-united-democratic-movement",
+      "name": "United Democratic Movement",
+      "aliases": [
+        "United Democratic Movement",
+        "UDM"
+      ],
+      "website": "https://udm.org.za",
+      "retrievedAt": "2026-11-08",
+      "asset": "za-united-democratic-movement.jpg",
+      "representation": "site-icon",
+      "sourceUrl": "https://udm.org.za",
+      "downloadUrl": "https://t0.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=http://udm.org.za&size=128",
+      "rights": "Identity artwork belongs to the named party; supplied unmodified for identification."
+    },
+    {
+      "country": "ZA",
+      "id": "za-rise-mzansi",
+      "name": "Rise Mzansi",
+      "aliases": [
+        "Rise Mzansi",
+        "RISE"
+      ],
+      "website": "https://risemzansi.org.za",
+      "retrievedAt": "2026-11-08",
+      "asset": "za-rise-mzansi.svg",
+      "representation": "site-icon",
+      "sourceUrl": "https://risemzansi.co.za/",
+      "downloadUrl": "https://cdn.prod.website-files.com/6512abc58b1468c2e0784360/65425571002243d6de441bb1_Favicon.svg",
+      "rights": "Identity artwork belongs to the named party."
+    },
+    {
+      "country": "ZA",
+      "id": "za-build-one-south-africa",
+      "name": "Build One South Africa",
+      "aliases": [
+        "Build One South Africa",
+        "BOSA"
+      ],
+      "website": "https://bosa.co.za",
+      "retrievedAt": "2026-11-08",
+      "asset": "za-build-one-south-africa.png",
+      "representation": "site-icon",
+      "sourceUrl": "https://bosa.co.za",
+      "downloadUrl": "https://t0.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=http://bosa.co.za&size=128",
+      "rights": "Identity artwork belongs to the named party; supplied unmodified for identification."
+    },
+    {
+      "country": "ZA",
+      "id": "za-african-transformation-movement",
+      "name": "African Transformation Movement",
+      "aliases": [
+        "African Transformation Movement",
+        "ATM"
+      ],
+      "website": "https://atmovement.org",
+      "retrievedAt": "2026-11-08",
+      "missingAsset": true
+    },
+    {
+      "country": "ZA",
+      "id": "za-al-jama-ah",
+      "name": "Al Jama-ah",
+      "aliases": [
+        "Al Jama-ah",
+        "Al Jamaah"
+      ],
+      "website": "https://aljama.co.za",
+      "retrievedAt": "2026-11-08",
+      "asset": "za-al-jama-ah.jpg",
+      "representation": "site-icon",
+      "sourceUrl": "https://aljama.co.za",
+      "downloadUrl": "https://t2.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=http://aljama.co.za&size=128",
+      "rights": "Identity artwork belongs to the named party; supplied unmodified for identification."
+    },
+    {
+      "country": "ZA",
+      "id": "za-national-coloured-congress",
+      "name": "National Coloured Congress",
+      "aliases": [
+        "National Coloured Congress",
+        "NCC"
+      ],
+      "website": "https://nationalcolouredcongress.org.za",
+      "retrievedAt": "2026-11-08",
+      "asset": "za-national-coloured-congress.jpg",
+      "representation": "site-icon",
+      "sourceUrl": "https://nationalcolouredcongress.org.za",
+      "downloadUrl": "https://t1.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=http://nationalcolouredcongress.org.za&size=128",
+      "rights": "Identity artwork belongs to the named party; supplied unmodified for identification."
+    },
+    {
+      "country": "ZA",
+      "id": "za-pan-africanist-congress-of-azania",
+      "name": "Pan Africanist Congress of Azania",
+      "aliases": [
+        "Pan Africanist Congress of Azania",
+        "PAC"
+      ],
+      "website": "https://pac.org.za",
+      "retrievedAt": "2026-11-08",
+      "asset": "za-pan-africanist-congress-of-azania.png",
+      "representation": "site-icon",
+      "sourceUrl": "https://pac.org.za",
+      "downloadUrl": "https://icons.duckduckgo.com/ip3/pac.org.za.ico",
+      "rights": "Identity artwork belongs to the named party; supplied unmodified for identification."
+    },
+    {
+      "country": "ZA",
+      "id": "za-united-africans-transformation",
+      "name": "United Africans Transformation",
+      "aliases": [
+        "United Africans Transformation",
+        "UAT"
+      ],
+      "website": "https://uat.org.za",
+      "retrievedAt": "2026-11-08",
+      "missingAsset": true
+    },
+    {
+      "country": "ZA",
+      "id": "za-good",
+      "name": "GOOD",
+      "aliases": [
+        "GOOD",
+        "Good Party"
+      ],
+      "website": "https://forgood.org.za",
+      "retrievedAt": "2026-11-08",
+      "asset": "za-good.png",
+      "representation": "site-icon",
+      "sourceUrl": "https://forgood.org.za",
+      "downloadUrl": "https://t0.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=http://forgood.org.za&size=128",
+      "rights": "Identity artwork belongs to the named party; supplied unmodified for identification."
+    },
+    {
+      "country": "TR",
+      "id": "tr-justice-and-development-party",
+      "name": "Justice and Development Party",
+      "aliases": [
+        "Justice and Development Party",
+        "AK Party",
+        "AK Parti",
+        "AKP",
+        "Adalet ve Kalkınma Partisi"
+      ],
+      "website": "https://akparti.org.tr",
+      "retrievedAt": "2026-11-08",
+      "asset": "tr-justice-and-development-party.png",
+      "representation": "site-icon",
+      "sourceUrl": "https://akparti.org.tr",
+      "downloadUrl": "https://t1.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=http://akparti.org.tr&size=128",
+      "rights": "Identity artwork belongs to the named party; supplied unmodified for identification."
+    },
+    {
+      "country": "TR",
+      "id": "tr-republican-people-s-party",
+      "name": "Republican People's Party",
+      "aliases": [
+        "Republican People's Party",
+        "CHP",
+        "Cumhuriyet Halk Partisi"
+      ],
+      "website": "https://chp.org.tr",
+      "retrievedAt": "2026-11-08",
+      "asset": "tr-republican-people-s-party.png",
+      "representation": "site-icon",
+      "sourceUrl": "https://chp.org.tr",
+      "downloadUrl": "https://t2.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=http://chp.org.tr&size=128",
+      "rights": "Identity artwork belongs to the named party; supplied unmodified for identification."
+    },
+    {
+      "country": "TR",
+      "id": "tr-peoples-equality-and-democracy-party",
+      "name": "Peoples' Equality and Democracy Party",
+      "aliases": [
+        "Peoples' Equality and Democracy Party",
+        "DEM Party",
+        "DEM Parti",
+        "DEM",
+        "Halkların Eşitlik ve Demokrasi Partisi"
+      ],
+      "website": "https://demparti.org.tr",
+      "retrievedAt": "2026-11-08",
+      "asset": "tr-peoples-equality-and-democracy-party.png",
+      "representation": "site-icon",
+      "sourceUrl": "https://demparti.org.tr",
+      "downloadUrl": "https://t2.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=http://demparti.org.tr&size=128",
+      "rights": "Identity artwork belongs to the named party; supplied unmodified for identification."
+    },
+    {
+      "country": "TR",
+      "id": "tr-nationalist-movement-party",
+      "name": "Nationalist Movement Party",
+      "aliases": [
+        "Nationalist Movement Party",
+        "MHP",
+        "Milliyetçi Hareket Partisi"
+      ],
+      "website": "https://mhp.org.tr",
+      "retrievedAt": "2026-11-08",
+      "asset": "tr-nationalist-movement-party.png",
+      "representation": "site-icon",
+      "sourceUrl": "https://mhp.org.tr",
+      "downloadUrl": "https://t0.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=http://mhp.org.tr&size=128",
+      "rights": "Identity artwork belongs to the named party; supplied unmodified for identification."
+    },
+    {
+      "country": "TR",
+      "id": "tr-good-party",
+      "name": "Good Party",
+      "aliases": [
+        "Good Party",
+        "İYİ Party",
+        "İYİ Parti",
+        "IYI"
+      ],
+      "website": "https://iyiparti.org.tr",
+      "retrievedAt": "2026-11-08",
+      "asset": "tr-good-party.png",
+      "representation": "site-icon",
+      "sourceUrl": "https://iyiparti.org.tr",
+      "downloadUrl": "https://t0.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=http://iyiparti.org.tr&size=128",
+      "rights": "Identity artwork belongs to the named party; supplied unmodified for identification."
+    },
+    {
+      "country": "TR",
+      "id": "tr-new-welfare-party",
+      "name": "New Welfare Party",
+      "aliases": [
+        "New Welfare Party",
+        "Yeniden Refah Partisi",
+        "YRP"
+      ],
+      "website": "https://yenidenrefahpartisi.org.tr",
+      "retrievedAt": "2026-11-08",
+      "asset": "tr-new-welfare-party.png",
+      "representation": "site-icon",
+      "sourceUrl": "https://yenidenrefahpartisi.org.tr",
+      "downloadUrl": "https://t3.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=http://yenidenrefahpartisi.org.tr&size=128",
+      "rights": "Identity artwork belongs to the named party; supplied unmodified for identification."
+    },
+    {
+      "country": "TR",
+      "id": "tr-workers-party-of-turkey",
+      "name": "Workers' Party of Turkey",
+      "aliases": [
+        "Workers' Party of Turkey",
+        "Türkiye İşçi Partisi",
+        "TİP",
+        "TIP"
+      ],
+      "website": "https://tip.org.tr",
+      "retrievedAt": "2026-11-08",
+      "asset": "tr-workers-party-of-turkey.png",
+      "representation": "site-icon",
+      "sourceUrl": "https://tip.org.tr",
+      "downloadUrl": "https://t2.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=http://tip.org.tr&size=128",
+      "rights": "Identity artwork belongs to the named party; supplied unmodified for identification."
+    },
+    {
+      "country": "TR",
+      "id": "tr-democracy-and-progress-party",
+      "name": "Democracy and Progress Party",
+      "aliases": [
+        "Democracy and Progress Party",
+        "DEVA",
+        "DEVA Party"
+      ],
+      "website": "https://devapartisi.org",
+      "retrievedAt": "2026-11-08",
+      "asset": "tr-democracy-and-progress-party.png",
+      "representation": "site-icon",
+      "sourceUrl": "https://devapartisi.org",
+      "downloadUrl": "https://t0.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=http://devapartisi.org&size=128",
+      "rights": "Identity artwork belongs to the named party; supplied unmodified for identification."
+    },
+    {
+      "country": "TR",
+      "id": "tr-felicity-party",
+      "name": "Felicity Party",
+      "aliases": [
+        "Felicity Party",
+        "Saadet Partisi",
+        "SP"
+      ],
+      "website": "https://saadet.org.tr",
+      "retrievedAt": "2026-11-08",
+      "asset": "tr-felicity-party.png",
+      "representation": "site-icon",
+      "sourceUrl": "https://saadet.org.tr",
+      "downloadUrl": "https://t1.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=http://saadet.org.tr&size=128",
+      "rights": "Identity artwork belongs to the named party; supplied unmodified for identification."
+    },
+    {
+      "country": "TR",
+      "id": "tr-future-party",
+      "name": "Future Party",
+      "aliases": [
+        "Future Party",
+        "Gelecek Partisi",
+        "GP"
+      ],
+      "website": "https://gelecekpartisi.org.tr",
+      "retrievedAt": "2026-11-08",
+      "missingAsset": true
+    },
+    {
+      "country": "TR",
+      "id": "tr-democrat-party",
+      "name": "Democrat Party",
+      "aliases": [
+        "Democrat Party",
+        "Demokrat Parti",
+        "DP"
+      ],
+      "website": "https://dp.org.tr",
+      "retrievedAt": "2026-11-08",
+      "asset": "tr-democrat-party.png",
+      "representation": "site-icon",
+      "sourceUrl": "https://dp.org.tr",
+      "downloadUrl": "https://t2.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=http://dp.org.tr&size=128",
+      "rights": "Identity artwork belongs to the named party; supplied unmodified for identification."
+    },
+    {
+      "country": "TR",
+      "id": "tr-democratic-left-party",
+      "name": "Democratic Left Party",
+      "aliases": [
+        "Democratic Left Party",
+        "Demokratik Sol Parti",
+        "DSP"
+      ],
+      "website": "https://dsp.org.tr",
+      "retrievedAt": "2026-11-08",
+      "asset": "tr-democratic-left-party.png",
+      "representation": "site-icon",
+      "sourceUrl": "https://dsp.org.tr",
+      "downloadUrl": "https://t0.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=http://dsp.org.tr&size=128",
+      "rights": "Identity artwork belongs to the named party; supplied unmodified for identification."
+    },
+    {
+      "country": "TR",
+      "id": "tr-free-cause-party",
+      "name": "Free Cause Party",
+      "aliases": [
+        "Free Cause Party",
+        "HÜDA PAR",
+        "Huda Par"
+      ],
+      "website": "https://hudapar.org",
+      "retrievedAt": "2026-11-08",
+      "asset": "tr-free-cause-party.png",
+      "representation": "site-icon",
+      "sourceUrl": "https://hudapar.org",
+      "downloadUrl": "https://t1.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=http://hudapar.org&size=128",
+      "rights": "Identity artwork belongs to the named party; supplied unmodified for identification."
+    },
+    {
+      "country": "TR",
+      "id": "tr-labour-party",
+      "name": "Labour Party",
+      "aliases": [
+        "Labour Party",
+        "Emek Partisi",
+        "EMEP"
+      ],
+      "website": "https://emep.org",
+      "retrievedAt": "2026-11-08",
+      "asset": "tr-labour-party.png",
+      "representation": "site-icon",
+      "sourceUrl": "https://emep.org",
+      "downloadUrl": "https://t3.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=http://emep.org&size=128",
+      "rights": "Identity artwork belongs to the named party; supplied unmodified for identification."
+    },
+    {
+      "country": "TR",
+      "id": "tr-peoples-democratic-party",
+      "name": "Peoples' Democratic Party",
+      "aliases": [
+        "Peoples' Democratic Party",
+        "Halkların Demokratik Partisi",
+        "HDP"
+      ],
+      "website": "https://hdp.org.tr",
+      "retrievedAt": "2026-11-08",
+      "asset": "tr-peoples-democratic-party.png",
+      "representation": "site-icon",
+      "sourceUrl": "https://hdp.org.tr",
+      "downloadUrl": "https://t2.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=http://hdp.org.tr&size=128",
+      "rights": "Identity artwork belongs to the named party; supplied unmodified for identification."
+    },
+    {
+      "country": "TR",
+      "id": "tr-victory-party",
+      "name": "Victory Party",
+      "aliases": [
+        "Victory Party",
+        "Zafer Partisi",
+        "ZP"
+      ],
+      "website": "https://zaferpartisi.org.tr",
+      "retrievedAt": "2026-11-08",
+      "asset": "tr-victory-party.png",
+      "representation": "site-icon",
+      "sourceUrl": "https://zaferpartisi.org.tr",
+      "downloadUrl": "https://t1.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=http://zaferpartisi.org.tr&size=128",
+      "rights": "Identity artwork belongs to the named party; supplied unmodified for identification."
+    },
+    {
+      "country": "TR",
+      "id": "tr-homeland-party",
+      "name": "Homeland Party",
+      "aliases": [
+        "Homeland Party",
+        "Memleket Partisi"
+      ],
+      "website": "https://memleketpartisi.org.tr",
+      "retrievedAt": "2026-11-08",
+      "missingAsset": true
+    },
+    {
+      "country": "TR",
+      "id": "tr-great-unity-party",
+      "name": "Great Unity Party",
+      "aliases": [
+        "Great Unity Party",
+        "Büyük Birlik Partisi",
+        "BBP"
+      ],
+      "website": "https://bbp.org.tr",
+      "retrievedAt": "2026-11-08",
+      "asset": "tr-great-unity-party.jpg",
+      "representation": "site-icon",
+      "sourceUrl": "https://bbp.org.tr",
+      "downloadUrl": "https://t1.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=http://bbp.org.tr&size=128",
+      "rights": "Identity artwork belongs to the named party; supplied unmodified for identification."
+    },
+    {
+      "country": "IL",
+      "id": "il-likud",
+      "name": "Likud",
+      "aliases": [
+        "Likud",
+        "הליכוד"
+      ],
+      "website": "https://likud.org.il",
+      "retrievedAt": "2026-11-08",
+      "asset": "il-likud.jpg",
+      "representation": "site-icon",
+      "sourceUrl": "https://likud.org.il",
+      "downloadUrl": "https://t3.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=http://likud.org.il&size=128",
+      "rights": "Identity artwork belongs to the named party; supplied unmodified for identification."
+    },
+    {
+      "country": "IL",
+      "id": "il-yesh-atid",
+      "name": "Yesh Atid",
+      "aliases": [
+        "Yesh Atid",
+        "יש עתיד"
+      ],
+      "website": "https://yeshatid.org.il",
+      "retrievedAt": "2026-11-08",
+      "asset": "il-yesh-atid.png",
+      "representation": "site-icon",
+      "sourceUrl": "https://yeshatid.org.il",
+      "downloadUrl": "https://t3.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=http://yeshatid.org.il&size=128",
+      "rights": "Identity artwork belongs to the named party; supplied unmodified for identification."
+    },
+    {
+      "country": "IL",
+      "id": "il-national-unity",
+      "name": "National Unity",
+      "aliases": [
+        "National Unity",
+        "National Unity Party",
+        "HaMahane HaMamlakhti",
+        "המחנה הממלכתי"
+      ],
+      "website": "https://hamahanemamlachti.org.il",
+      "retrievedAt": "2026-11-08",
+      "missingAsset": true
+    },
+    {
+      "country": "IL",
+      "id": "il-shas",
+      "name": "Shas",
+      "aliases": [
+        "Shas",
+        "ש״ס",
+        "שס"
+      ],
+      "website": "https://shas.org.il",
+      "retrievedAt": "2026-11-08",
+      "missingAsset": true
+    },
+    {
+      "country": "IL",
+      "id": "il-united-torah-judaism",
+      "name": "United Torah Judaism",
+      "aliases": [
+        "United Torah Judaism",
+        "UTJ",
+        "יהדות התורה"
+      ],
+      "website": "https://yahadut-hatorah.org.il",
+      "retrievedAt": "2026-11-08",
+      "missingAsset": true
+    },
+    {
+      "country": "IL",
+      "id": "il-religious-zionist-party",
+      "name": "Religious Zionist Party",
+      "aliases": [
+        "Religious Zionist Party",
+        "Religious Zionism",
+        "RZP",
+        "הציונות הדתית"
+      ],
+      "website": "https://zionutdatit.org.il",
+      "retrievedAt": "2026-11-08",
+      "missingAsset": true
+    },
+    {
+      "country": "IL",
+      "id": "il-otzma-yehudit",
+      "name": "Otzma Yehudit",
+      "aliases": [
+        "Otzma Yehudit",
+        "עוצמה יהודית"
+      ],
+      "website": "https://ozma-yeudit.co.il",
+      "retrievedAt": "2026-11-08",
+      "missingAsset": true
+    },
+    {
+      "country": "IL",
+      "id": "il-yisrael-beiteinu",
+      "name": "Yisrael Beiteinu",
+      "aliases": [
+        "Yisrael Beiteinu",
+        "Israel Beytenu",
+        "Yisrael Beytenu",
+        "ישראל ביתנו"
+      ],
+      "website": "https://beytenu.org.il",
+      "retrievedAt": "2026-11-08",
+      "asset": "il-yisrael-beiteinu.png",
+      "representation": "site-icon",
+      "sourceUrl": "https://beytenu.org.il",
+      "downloadUrl": "https://t3.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=http://beytenu.org.il&size=128",
+      "rights": "Identity artwork belongs to the named party; supplied unmodified for identification."
+    },
+    {
+      "country": "IL",
+      "id": "il-ra-am",
+      "name": "Ra'am",
+      "aliases": [
+        "Ra'am",
+        "Raam",
+        "United Arab List",
+        "רע״ם"
+      ],
+      "website": "https://raam.org.il",
+      "retrievedAt": "2026-11-08",
+      "missingAsset": true
+    },
+    {
+      "country": "IL",
+      "id": "il-hadash",
+      "name": "Hadash",
+      "aliases": [
+        "Hadash",
+        "חד״ש"
+      ],
+      "website": "https://hadash.org.il",
+      "retrievedAt": "2026-11-08",
+      "asset": "il-hadash.png",
+      "representation": "site-icon",
+      "sourceUrl": "https://hadash.org.il",
+      "downloadUrl": "https://t3.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=http://hadash.org.il&size=128",
+      "rights": "Identity artwork belongs to the named party; supplied unmodified for identification."
+    },
+    {
+      "country": "IL",
+      "id": "il-ta-al",
+      "name": "Ta'al",
+      "aliases": [
+        "Ta'al",
+        "Taal",
+        "תע״ל"
+      ],
+      "website": "https://taal.org.il",
+      "retrievedAt": "2026-11-08",
+      "missingAsset": true
+    },
+    {
+      "country": "IL",
+      "id": "il-noam",
+      "name": "Noam",
+      "aliases": [
+        "Noam",
+        "נעם"
+      ],
+      "website": "https://noamparty.org.il",
+      "retrievedAt": "2026-11-08",
+      "missingAsset": true
+    },
+    {
+      "country": "IL",
+      "id": "il-the-democrats",
+      "name": "The Democrats",
+      "aliases": [
+        "The Democrats",
+        "Democrats",
+        "הדמוקרטים"
+      ],
+      "website": "https://democrats.org.il",
+      "retrievedAt": "2026-11-08",
+      "asset": "il-the-democrats.png",
+      "representation": "site-icon",
+      "sourceUrl": "https://democrats.org.il",
+      "downloadUrl": "https://t0.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=http://democrats.org.il&size=128",
+      "rights": "Identity artwork belongs to the named party; supplied unmodified for identification."
+    },
+    {
+      "country": "IL",
+      "id": "il-israeli-labor-party",
+      "name": "Israeli Labor Party",
+      "aliases": [
+        "Israeli Labor Party",
+        "Labor Party",
+        "Labor",
+        "HaAvoda",
+        "העבודה"
+      ],
+      "website": "https://havoda.org.il",
+      "retrievedAt": "2026-11-08",
+      "missingAsset": true,
+      "reviewNote": "Site icon is a portrait or successor mark, not this party logo."
+    },
+    {
+      "country": "IL",
+      "id": "il-meretz",
+      "name": "Meretz",
+      "aliases": [
+        "Meretz",
+        "מרצ"
+      ],
+      "website": "https://meretz.org.il",
+      "retrievedAt": "2026-11-08",
+      "asset": "il-meretz.png",
+      "representation": "site-icon",
+      "sourceUrl": "https://meretz.org.il",
+      "downloadUrl": "https://t3.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=http://meretz.org.il&size=128",
+      "rights": "Identity artwork belongs to the named party; supplied unmodified for identification."
+    },
+    {
+      "country": "IL",
+      "id": "il-balad",
+      "name": "Balad",
+      "aliases": [
+        "Balad",
+        "National Democratic Assembly",
+        "בל״ד"
+      ],
+      "website": "https://balad.org.il",
+      "retrievedAt": "2026-11-08",
+      "missingAsset": true
+    },
+    {
+      "country": "IL",
+      "id": "il-new-hope",
+      "name": "New Hope",
+      "aliases": [
+        "New Hope",
+        "Tikva Hadasha",
+        "תקווה חדשה"
+      ],
+      "website": "https://newhope.org.il",
+      "retrievedAt": "2026-11-08",
+      "asset": "il-new-hope.png",
+      "representation": "site-icon",
+      "sourceUrl": "https://newhope.org.il",
+      "downloadUrl": "https://t2.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=http://newhope.org.il&size=128",
+      "rights": "Identity artwork belongs to the named party; supplied unmodified for identification."
+    },
+    {
+      "country": "IL",
+      "id": "il-blue-and-white",
+      "name": "Blue and White",
+      "aliases": [
+        "Blue and White",
+        "Kahol Lavan",
+        "כחול לבן"
+      ],
+      "website": "https://kachollavan.org.il",
+      "retrievedAt": "2026-11-08",
+      "asset": "il-blue-and-white.png",
+      "representation": "site-icon",
+      "sourceUrl": "https://kachollavan.org.il",
+      "downloadUrl": "https://t1.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=http://kachollavan.org.il&size=128",
+      "rights": "Identity artwork belongs to the named party; supplied unmodified for identification."
+    }
+  ]
+}

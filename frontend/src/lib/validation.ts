@@ -1,7 +1,7 @@
 import { config } from '../config';
 import { t } from './i18n';
 
-export interface TextLimits {
+interface TextLimits {
   minLength: number;
   maxLength: number;
 }
@@ -53,7 +53,7 @@ export function validateUrl(value: string, maxLength: number = config.url.maxLen
   return null;
 }
 
-export interface FileLimits {
+interface FileLimits {
   maxFiles: number;
   maxBytes: number;
   maxChars: number;
@@ -112,7 +112,7 @@ export function validateFileText(name: string, text: string, limits: FileLimits 
   return null;
 }
 
-export interface ScreenshotLimits {
+interface ScreenshotLimits {
   maxFiles: number;
   maxBytes: number;
   types: readonly string[];

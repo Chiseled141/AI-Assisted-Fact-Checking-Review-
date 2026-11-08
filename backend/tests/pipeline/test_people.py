@@ -6,7 +6,7 @@ import pytest
 from app.core.config import Settings
 from app.db.models import Claim
 from app.pipeline.people import names_person, person_query
-from app.pipeline.prompts import ExtractedClaim, ExtractedClaims
+from app.pipeline.prompts import ClaimReview, ExtractedClaim, ExtractedClaims
 from app.pipeline.run import _retrieve
 from app.search.fetcher import Page
 from app.search.tavily import SearchHit
@@ -58,6 +58,8 @@ def test_a_person_claim_with_only_generic_sources_skips_judges_instead_of_using_
     text = "Alex Example received the Aurora award in 2024."
 
     def complete(model, system, user, schema, check=None):
+        if schema is ClaimReview:
+            return ClaimReview(), model
         assert schema is ExtractedClaims, "No judge should be called for unrelated sources."
         return ExtractedClaims(claims=[ExtractedClaim(text=text, person_name="Alex Example", checkworthiness=0.9)]), model
 

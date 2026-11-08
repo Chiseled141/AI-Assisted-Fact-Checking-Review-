@@ -1,6 +1,7 @@
 import os
 
-os.environ.update(DATABASE_URL="sqlite:///:memory:", OPENROUTER_API_KEY="", TAVILY_API_KEY="", ELECTION_MAP_MIN_STATES="3", SEAT_CHART_REQUIRE_ALL_SEATS="false", DATA_SERVICE_RETRY_SECONDS="0")
+# SQLite in memory by default. TEST_DATABASE_URL runs the same tests on an empty PostgreSQL database, which they wipe.
+os.environ.update(DATABASE_URL=os.environ.get("TEST_DATABASE_URL", "sqlite:///:memory:"), OPENROUTER_API_KEY="", TAVILY_API_KEY="", ELECTION_MAP_MIN_STATES="3", SEAT_CHART_REQUIRE_ALL_SEATS="false", DATA_SERVICE_RETRY_SECONDS="0")
 
 import pytest
 from fastapi.testclient import TestClient
@@ -13,8 +14,11 @@ from app.db.session import Base, SessionLocal, engine
 from app.main import app
 from app.pipeline.prompts import (
     Citation,
+    ClaimReview,
     ExtractedClaim,
     ExtractedClaims,
+    FollowUpAnswer,
+    IncidentLocations,
     JudgeAnswer,
     MapDetails,
     PriceEvent,
@@ -35,6 +39,7 @@ class FakeLLM:
 
     def __init__(self):
         self.claims = ["The line opened on 6 November 2021."]
+        self.review_questions = []
         self.price_asset = None
         self.reported_prices = []
         self.map_places = []
@@ -46,10 +51,15 @@ class FakeLLM:
         self.reported_states = None
         self.reported_election = None
         self.map_details = []
+        self.incident_locations = []
         self.verdicts: dict[str, str] = {}
         self.failing: set[str] = set()
         self.calls: list[tuple[str, type]] = []
         self.prompts: list[tuple[type, str, str]] = []
+
+    def followup(self, model, system, user, schema, run_search):
+        answer, reported = self.complete(model, system, user, schema)
+        return answer, reported, []
 
     def complete(self, model, system, user, schema, check=None):
         from app.providers.llm import LLMError
@@ -78,6 +88,8 @@ class FakeLLM:
                     for text in self.claims
                 ]
             )
+        elif schema is ClaimReview:
+            answer = ClaimReview(questions=self.review_questions)
         elif schema is ReportedSeats:
             answer = self.reported_seats or ReportedSeats()
         elif schema is ReportedElection:
@@ -86,8 +98,12 @@ class FakeLLM:
             answer = self.reported_states or ReportedStates()
         elif schema is MapDetails:
             answer = MapDetails(details=self.map_details)
+        elif schema is IncidentLocations:
+            answer = IncidentLocations(locations=self.incident_locations)
         elif schema is ReportedPrices:
             answer = ReportedPrices(prices=self.reported_prices)
+        elif schema is FollowUpAnswer:
+            answer = FollowUpAnswer(answer=f"Answered by {model} from the saved sources.")
         elif schema is JudgeAnswer:
             verdict = self.verdicts.get(model, "supported")
             citations = (
@@ -208,9 +224,11 @@ def fakes():
 def client(fakes, monkeypatch):
     # Tests never touch the network, so every host counts as public unless a test says otherwise.
     monkeypatch.setattr("app.search.fetcher._is_public", lambda host: True)
+    from app.api.auth import _failed
     from app.api.checks import _recent_checks
 
     _recent_checks.clear()
+    _failed.clear()
     # Starting the app below applies the real migrations to an empty database.
     Base.metadata.drop_all(engine)
     with engine.begin() as connection:
@@ -225,5 +243,29 @@ def client(fakes, monkeypatch):
         state_data=fakes.state_data,
     )
     app.state.start_check = lambda check_id: run_check(check_id, SessionLocal, providers, get_settings())
+    app.state.llm = fakes.llm
+    app.state.followup_search = fakes.search
+    app.state.followup_fetch = fakes.fetch
     with TestClient(app) as test_client:
+        # Every route that reads or writes checks needs an account, so the shared client is signed in.
+        test_client.user_id = sign_up(test_client, "tester")["id"]
         yield test_client
+
+
+PASSWORD = "correct horse battery"
+
+
+def sign_up(test_client, username, password=PASSWORD):
+    response = test_client.post(
+        "/api/auth/register", json={"username": username, "password": password, "passwordConfirmation": password}
+    )
+    assert response.status_code == 201, response.text
+    return response.json()
+
+
+@pytest.fixture
+def other_client(client):
+    """A second browser, signed in as someone else, on the same app and database."""
+    other = TestClient(app)
+    other.user_id = sign_up(other, "someone-else")["id"]
+    return other

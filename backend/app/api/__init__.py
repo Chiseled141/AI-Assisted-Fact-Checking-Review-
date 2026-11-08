@@ -2,9 +2,10 @@
 
 from fastapi import APIRouter
 
-from . import checks, claims, system
+from . import auth, checks, claims, system
 
 router = APIRouter(prefix="/api")
+router.include_router(auth.router)
 router.include_router(checks.router)
 router.include_router(claims.router)
 router.include_router(system.router)

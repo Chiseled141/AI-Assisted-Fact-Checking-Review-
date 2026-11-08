@@ -8,15 +8,15 @@ from ..db import models
 from ..db.session import get_session
 from ..pipeline.passages import saved_excerpt
 from . import schemas
-from .deps import get_or_404
+from .deps import current_user, owned_claim
 from .serializers import claim_out, revision_out
 
 router = APIRouter()
 
 
 @router.get("/claims/{claim_id}/evidence", response_model=list[schemas.EvidenceOut])
-def claim_evidence(claim_id: str, session: Session = Depends(get_session)):
-    claim = get_or_404(session, models.Claim, claim_id)
+def claim_evidence(claim_id: str, session: Session = Depends(get_session), user: models.User = Depends(current_user)):
+    claim = owned_claim(session, claim_id, user)
     excerpts = {item.id: saved_excerpt(item.excerpt, item.source.text, claim.text) for item in claim.evidence}
     return [
         schemas.EvidenceOut(
@@ -38,8 +38,8 @@ def claim_evidence(claim_id: str, session: Session = Depends(get_session)):
 
 
 @router.get("/claims/{claim_id}/revisions", response_model=list[schemas.RevisionOut])
-def claim_revisions(claim_id: str, session: Session = Depends(get_session)):
-    return [revision_out(verdict) for verdict in get_or_404(session, models.Claim, claim_id).verdicts]
+def claim_revisions(claim_id: str, session: Session = Depends(get_session), user: models.User = Depends(current_user)):
+    return [revision_out(verdict) for verdict in owned_claim(session, claim_id, user).verdicts]
 
 
 @router.post("/claims/{claim_id}/corrections", status_code=201, response_model=schemas.CorrectionOut)
@@ -48,8 +48,9 @@ def publish_correction(
     body: schemas.CorrectionIn,
     session: Session = Depends(get_session),
     settings: Settings = Depends(get_settings),
+    user: models.User = Depends(current_user),
 ):
-    claim = get_or_404(session, models.Claim, claim_id)
+    claim = owned_claim(session, claim_id, user)
     current = claim.verdicts[-1].version if claim.verdicts else 0
     if body.expected_version != current:
         raise HTTPException(409, {"expectedVersion": body.expected_version, "currentVersion": current})
@@ -73,7 +74,7 @@ def publish_correction(
         evidence_ids=body.evidence_ids,
         citation_freshness={key: value.model_dump() for key, value in body.citation_freshness.items()},
         attachments=[item.model_dump(by_alias=True) for item in body.attachments] or None,
-        author="Reviewer",
+        author=user.username,
     )
     session.add(verdict)
     session.commit()

@@ -8,7 +8,7 @@ from app.core.config import Settings
 from app.db.models import Check, Claim, Evidence, Source
 from app.db.session import Base, make_engine
 from app.pipeline.progress import CHART_INCOMPLETE, TaskLog
-from app.pipeline.prompts import Citation, ExtractedClaims, JudgeAnswer, ReportedSeats, SeatChartRequest
+from app.pipeline.prompts import Citation, ClaimReview, ExtractedClaims, JudgeAnswer, ReportedSeats, SeatChartRequest
 from app.pipeline.run import Providers, _judge_claim, run_check
 from app.providers.llm import TIMED_OUT, LLMError
 from app.search.tavily import SearchError
@@ -79,16 +79,16 @@ def test_pipeline_saves_public_progress_without_any_per_source_model_calls(tmp_p
         assert check.status == "completed"
         assert all(event["status"] == "completed" for event in check.progress)
         assert check.progress[0]["claimCount"] == 1
-        assert [event["task"] for event in check.progress] == ["extracting", "searching", "judging", "judging"]
-        assert [event["kind"] for event in check.progress] == ["ai", "search", "ai", "ai"]
-        search = check.progress[1]
+        assert [event["task"] for event in check.progress] == ["extracting", "reviewing", "searching", "judging", "judging"]
+        assert [event["kind"] for event in check.progress] == ["ai", "ai", "search", "ai", "ai"]
+        search = check.progress[2]
         assert search["service"] == "Tavily"
         assert search["claimPosition"] == 1
         assert search["sourceCount"] == 2
         assert search["sourceTarget"] == settings.target_publishers_per_claim
         assert "requestedModel" not in search
-    assert len(fakes.llm.calls) == 3
-    assert {schema for _, schema in fakes.llm.calls} == {ExtractedClaims, JudgeAnswer}
+    assert len(fakes.llm.calls) == 4
+    assert {schema for _, schema in fakes.llm.calls} == {ExtractedClaims, ClaimReview, JudgeAnswer}
 
 
 def test_failed_extraction_closes_its_public_progress(tmp_path, fakes):

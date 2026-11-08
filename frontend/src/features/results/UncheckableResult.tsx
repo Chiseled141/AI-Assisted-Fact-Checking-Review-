@@ -1,5 +1,3 @@
-import { Link } from 'react-router-dom';
-import { ArrowUpRight } from 'lucide-react';
 import type { Check, CheckDetail } from '../../types/models';
 import { t } from '../../lib/i18n';
 
@@ -27,27 +25,21 @@ function explanation(category: Check['inputCategory']): string {
 export function UncheckableResult({ check }: { check: CheckDetail }) {
   const failed = check.progress?.some((task) => task.task === 'rephrasing' && task.status === 'failed');
   return (
-    <div className="mx-auto w-full max-w-[1040px] px-4 pb-24 pt-8 sm:px-6 sm:pt-10">
-      <section className="rounded-2xl border border-line bg-white p-6 sm:p-10" aria-labelledby="input-result-heading">
+    <div className="mx-auto w-full max-w-3xl px-4 pb-10 pt-6 sm:px-6">
+      <section className="ml-10 rounded-2xl border border-line bg-white p-5 sm:p-6" aria-labelledby="input-result-heading">
         <p className="text-sm font-medium text-ink-muted">{t('Input assessment')}</p>
-        <h1 id="input-result-heading" className="mt-3 break-words text-[24px] font-medium leading-snug tracking-[-0.02em] text-ink sm:text-[32px]">
-          {check.inputText && check.inputText.length <= 1000 ? check.inputText : check.title}
-        </h1>
-        <div className="mt-5 flex flex-wrap gap-2">
-          <span className="rounded-full border border-line-strong bg-page px-3 py-1 text-sm text-ink-soft">{inputCategoryLabel(check.inputCategory)}</span>
-          <span className="rounded-full border border-indigo-200 bg-indigo-50 px-3 py-1 text-sm text-indigo-700">{t('No factual verdict')}</span>
-        </div>
-        <p className="mt-5 max-w-2xl text-[16px] leading-relaxed text-ink-soft">
+        <h2 id="input-result-heading" className="mt-2 text-[20px] font-medium leading-snug tracking-[-0.02em] text-ink">
+          {inputCategoryLabel(check.inputCategory)}
+        </h2>
+        <span className="mt-3 inline-block rounded-full border border-indigo-200 bg-indigo-50 px-3 py-1 text-sm text-indigo-700">{t('No factual verdict')}</span>
+        <p className="mt-4 text-[15px] leading-relaxed text-ink-soft">
           {failed ? t('The model could not finish interpreting this input. Try again; no factual verdict was produced.') : explanation(check.inputCategory)}
         </p>
-        <h2 className="mt-6 text-sm font-semibold text-ink">{t('How to make this checkable')}</h2>
-        <p className="mt-2 max-w-2xl text-sm leading-relaxed text-ink-soft">
+        <h3 className="mt-5 text-sm font-semibold text-ink">{t('How to make this checkable')}</h3>
+        <p className="mt-2 text-sm leading-relaxed text-ink-soft">
           {t('State a specific fact and, when relevant, a date, place or measurable criterion.')}
           {check.inputCategory === 'subjective' && <> {t('For a “GOAT” question, choose a competition and a record to compare instead of asking who is best.')}</>}
         </p>
-        <Link to="/" className="mt-6 inline-flex min-h-11 items-center gap-1.5 rounded-full bg-ink py-2 pl-4 pr-3.5 text-sm font-medium text-page hover:opacity-90">
-          {t('Start a new check')}<ArrowUpRight className="h-4 w-4" aria-hidden="true" />
-        </Link>
       </section>
     </div>
   );

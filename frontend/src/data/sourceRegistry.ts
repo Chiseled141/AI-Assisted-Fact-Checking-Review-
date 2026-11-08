@@ -1264,7 +1264,7 @@ export const sourceRegistry: SourceEntry[] = [
     logo: 'vietnamfinance-vn.svg',
     about: 'Vietnamese news outlet',
   },
-  { domain: 'vietnamnet.vn', name: 'VietnamNet', trust: 'green', about: 'Vietnamese national newspaper' },
+  { domain: 'vietnamnet.vn', name: 'VietnamNet', trust: 'green', logo: 'vietnamnet-vn.png', about: 'Vietnamese national newspaper' },
   { domain: 'vietnamnews.vn', name: 'Vietnam News', trust: 'green', about: 'English-language Vietnamese news' },
   {
     domain: 'vietnamplus.vn',

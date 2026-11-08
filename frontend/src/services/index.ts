@@ -5,5 +5,4 @@ import { httpCheckService } from './httpCheckService';
 
 export const checkService: CheckService = httpCheckService;
 
-export type { CheckService } from './contract';
 export { NotFoundError, ValidationError, VersionConflictError } from './errors';

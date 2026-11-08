@@ -55,9 +55,10 @@ class Settings(BaseSettings):
     # --- 1. Models. Edit `config/models.toml`, or override one here through `.env`. ---------------------------------
     extraction_model: str = MODELS["roles"]["extraction"]
     research_model: str = MODELS["roles"]["research"]
+    followup_model: str = MODELS["roles"]["followup"]
     judges: dict[str, JudgeOption] = DEFAULT_JUDGES
     default_judge_ids: list[str] = MODELS["roles"]["default_judges"]
-    prompt_version: str = "v25"  # Bump when any file in `config/prompts/` changes. Each verdict records it.
+    prompt_version: str = "v40"  # Bump when any file in `config/prompts/` changes. Each verdict records it.
     llm_timeout_seconds: float = MODELS["openrouter"]["timeout_seconds"]
 
     # --- 2. Keys and storage ------------------------------------------------------------------------------------------
@@ -65,8 +66,8 @@ class Settings(BaseSettings):
     openrouter_base_url: str = MODELS["openrouter"]["base_url"]
     tavily_api_key: str = ""
 
-    # The local SQLite file sits with the rest of the database code, wherever the server is started from.
-    database_url: str = f"sqlite:///{CONFIG_DIR.parent / 'app' / 'db' / 'claimtrace.db'}"
+    # PostgreSQL. The old SQLite file is only read by `python -m app.db.transfer`; tests use SQLite in memory.
+    database_url: str = "postgresql+psycopg://claimtrace@localhost:5432/claimtrace"
     cors_origins: list[str] = [
         "http://localhost:5173",
         "http://localhost:5174",
@@ -81,8 +82,24 @@ class Settings(BaseSettings):
     max_file_bytes: int = 200 * 1024
     max_claims_per_check: int = 5
     question_max_chars: int = 300  # Longer input with no claims is an article, not a question, so no model is asked.
+    review_input_chars: int = 6000  # How much of the source text the claim review reads.
+    max_review_questions: int = 3  # More than this and the reader may as well start again.
     # Each check spends API credit, so one address can't start endless checks. 0 turns this off.
     max_checks_per_hour: int = 30
+
+    # Accounts: a username and a password, kept signed in by an HttpOnly cookie.
+    username_min_length: int = 3
+    username_max_length: int = 32
+    password_min_length: int = 8
+    password_max_length: int = 128
+    session_days: int = 30
+    session_cookie_name: str = "claimtrace_session"
+    session_cookie_secure: bool = False  # Turn on when the site is served over HTTPS.
+    max_login_attempts_per_hour: int = 20  # Per address, counting failed logins and sign-ups. 0 turns this off.
+
+    # Follow-up questions about a finished check. Each one is a paid model call.
+    max_followups_per_check: int = 10
+    max_followup_length: int = 1000
 
     # Human corrections.
     min_correction_reason: int = 10
@@ -94,7 +111,11 @@ class Settings(BaseSettings):
     # Tavily only ever searches the green-rated domains in `config/data/source_ratings.json`.
     tavily_timeout_seconds: float = 20
     tavily_candidates_per_search: int = 20  # Tavily's own maximum.
-    tavily_max_searches_per_claim: int = 2  # Only when research fails: a search, then one excluding publishers returned.
+    tavily_max_searches_per_claim: int = 2  # When research fails or keeps nothing: a search, then one more.
+    # Where that one more search looks when research kept nothing. News rarely covers general knowledge. Must be green-rated.
+    reference_domains: list[str] = [
+        "britannica.com", "nasa.gov", "noaa.gov", "usgs.gov", "nih.gov", "who.int", "cdc.gov", "nature.com", "science.org",
+    ]
     research_max_searches_per_claim: int = 3  # What `research_model` may spend on one claim.
     research_max_picks: int = 8  # More than the target, because some pages turn out unreadable.
     research_timeout_seconds: float = 90  # It reads far more than a judge does, so it gets longer than `llm_timeout_seconds`.
@@ -126,7 +147,7 @@ class Settings(BaseSettings):
     seat_chart_require_all_seats: bool = True  # A chart whose parties don't add up to the chamber is not shown.
 
     # US election map.
-    election_map_min_states: int = 51  # Every state and DC. A partial map is not shown.
+    election_map_min_states: int = 51  # Presidential maps require every state and DC by default.
 
     # Data services for charts: Yahoo Finance, World Bank and Data USA. A second try only after a temporary failure.
     data_service_attempts: int = 2
@@ -145,6 +166,11 @@ class Settings(BaseSettings):
     location_map_max_places: int = 8
     location_map_max_details: int = 8
     location_map_max_detail_label: int = 60
+
+    # Street locations come from OpenStreetMap through Photon (roads) and Overpass (junctions).
+    incident_map_photon_url: str = "https://photon.komoot.io/api/"
+    incident_map_overpass_url: str = "https://overpass-api.de/api/interpreter"
+    incident_map_timeout_seconds: float = 5
 
     # Heatmap. Values from Open-Meteo (`charts/data_sources.py`).
     heat_map_timeout_seconds: float = 30

@@ -3,8 +3,10 @@ from datetime import date
 import pytest
 
 from app.charts.election_map import election_window, is_us_election_claim, is_verified_state
+from app.core.config import get_settings
 from app.pipeline.prompts import (
     ElectionMapRequest,
+    ExtractedClaims,
     ReportedElection,
     ReportedSeat,
     ReportedSeats,
@@ -92,6 +94,34 @@ def test_too_few_verified_states_draw_nothing(client, fakes):
     check = run(client)
     assert check["claims"][0]["electionMap"] is None
     assert next(event for event in check["progress"] if event["task"] == "reading_states")["status"] == "completed"
+
+
+@pytest.mark.parametrize("verified", [True, False])
+def test_both_chambers_midterm_claim_draws_a_house_map_with_verified_results(client, fakes, monkeypatch, verified):
+    fakes.llm.claims = ["Đảng Dân Chủ chiếm ưu thế ở cả 2 viện trong cuộc bầu cử giữa kỳ tháng 11/2026."]
+    complete = fakes.llm.complete
+
+    def complete_with_topic(model, system, user, schema, check=None):
+        answer, reported = complete(model, system, user, schema, check)
+        if schema is ExtractedClaims:
+            answer.claims[0].topic = "kiểm soát Quốc hội Mỹ 2026"
+        return answer, reported
+
+    fakes.llm.complete = complete_with_topic
+    monkeypatch.setattr(get_settings(), "election_map_min_states", 51)
+    quote = "Democrats won most of Virginia's House seats."
+    fakes.fetch.text = (quote + " " + PAGE) * 8 if verified else PAGE * 8
+    fakes.fetch.published_at = "2026-11-08"
+    fakes.llm.reported_states = ReportedStates(states=[_state("Virginia", "Democrats", quote, None)])
+
+    check = run(client)
+    election = check["claims"][0]["electionMap"]
+    assert any(event["task"] == "reading_states" for event in check["progress"])
+    if verified:
+        assert (election["office"], election["year"]) == ("house", 2026)
+        assert [state["code"] for state in election["states"]] == ["us-va"]
+    else:
+        assert election is None
 
 
 def test_when_sources_disagree_the_other_winner_stays_on_screen(client, fakes):

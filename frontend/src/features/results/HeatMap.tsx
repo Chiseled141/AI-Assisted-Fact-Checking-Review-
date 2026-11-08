@@ -1,3 +1,4 @@
+import { ChartReply } from './ChartReply';
 import { lazy, Suspense } from 'react';
 import type { HeatMapData } from '../../types/models';
 import { formatCalendarDate } from '../../lib/format';
@@ -23,7 +24,8 @@ export const formatValue = (value: number, metric: HeatMapData['metric']) =>
 const degrees = (value: number, positive: string, negative: string) =>
   `${new Intl.NumberFormat(locale(), { maximumFractionDigits: 1 }).format(Math.abs(value))}°${value >= 0 ? positive : negative}`;
 
-export function HeatMap({ map }: { map: HeatMapData }) {
+export function HeatMap({ map, onReply }: { map: HeatMapData; onReply?: (title: string) => void }) {
+  const title = metricTitle[map.metric];
   const highest = map.points.reduce((best, point) => (point[2] > best[2] ? point : best));
   const lowest = map.points.reduce((best, point) => (point[2] < best[2] ? point : best));
   const average = map.points.reduce((sum, [, , value]) => sum + value, 0) / map.points.length;
@@ -41,9 +43,12 @@ export function HeatMap({ map }: { map: HeatMapData }) {
     <section aria-labelledby="heat-map-heading" className="mt-8">
       {/* A white panel, the same as the other charts'. */}
       <div className="rounded-2xl border border-ink bg-white p-4 sm:p-6">
-        <h2 id="heat-map-heading" className="text-[24px] font-medium leading-[1.2] tracking-[-0.02em] text-ink">
-          {metricTitle[map.metric]}
-        </h2>
+        <div className="flex items-start justify-between gap-3">
+          <h2 id="heat-map-heading" className="text-[24px] font-medium leading-[1.2] tracking-[-0.02em] text-ink">
+            {title}
+          </h2>
+          <ChartReply title={title} onReply={onReply} />
+        </div>
         <p className="mt-1.5 text-sm text-ink-soft">
           {map.areaName} · {period}
         </p>

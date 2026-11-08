@@ -18,9 +18,10 @@ For each state:
 
 - Use only final results of the election you are given. Leave out results from any other year, counts from while votes were still being counted, projections, polls and forecasts.
 - For a House election, give a state only when the quote says which party won that state's seats or most of them. A single district is not a state's result.
+- For a Senate election, give only states where a Senate race took place that year. For either chamber, omit nonvoting delegates.
 - A nationwide total is not a state's result.
 - When passages disagree, list each one, so the reader sees the difference.
-- An empty list is a good answer. Never fill a state in: a chart that isn't complete is simply not shown.
+- An empty list is a good answer. Leave any state without a supported result out.
 
 ## Example
 

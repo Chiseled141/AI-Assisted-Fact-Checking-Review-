@@ -1,120 +1,108 @@
-import { type KeyboardEvent, useEffect, useRef, useState } from 'react';
-import { NavLink, Outlet, Link, useLocation } from 'react-router-dom';
-import { Check, ChevronDown, Globe, ScanSearch } from 'lucide-react';
-import { type Language, setLanguage, t, useLanguage } from '../lib/i18n';
+import { useCallback, useEffect, useId, useLayoutEffect, useRef, useState } from 'react';
+import { Outlet, Link, useLocation, useNavigationType } from 'react-router-dom';
+import { History, Menu, ScanLine, Settings, UserRound, X } from 'lucide-react';
+import { t } from '../lib/i18n';
+import { readItem, RUNNING_CHECK_KEY, writeItem } from '../lib/storage';
+import { type Check, isTerminal } from '../types/models';
+import { loadAccount, useAccount } from '../services/account';
+import { LanguageSwitcher } from './LanguageSwitcher';
 
-const navClass = ({ isActive }: { isActive: boolean }) =>
-  `inline-flex min-h-11 items-center whitespace-nowrap rounded-md px-2.5 text-sm transition-colors hover:bg-zinc-100 sm:min-h-8 ${
-    isActive ? 'text-ink' : 'text-ink-muted hover:text-ink'
-  }`;
-
-const languages: { code: Language; short: string; name: string }[] = [
-  { code: 'en', short: 'EN', name: 'English' },
-  { code: 'vi', short: 'VI', name: 'Tiếng Việt' },
-];
-
-function LanguageSwitcher() {
-  const current = useLanguage();
-  const [open, setOpen] = useState(false);
-  const root = useRef<HTMLDivElement>(null);
-  const trigger = useRef<HTMLButtonElement>(null);
-  const items = useRef<(HTMLButtonElement | null)[]>([]);
-  const selected = languages.find(({ code }) => code === current) ?? languages[0];
-
-  useEffect(() => {
-    if (!open) return;
-    items.current[languages.indexOf(selected)]?.focus();
-    const onPointerDown = (event: PointerEvent) => {
-      if (!root.current?.contains(event.target as Node)) setOpen(false);
-    };
-    document.addEventListener('pointerdown', onPointerDown);
-    return () => document.removeEventListener('pointerdown', onPointerDown);
-  }, [open, selected]);
-
-  function onMenuKeyDown(event: KeyboardEvent<HTMLDivElement>) {
-    if (event.key === 'Escape') {
-      setOpen(false);
-      trigger.current?.focus();
-    } else if (event.key === 'Tab') {
-      setOpen(false);
-    } else if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
-      event.preventDefault();
-      const index = items.current.indexOf(document.activeElement as HTMLButtonElement);
-      const step = event.key === 'ArrowDown' ? 1 : -1;
-      items.current[(index + step + languages.length) % languages.length]?.focus();
-    }
-  }
-
-  return (
-    <div ref={root} className="relative">
-      <button
-        ref={trigger}
-        type="button"
-        aria-label={`${t('Language')}: ${selected.name}`}
-        aria-haspopup="menu"
-        aria-expanded={open}
-        onClick={() => setOpen((value) => !value)}
-        className="inline-flex min-h-11 items-center gap-1.5 rounded-md px-2 text-sm text-ink-muted transition-colors hover:bg-zinc-100 hover:text-ink sm:min-h-8"
-      >
-        <Globe className="h-3.5 w-3.5" aria-hidden="true" />
-        {/* A phone has room for the code only. */}
-        <span className="sm:hidden">{selected.short}</span>
-        <span className="hidden sm:inline">{selected.name}</span>
-        <ChevronDown className={`h-3.5 w-3.5 transition-transform duration-200 ${open ? 'rotate-180' : ''}`} aria-hidden="true" />
-      </button>
-      {open && (
-        <div
-          role="menu"
-          aria-label={t('Language')}
-          onKeyDown={onMenuKeyDown}
-          className="rise-in absolute right-0 top-full z-40 mt-1 min-w-36 rounded-md border border-line bg-white p-1 shadow-sm"
-        >
-          {languages.map(({ code, name }, index) => (
-            <button
-              key={code}
-              ref={(item) => {
-                items.current[index] = item;
-              }}
-              type="button"
-              role="menuitemradio"
-              aria-checked={current === code}
-              lang={code}
-              onClick={() => {
-                setLanguage(code);
-                setOpen(false);
-                trigger.current?.focus();
-              }}
-              className="flex min-h-11 w-full items-center justify-between gap-4 rounded px-2 text-left text-sm text-ink transition-colors hover:bg-zinc-100 focus:bg-zinc-100 focus:outline-none sm:min-h-8"
-            >
-              {name}
-              {current === code && <Check className="h-3.5 w-3.5 text-brand-600" aria-hidden="true" />}
-            </button>
-          ))}
-        </div>
-      )}
-    </div>
-  );
+export interface CheckNavigationContext {
+  reportCheck: (check: Pick<Check, 'id' | 'status'>) => void;
 }
 
 export function Layout() {
-  const { pathname } = useLocation();
+  const { pathname, hash, key } = useLocation();
+  const navigationType = useNavigationType();
   const home = pathname === '/';
   const press = pathname.startsWith('/checks/');
   const atmosphere = home || press;
-  const [scrolled, setScrolled] = useState(false);
+  const [pastComposer, setPastComposer] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [runningCheckId, setRunningCheckId] = useState<string | null>(() => readItem(RUNNING_CHECK_KEY) || null);
+  const account = useAccount();
+  const navId = useId();
+  const headerRef = useRef<HTMLElement>(null);
+  const docked = !home || pastComposer;
+  const reportCheck = useCallback<CheckNavigationContext['reportCheck']>((check) => {
+    setRunningCheckId((current) => isTerminal(check.status) ? current === check.id ? null : current : check.id);
+  }, []);
 
-  // The home header sits directly on the page background. Once content starts
-  // sliding underneath it, soften into a frosted bar so text stays legible.
+  // Who is signed in, for the name in the header. Signed out, it simply says "Account".
   useEffect(() => {
-    if (!atmosphere) {
-      setScrolled(false);
+    if (account === undefined) loadAccount().catch(() => undefined);
+  }, [account]);
+
+  useEffect(() => {
+    writeItem(RUNNING_CHECK_KEY, runningCheckId ?? '');
+  }, [runningCheckId]);
+
+  useLayoutEffect(() => {
+    if (home && !hash && navigationType === 'PUSH') {
+      document.scrollingElement?.scrollTo?.({ top: 0, behavior: 'instant' });
+    }
+  }, [home, hash, navigationType, key]);
+
+  // Reveal the floating navigation once the home input has left the viewport.
+  useEffect(() => {
+    if (!home) {
+      setPastComposer(false);
       return;
     }
-    const onScroll = () => setScrolled(window.scrollY > 8);
-    onScroll();
+    let frame = 0;
+    const update = () => {
+      const composer = document.getElementById('check-composer');
+      setPastComposer(window.scrollY > 0 && (composer ? composer.getBoundingClientRect().bottom < 100 : window.scrollY > 160));
+    };
+    const onScroll = () => {
+      cancelAnimationFrame(frame);
+      frame = requestAnimationFrame(update);
+    };
+    update();
     window.addEventListener('scroll', onScroll, { passive: true });
-    return () => window.removeEventListener('scroll', onScroll);
-  }, [atmosphere]);
+    window.addEventListener('resize', onScroll);
+    return () => {
+      cancelAnimationFrame(frame);
+      window.removeEventListener('scroll', onScroll);
+      window.removeEventListener('resize', onScroll);
+    };
+  }, [home]);
+
+  // Anchor actions also work after changing routes, without replacing a draft.
+  useEffect(() => {
+    setMenuOpen(false);
+    if (!hash) return;
+    const targets = ['#check-composer', '#how-it-works', '#find-check', '#check-results', '#followup-composer'];
+    if (!targets.includes(hash)) return;
+    const frame = requestAnimationFrame(() => {
+      const target = document.getElementById(hash.slice(1));
+      const reduced = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+      target?.scrollIntoView?.({ behavior: reduced ? 'instant' : 'smooth', block: 'start' });
+      if (hash === '#check-composer' || hash === '#followup-composer') {
+        target?.querySelector('textarea')?.focus({ preventScroll: true });
+      }
+      if (hash === '#find-check') target?.querySelector('input')?.focus({ preventScroll: true });
+    });
+    return () => cancelAnimationFrame(frame);
+  }, [pathname, hash, key]);
+
+  useEffect(() => {
+    if (!menuOpen) return;
+    const onPointerDown = (event: PointerEvent) => {
+      if (!headerRef.current?.contains(event.target as Node)) setMenuOpen(false);
+    };
+    const onKeyDown = (event: globalThis.KeyboardEvent) => {
+      if (event.key !== 'Escape') return;
+      setMenuOpen(false);
+      headerRef.current?.querySelector<HTMLButtonElement>('[aria-controls]')?.focus();
+    };
+    document.addEventListener('pointerdown', onPointerDown);
+    document.addEventListener('keydown', onKeyDown);
+    return () => {
+      document.removeEventListener('pointerdown', onPointerDown);
+      document.removeEventListener('keydown', onKeyDown);
+    };
+  }, [menuOpen]);
 
   return (
     <div className={`flex min-h-screen flex-col ${atmosphere ? 'home-atmosphere' : ''} ${press ? 'press' : ''}`}>
@@ -125,50 +113,64 @@ export function Layout() {
         {t('Skip to content')}
       </a>
       <header
-        className={`sticky top-0 z-30 border-b transition-colors ${
-          atmosphere
-            ? scrolled
-              ? 'border-line bg-page/95 backdrop-blur-md'
-              : 'border-transparent bg-transparent'
-            : 'border-line bg-page'
-        }`}
+        ref={headerRef}
+        className="site-header"
+        data-docked={docked}
       >
-        <div
-          className={`relative mx-auto flex items-center justify-between gap-2 px-4 py-2 sm:gap-4 ${
-            press ? 'max-w-[1240px] sm:px-8' : 'max-w-6xl sm:px-6'
-          }`}
-        >
+        <div className="site-header-shell">
           <Link
             to="/"
-            className="flex min-h-11 min-w-8 items-center gap-2 min-[360px]:min-w-11 rounded-md text-ink sm:min-h-0 sm:min-w-0"
+            className="site-header-wordmark font-wordmark"
             aria-label={t('ClaimTrace home')}
           >
-            <ScanSearch className="h-5 w-5 text-brand-600" strokeWidth={2} aria-hidden="true" />
-            <span className="hidden font-logo text-[17px] font-medium tracking-[-0.02em] min-[440px]:inline">
-              claimtrace<span className="text-brand-600">.</span>
-            </span>
+            ClaimTrace
           </Link>
-          <div className="flex items-center gap-1">
-            <nav aria-label={t('Main')}>
-              <ul className="flex items-center gap-1">
+          <div className="site-header-actions">
+            <nav id={navId} aria-label={t('Main')} className={`site-header-nav ${menuOpen ? 'is-open' : ''}`}>
+              <ul className="site-header-links">
                 <li>
-                  <NavLink to="/" end className={navClass}>
-                    {t('New Check')}
-                  </NavLink>
+                  <Link to="/settings" className="site-header-link" aria-current={pathname === '/settings' ? 'page' : undefined}>
+                    {!home && <Settings className="h-3.5 w-3.5" aria-hidden="true" />}
+                    {t('Settings')}
+                  </Link>
                 </li>
                 <li>
-                  <NavLink to="/history" className={navClass}>
+                  <Link to="/history" className="site-header-link" aria-current={pathname === '/history' ? 'page' : undefined}>
+                    {!home && <History className="h-3.5 w-3.5" aria-hidden="true" />}
                     {t('History')}
-                  </NavLink>
+                  </Link>
                 </li>
+                {!home && (
+                  <li>
+                    <Link to="/" className="site-header-check">
+                      <ScanLine className="h-3.5 w-3.5" aria-hidden="true" />
+                      {t('New check')}
+                    </Link>
+                  </li>
+                )}
               </ul>
             </nav>
             <LanguageSwitcher />
+            <Link to="/login" className="site-header-account"
+              aria-label={account ? t('Account: {username}', { username: account.username }) : t('Account')}>
+              <UserRound className="h-4 w-4" aria-hidden="true" />
+              <span className="site-header-account-label max-w-[10rem] truncate">{account ? account.username : t('Account')}</span>
+            </Link>
+            <button
+              type="button"
+              className="site-header-menu"
+              aria-label={menuOpen ? t('Close navigation') : t('Open navigation')}
+              aria-expanded={menuOpen}
+              aria-controls={navId}
+              onClick={() => setMenuOpen((open) => !open)}
+            >
+              {menuOpen ? <X className="h-5 w-5" aria-hidden="true" /> : <Menu className="h-5 w-5" aria-hidden="true" />}
+            </button>
           </div>
         </div>
       </header>
       <main id="main" tabIndex={-1} className="flex-1 focus:outline-none">
-        <Outlet />
+        <Outlet context={{ reportCheck } satisfies CheckNavigationContext} />
       </main>
     </div>
   );

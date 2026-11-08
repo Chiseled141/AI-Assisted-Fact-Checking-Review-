@@ -1,3 +1,4 @@
+import { ChartReply } from './ChartReply';
 import { lazy, Suspense } from 'react';
 import type { ElectionMapData } from '../../types/models';
 import { formatCalendarDate, safeHref } from '../../lib/format';
@@ -37,19 +38,27 @@ function winnerColors(map: ElectionMapData): (state: ElectionMapData['states'][n
  * Who won each US state, as far as the sources show. Claims without `electionMap` never reach this,
  * so Highcharts Maps and the map shapes only load when needed.
  */
-export function ElectionMap({ map }: { map: ElectionMapData }) {
+export function ElectionMap({ map, onReply }: { map: ElectionMapData; onReply?: (title: string) => void }) {
+  const title = t('US election results by state');
   const phone = useMediaQuery('(max-width: 639px)');
   const height = phone ? electionMap.phoneHeight : electionMap.height;
   const colorOf = winnerColors(map);
+  const count = map.states.length;
+  const coverage = map.office === 'president'
+    ? t('{count} of {total} states verified', { count, total: electionMap.totalStates })
+    : t(count === 1 ? '{count} state verified' : '{count} states verified', { count });
 
   return (
     <section aria-labelledby="election-map-heading" className="mt-8">
       <div className="rounded-2xl border border-ink bg-white p-4 sm:p-6">
-        <h2 id="election-map-heading" className="text-[24px] font-medium leading-[1.2] tracking-[-0.02em] text-ink">
-          {t('US election results by state')}
-        </h2>
+        <div className="flex items-start justify-between gap-3">
+          <h2 id="election-map-heading" className="text-[24px] font-medium leading-[1.2] tracking-[-0.02em] text-ink">
+            {title}
+          </h2>
+          <ChartReply title={title} onReply={onReply} />
+        </div>
         <p className="mt-1.5 text-sm text-ink-soft">
-          {[map.year, officeTitle[map.office], t('{count} of {total} states verified', { count: map.states.length, total: electionMap.totalStates })].join(' · ')}
+          {[map.year, officeTitle[map.office], coverage].join(' · ')}
         </p>
         <div className="mt-4 grid gap-6 lg:grid-cols-[minmax(0,7fr)_minmax(0,5fr)] lg:gap-8">
           {/* The height matches the map's, so nothing jumps when it loads. */}

@@ -13,10 +13,9 @@ dependencies = [
   "trafilatura>=1.12",
   "rank-bm25>=0.2.2",
   "alembic>=1.20.1",
+  "psycopg[binary]>=3.2",
+  "argon2-cffi>=23.1",
 ]
-
-[project.optional-dependencies]
-postgres = ["psycopg[binary]>=3.2"]
 
 [dependency-groups]
 dev = [

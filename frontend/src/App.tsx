@@ -1,9 +1,13 @@
-import { Link, Route, Routes } from 'react-router-dom';
+import { useEffect } from 'react';
+import { Link, Route, Routes, useLocation, useNavigate } from 'react-router-dom';
 import { Layout } from './components/Layout';
 import { NewCheckPage } from './features/new-check/NewCheckPage';
 import { CheckPage } from './features/check/CheckPage';
 import { HistoryPage } from './features/history/HistoryPage';
+import { AccountPage } from './features/account/AccountPage';
+import { SettingsPage } from './features/settings/SettingsPage';
 import { t, useLanguage } from './lib/i18n';
+import { onSignInRequired } from './services/account';
 
 function NotFoundPage() {
   return (
@@ -17,15 +21,30 @@ function NotFoundPage() {
   );
 }
 
+/** Opens the login page when a page's data needs an account, and comes back here afterwards. */
+function useSignInRedirect() {
+  const navigate = useNavigate();
+  const { pathname, search, hash } = useLocation();
+  useEffect(
+    () => onSignInRequired(() => {
+      if (pathname !== '/login') navigate(`/login?next=${encodeURIComponent(pathname + search + hash)}`, { replace: true });
+    }),
+    [navigate, pathname, search, hash],
+  );
+}
+
 export function App() {
   // Reading the language here re-renders the whole app when it changes, without losing form state.
   useLanguage();
+  useSignInRedirect();
   return (
     <Routes>
+      <Route path="login" element={<AccountPage />} />
       <Route element={<Layout />}>
         <Route index element={<NewCheckPage />} />
         <Route path="checks/:checkId" element={<CheckPage />} />
         <Route path="history" element={<HistoryPage />} />
+        <Route path="settings" element={<SettingsPage />} />
         <Route path="*" element={<NotFoundPage />} />
       </Route>
     </Routes>

@@ -19,7 +19,8 @@ def make_engine(url: str) -> Engine:
         if ":memory:" in url:
             args["poolclass"] = StaticPool
         return create_engine(url, **args)
-    return create_engine(url, pool_pre_ping=True)
+    # Times are stored and read back in UTC, whatever the server's own time zone is.
+    return create_engine(url, pool_pre_ping=True, connect_args={"options": "-c timezone=utc"})
 
 
 engine = make_engine(get_settings().database_url)

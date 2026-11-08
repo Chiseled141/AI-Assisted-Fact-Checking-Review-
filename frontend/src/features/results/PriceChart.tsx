@@ -1,3 +1,4 @@
+import { ChartReply } from './ChartReply';
 import { lazy, Suspense } from 'react';
 import type { MarketAsset, PriceChartData } from '../../types/models';
 import { formatCalendarDate, safeHref } from '../../lib/format';
@@ -34,16 +35,20 @@ const day = (ms: number) => formatCalendarDate(new Date(ms).toISOString().slice(
  * Market prices around a claim about an asset's price, with the claim's dates flagged. Claims without
  * `priceChart` never reach this, so Highcharts Stock only loads when there is a chart to show.
  */
-export function PriceChart({ chart }: { chart: PriceChartData }) {
+export function PriceChart({ chart, onReply }: { chart: PriceChartData; onReply?: (title: string) => void }) {
+  const title = priceTitle[chart.asset];
   const [start, first] = chart.prices[0];
   const [end, last] = chart.prices[chart.prices.length - 1];
   return (
     <section aria-labelledby="price-chart-heading" className="mt-8">
       {/* A white panel, so the chart stands apart from the page. */}
       <div className="rounded-2xl border border-ink bg-white p-4 sm:p-6">
-        <h2 id="price-chart-heading" className="text-[24px] font-medium leading-[1.2] tracking-[-0.02em] text-ink">
-          {priceTitle[chart.asset]}
-        </h2>
+        <div className="flex items-start justify-between gap-3">
+          <h2 id="price-chart-heading" className="text-[24px] font-medium leading-[1.2] tracking-[-0.02em] text-ink">
+            {title}
+          </h2>
+          <ChartReply title={title} onReply={onReply} />
+        </div>
         {/* The height matches the chart's, so nothing jumps when it loads. */}
         <div className="mt-3" style={{ height: priceChart.height }} aria-hidden="true">
           <Suspense fallback={null}>

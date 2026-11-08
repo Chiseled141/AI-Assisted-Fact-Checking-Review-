@@ -5,7 +5,7 @@ Bump `prompt_version` in settings when it changes, because every verdict records
 """
 
 import re
-from typing import Literal
+from typing import Annotated, Literal
 
 from pydantic import BaseModel, Field
 
@@ -31,12 +31,15 @@ EXTRACT_SYSTEM = system_prompt("charts/chart_rules.md", "extract.md")
 JUDGE_SYSTEM = system_prompt("judge.md")
 SJC_PRICES_SYSTEM = system_prompt("charts/chart_rules.md", "charts/sjc_prices.md")
 MAP_DETAILS_SYSTEM = system_prompt("charts/chart_rules.md", "charts/map_details.md")
+INCIDENT_MAP_SYSTEM = system_prompt("charts/chart_rules.md", "charts/incident_map.md")
 SEAT_CHART_SYSTEM = system_prompt("charts/chart_rules.md", "charts/seat_chart.md")
 ELECTION_MAP_SYSTEM = system_prompt("charts/chart_rules.md", "charts/election_map.md")
 ELECTION_RESULTS_SYSTEM = system_prompt("charts/chart_rules.md", "charts/seat_chart.md", "charts/election_map.md")
 RESEARCH_SYSTEM = system_prompt("research.md")
 QUESTION_SYSTEM = system_prompt("question.md")
+REVIEW_SYSTEM = system_prompt("review.md")
 CHART_RESEARCH_SYSTEM = system_prompt("charts/chart_research.md")
+FOLLOWUP_SYSTEM = system_prompt("followup.md")
 
 
 class PriceEvent(BaseModel):
@@ -98,6 +101,16 @@ class ExtractedClaims(BaseModel):
     input_category: InputCategory | None = None
 
 
+class ClaimQuestion(BaseModel):
+    claim: int = Field(ge=1)
+    question: str = Field(min_length=3, max_length=300)
+    options: list[Annotated[str, Field(min_length=1, max_length=160)]] = Field(default_factory=list, max_length=4)
+
+
+class ClaimReview(BaseModel):
+    questions: list[ClaimQuestion] = []
+
+
 class ReportedPrice(BaseModel):
     evidence_id: str
     date: str
@@ -119,6 +132,28 @@ class MapDetail(BaseModel):
 
 class MapDetails(BaseModel):
     details: list[MapDetail] = []
+
+
+class ReportedIncidentArea(BaseModel):
+    name: str = Field(min_length=1, max_length=100)
+    kind: Literal["area", "road_segment"] = "area"
+    start: str | None = Field(default=None, max_length=100)
+    end: str | None = Field(default=None, max_length=100)
+
+
+class ReportedIncidentLocation(BaseModel):
+    evidence_id: str
+    city: str = Field(min_length=2, max_length=60)
+    district: str | None = Field(default=None, max_length=80)
+    roads: list[str] = Field(default_factory=list, max_length=2)
+    areas: list[ReportedIncidentArea] = Field(default_factory=list, max_length=4)
+    toward: str | None = Field(default=None, max_length=100)
+    whole_road: bool = False
+    quote: str = Field(min_length=1, max_length=650)
+
+
+class IncidentLocations(BaseModel):
+    locations: list[ReportedIncidentLocation] = Field(default_factory=list, max_length=8)
 
 
 class ReportedSeat(BaseModel):
@@ -177,6 +212,11 @@ class JudgeAnswer(BaseModel):
     review_en: str | None = None
     review_vi: str | None = None
     citations: list[Citation] = []
+
+
+class FollowUpAnswer(BaseModel):
+    answer: str = Field(min_length=1)
+    source_urls: list[str] = Field(default_factory=list, max_length=18)
 
 
 def tagged(tag: str, text: str, **attributes: str) -> str:

@@ -62,9 +62,23 @@ def claim_out(claim: models.Claim) -> schemas.ClaimOut:
         unavailable_reason=claim.unavailable_reason,
         price_chart=claim.price_chart,
         location_map=claim.location_map,
+        incident_map=claim.incident_map,
         heat_map=claim.heat_map,
         country_map=claim.country_map,
         seat_chart=claim.seat_chart,
         election_map=claim.election_map,
         rephrased_from=claim.rephrased_from,
+    )
+
+
+def message_out(message: models.CheckMessage, model_name: str | None) -> schemas.MessageOut:
+    return schemas.MessageOut(
+        id=message.id,
+        question=message.question,
+        files=message.files or [],
+        answer=message.answer,
+        reference=message.reference,
+        sources=message.sources or [],
+        model_name=model_name,
+        created_at=message.created_at,
     )

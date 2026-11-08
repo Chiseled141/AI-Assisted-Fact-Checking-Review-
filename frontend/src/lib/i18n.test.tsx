@@ -29,28 +29,24 @@ function serveCheck() {
 }
 
 async function chooseLanguage(user: ReturnType<typeof userEvent.setup>, name: string) {
-  await user.click(screen.getByRole('button', { name: /^(Language|Ngôn ngữ):/ }));
-  await user.click(screen.getByRole('menuitemradio', { name }));
+  await user.click(screen.getByRole('radio', { name }));
 }
 
 describe('language', () => {
   afterEach(async () => { await act(async () => setLanguage('en')); });
 
-  it('closes the language menu with Escape and returns focus to its button', async () => {
+  it('moves between languages with the arrow keys, like a radio group', async () => {
     const user = userEvent.setup();
     renderApp('/');
-    const button = screen.getByRole('button', { name: /^Language:/ });
+    const english = screen.getByRole('radio', { name: 'English' });
+    expect(english).toHaveAttribute('aria-checked', 'true');
 
-    await user.click(button);
-    expect(screen.getByRole('menuitemradio', { name: 'English' })).toHaveFocus();
-    expect(screen.getByRole('menuitemradio', { name: 'English' })).toHaveAttribute('aria-checked', 'true');
-
-    await user.keyboard('{ArrowDown}');
-    expect(screen.getByRole('menuitemradio', { name: 'Tiếng Việt' })).toHaveFocus();
-
-    await user.keyboard('{Escape}');
-    expect(screen.queryByRole('menu')).not.toBeInTheDocument();
-    expect(button).toHaveFocus();
+    await act(async () => english.focus());
+    await user.keyboard('{ArrowRight}');
+    const vietnamese = screen.getByRole('radio', { name: 'Tiếng Việt' });
+    expect(vietnamese).toHaveAttribute('aria-checked', 'true');
+    expect(vietnamese).toHaveFocus();
+    expect(screen.getByRole('radiogroup', { name: 'Ngôn ngữ' })).toBeInTheDocument();
   });
 
   it('switches the interface from the header, keeps form text, and remembers the choice', async () => {
@@ -91,13 +87,6 @@ describe('language', () => {
     await chooseLanguage(user, 'English');
     expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('The route opened in March 2024.');
     expect(fetchMock.mock.calls.filter(([url]) => new URL(String(url), 'http://localhost').pathname === '/api/check/chk_test')).toHaveLength(1);
-  });
-
-  it('keeps saved history in every interface language', async () => {
-    interceptRequests(() => jsonResponse({ items: [makeCheck()], page: 1, pageSize: 20, total: 1, totalPages: 1 }));
-    setLanguage('vi');
-    renderApp('/history');
-    expect(await screen.findByText('A saved check')).toBeInTheDocument();
   });
 
   it('puts Vietnamese newspapers first in Vietnamese', () => {

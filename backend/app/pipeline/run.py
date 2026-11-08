@@ -17,6 +17,7 @@ from ..charts.country_map import build_country_map
 from ..charts.data_sources import ClimateData, CountryData, MarketData, StateData
 from ..charts.election_map import build_election_visuals, election_window
 from ..charts.heat_map import build_heat_map
+from ..charts.incident_map import build_incident_map
 from ..charts.location_map import build_location_map, build_map_details
 from ..charts.price_chart import build_price_chart, build_sjc_chart, price_table
 from ..core.config import Settings
@@ -49,6 +50,7 @@ from .prompts import (
     tagged,
 )
 from .research import Research, research_sources
+from .review import answered_claims, ask_questions, needs_choice, saved_review
 
 logger = logging.getLogger(__name__)
 
@@ -56,8 +58,23 @@ SEARCH_FAILED = "Evidence could not be retrieved, so there is no verdict."
 JUDGES_FAILED = "The AI judges could not assess this claim, so there is no verdict."
 NO_EVIDENCE = "No relevant source was found for this claim, so it cannot be verified."
 DATA_ID = "D1"  # The claim's own price data, which judges may cite beside the passages.
+STOPPED = "You stopped this check."
+FINISHED = ("completed", "failed", "stopped")
+
+# Checks the reader has asked to stop. Checks run inside this process, so a set is enough, like the rate limits.
+stop_requests: set[str] = set()
 
 VisualResult = TypeVar("VisualResult")
+
+
+class CheckStopped(Exception):
+    pass
+
+
+def _stop_if_asked(check: Check) -> None:
+    """Called each time the check saves, so it ends at its next step without paying for the ones after it."""
+    if check.id in stop_requests:
+        raise CheckStopped
 
 
 @dataclass
@@ -113,12 +130,14 @@ def _search_query(item: ExtractedClaim) -> str:
     return (query[:400 - len(suffix)].strip() + suffix).strip()
 
 
+def _dates(published_at: str | None) -> list[str]:
+    return [_today(), *([f"Article date: {published_at}"] if published_at else [])]
+
+
 def _extract_claims(
     text: str, article: Page | None, providers: Providers, settings: Settings
 ) -> tuple[list[ExtractedClaim], str, InputCategory | None]:
-    lines = [_today()]
-    if article and article.published_at:
-        lines.append(f"Article date: {article.published_at}")
+    lines = _dates(article.published_at if article else None)
     answer, model = providers.llm.complete(
         settings.extraction_model, EXTRACT_SYSTEM, "\n\n".join([*lines, tagged("input", text)]), ExtractedClaims
     )
@@ -148,6 +167,7 @@ def _claims_from_question(
 
 def _save_progress(check: Check, session: Session, event: dict) -> None:
     """Persist public task status and finished explanations, never a model's private reasoning stream."""
+    _stop_if_asked(check)
     events = [dict(item) for item in check.progress or []]
     for item in events:
         if item["id"] == event["id"]:
@@ -193,7 +213,7 @@ def _fetch_visuals(
 def _read_visual_figures(
     item: ExtractedClaim, location_map: dict | None, evidence: list[Evidence], skip_url: str | None, providers: Providers,
     settings: Settings, pool: ThreadPoolExecutor, tasks: TaskLog,
-) -> tuple[dict | None, list[dict], dict | None]:
+) -> tuple[dict | None, list[dict], dict | None, dict | None]:
     """The figures that come from sources. `evidence` is already loaded, so this only reads it."""
     request = item.election_map or item.seat_chart
     sources = election_sources(
@@ -206,9 +226,14 @@ def _read_visual_figures(
         sources.pages, sources.domains,
     )
     seat_chart, election_map = build_election_visuals(item, evidence, providers.llm, settings, tasks, finder)
-    if seat_chart or election_map or not location_map:
-        return seat_chart, [], election_map
-    return None, build_map_details(item.text, location_map, evidence, providers.llm, settings, tasks), None
+    if seat_chart or election_map:
+        return seat_chart, [], election_map, None
+    incident = build_incident_map(item.text, evidence, providers.llm, settings, tasks)
+    details = (
+        build_map_details(item.text, location_map, evidence, providers.llm, settings, tasks)
+        if location_map and not incident else []
+    )
+    return None, details, None, incident
 
 
 def _finish_research(task, research: Research, settings: Settings) -> None:
@@ -217,7 +242,10 @@ def _finish_research(task, research: Research, settings: Settings) -> None:
     elif research.hits is None:
         task.fail(research.search_error or NO_READABLE_SOURCE)
     else:
-        task.finish_model(research.reported_model, settings, sourceCount=len(research.hits), searchCount=research.searches)
+        task.finish_model(
+            research.reported_model, settings, sourceCount=len(research.hits), searchCount=research.searches,
+            candidateCount=research.candidate_count, pickedCount=research.picked_count,
+        )
 
 
 def _research_brief(item: ExtractedClaim, window: TimeWindow | None) -> str:
@@ -279,6 +307,8 @@ def _retrieve(
         for claim in claims
     } if research_call else {}
     researched: set[str] = set()
+    # Research looked and kept nothing. News rarely covers general knowledge, so reference sites get one search.
+    nothing_kept: set[str] = set()
 
     def show_reading():
         for claim in claims:
@@ -309,6 +339,9 @@ def _retrieve(
             since["start_date"] = window.start
             if window.end and not more:  # The backfill may reach later reports, which only count if nothing better is found.
                 since["end_date"] = window.end
+        if more and claim.id in nothing_kept:
+            query = (english_queries or {}).get(claim.id) or query
+            since = {"newest_first": False, "domains": settings.reference_domains}
         try:
             if more:
                 hits = providers.search.search_more(query, sorted(domains_seen[claim.id]), **since)
@@ -327,8 +360,12 @@ def _retrieve(
                 # When research fails, the search that replaces it counts too.
                 searches[claim_id] = research.searches + (research.hits is None)
                 # A successful selection/rejection must not be undone by an unreviewed backfill.
-                if research.hits or (research.hits is not None and research.candidate_count):
+                # A claim about one person or one election stays strict: its rejected pages were the wrong person or period.
+                strict = claim_id in windows or (people or {}).get(claim_id)
+                if research.hits or (research.hits is not None and research.candidate_count and strict):
                     researched.add(claim_id)
+                elif research.hits is not None and research.candidate_count:
+                    nothing_kept.add(claim_id)
             if hits is None:
                 search_failed.add(claim_id)
                 search_errors[claim_id] = error
@@ -556,15 +593,22 @@ def _judge_claim(
 
     # The first judge that answered is shown as the claim's verdict. Disagreement is kept, never voted away.
     option, primary, model = answered[0]
-    for _, answer, _ in reversed(answered):
+    citations_by_judge = {}
+    for judge_index, (_, answer, _) in reversed(list(enumerate(answered))):
+        citations_by_judge[judge_index] = saved_citations = []
         for citation in answer.citations:
             if citation.evidence_id not in labels:
                 continue  # The price data is shown as the claim's chart, not as a source.
             item = labels[citation.evidence_id]
             item.relation = citation.relation
-            if citation.quote and quote_in_text(citation.quote, item.source.text):  # Only real quotes are shown as quotes.
-                item.excerpt = citation.quote
-                item.translations = _translations(citation.quote, en=citation.quote_en, vi=citation.quote_vi)
+            quote = None
+            translations = None
+            if citation.quote and quote_in_text(citation.quote, item.source.text):
+                quote = citation.quote
+                translations = _translations(quote, en=citation.quote_en, vi=citation.quote_vi)
+                item.excerpt = quote
+                item.translations = translations
+            saved_citations.append({"evidence_id": item.id, "quote": quote, "translations": translations})
     source_citations = [citation for citation in primary.citations if citation.evidence_id in labels]
     cited = [labels[citation.evidence_id].id for citation in source_citations]
     return Verdict(
@@ -588,8 +632,9 @@ def _judge_claim(
                 "review": answer.review,
                 "translations": _translations(answer.review, en=answer.review_en, vi=answer.review_vi),
                 "primary": result_option is option,
+                "citations": citations_by_judge[index],
             }
-            for result_option, answer, result_model in answered
+            for index, (result_option, answer, result_model) in enumerate(answered)
         ],
         author=f"AI · {settings.model_display_name(model)}",
     )
@@ -609,6 +654,10 @@ def run_check(
             return
         try:
             _run(check, session, providers, settings, pool, given_claims)
+        except CheckStopped:
+            session.rollback()
+            pool.shutdown(wait=False, cancel_futures=True)  # Calls still queued are never made, or paid for.
+            _end(check, session, "stopped", STOPPED)
         except (FetchError, LLMError) as error:
             session.rollback()
             logger.warning("Check %s failed: %s", check_id, error)
@@ -617,16 +666,23 @@ def run_check(
             session.rollback()
             logger.exception("Check %s failed", check_id)
             _fail(check, session, "Something went wrong while running this check.")
+        finally:
+            stop_requests.discard(check_id)
 
 
-def _fail(check: Check, session: Session, message: str) -> None:
+def _end(check: Check, session: Session, status: str, message: str) -> None:
     check.progress = closed_tasks(check.progress, message)
-    check.status = "failed"
+    check.status = status
     check.error_message = message
     session.commit()
 
 
+def _fail(check: Check, session: Session, message: str) -> None:
+    _end(check, session, "failed", message)
+
+
 def _set_status(check: Check, session: Session, status: str) -> None:
+    _stop_if_asked(check)
     check.status = status
     session.commit()
 
@@ -642,7 +698,13 @@ def _run(
     tasks = TaskLog(lambda event: _save_progress(check, session, event))
     rephrased_from = None
     _set_status(check, session, "extracting")
-    if given_claims is None:
+    review = check.review or {}
+    if review.get("answer") and "extracted" in review:
+        context = _dates((check.article or {}).get("publishedAt"))
+        extracted = answered_claims(review, context, providers.llm, settings, pool, tasks)
+        rephrased_from = review["rephrased_from"]
+        check.review = {key: value for key, value in review.items() if key not in ("extracted", "rephrased_from")}
+    elif given_claims is None:
         text, article = _input_text(check, providers)
         if article:
             check.article = {"title": article.title, "publisher": article.publisher, "publishedAt": article.published_at}
@@ -657,6 +719,13 @@ def _run(
         if not extracted and category is None and text.strip() and len(text) <= settings.question_max_chars:
             extracted, category = _claims_from_question(text, providers, settings, tasks)
             rephrased_from = text.strip() if extracted else None
+        if extracted:
+            questions = ask_questions(extracted, text, providers.llm, settings, tasks)
+            choose = needs_choice(check, text, len(extracted), settings)
+            if questions or choose:
+                check.review = saved_review(extracted, questions, choose, rephrased_from)
+                _set_status(check, session, "awaiting_input")
+                return
     else:
         extracted = [ExtractedClaim(text=claim, checkworthiness=1) for claim in given_claims]
     claims = [
@@ -777,10 +846,11 @@ def _run(
     for members, result in zip(groups.values(), results, strict=True):
         for index in members:
             figures[index] = result
-    for claim, (seat_chart, details, election_map) in zip(claims, figures, strict=True):
+    for claim, (seat_chart, details, election_map, incident_map) in zip(claims, figures, strict=True):
         claim.seat_chart, claim.election_map = seat_chart, election_map
-        if seat_chart or election_map:
-            claim.location_map = None  # A seat chart and an election map can sit together, but never with this one.
+        claim.incident_map = incident_map
+        if seat_chart or election_map or incident_map:
+            claim.location_map = None
         elif details:
             claim.location_map = {**claim.location_map, "details": details}
 

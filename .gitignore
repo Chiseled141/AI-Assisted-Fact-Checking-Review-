@@ -4,4 +4,10 @@
 
 # Secrets
 .env
+.env.*
+!.env.example
+!.env.*.example
 .claude/
+
+# Cached metadata for the party-logo maintenance script
+frontend/scripts/.party-logo-cache/

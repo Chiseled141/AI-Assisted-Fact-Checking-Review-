@@ -1,6 +1,8 @@
+from concurrent.futures import ThreadPoolExecutor
 from types import SimpleNamespace
 from unittest.mock import patch
 
+import pytest
 from sqlalchemy.orm import sessionmaker
 
 from app.core.config import Settings
@@ -16,10 +18,10 @@ from app.pipeline.prompts import (
     ResearchPicks,
 )
 from app.pipeline.research import research_sources
-from app.pipeline.run import Providers, run_check
+from app.pipeline.run import Providers, _retrieve, run_check
 from app.providers.llm import TIMED_OUT, LLMError
 from app.search.fetcher import Page
-from app.search.tavily import CHART_DOMAINS, CHART_SOURCES, SearchError, SearchHit, TimeWindow
+from app.search.tavily import CHART_DOMAINS, CHART_SOURCES, SearchError, SearchHit, TimeWindow, is_allowed_source
 
 GOOD = "https://reuters.com/results"
 OTHER = "https://bbc.com/results"
@@ -84,11 +86,11 @@ def test_a_model_rejecting_every_candidate_does_not_get_padded_with_unselected_p
     assert found.candidate_count == 2
 
 
-def test_a_rejected_result_set_is_not_reintroduced_by_a_direct_backfill(fakes):
-    from concurrent.futures import ThreadPoolExecutor
-
-    from app.pipeline.run import _retrieve
-
+@pytest.mark.parametrize("strict", [
+    {"people": {"c": "Alex Example"}},
+    {"windows": {"c": TimeWindow("2024-11-05")}},
+])
+def test_a_rejected_result_set_about_a_person_or_an_election_gets_no_backfill(fakes, strict):
     def must_not_backfill(*args, **kwargs):
         raise AssertionError("Researcher-rejected pages must not be brought back by a direct search.")
 
@@ -96,10 +98,56 @@ def test_a_rejected_result_set_is_not_reintroduced_by_a_direct_backfill(fakes):
     providers = Providers(llm=SimpleNamespace(research=_researcher("q", urls=())), search=search, fetch=fakes.fetch)
     with ThreadPoolExecutor(2) as pool:
         pages, selected, failed = _retrieve(
-            [Claim(id="c", position=1, text="A factual claim.")], None, providers, Settings(), pool, briefs={"c": "brief"},
+            [Claim(id="c", position=1, text="Alex Example won a factual claim.")], None, providers, Settings(), pool,
+            briefs={"c": "brief"}, **strict,
         )
     assert pages == {} and selected == {"c": []}
     assert not failed and not fakes.fetch.fetched
+
+
+def test_a_general_claim_with_nothing_kept_searches_reference_sites_in_english(fakes):
+    asked = []
+
+    def search_more(query, exclude, **options):
+        asked.append((query, exclude, options))
+        return [SearchHit("https://www.britannica.com/science/boiling-point")]
+
+    search = SimpleNamespace(search_hits=_search(), search_more=search_more)
+    providers = Providers(llm=SimpleNamespace(research=_researcher("q", urls=())), search=search, fetch=fakes.fetch)
+    settings = Settings()
+    with ThreadPoolExecutor(2) as pool:
+        pages, selected, failed = _retrieve(
+            [Claim(id="c", position=1, text="Nước sôi ở 100 độ C ở mực nước biển.")], None, providers, settings, pool,
+            queries={"c": "nhiệt độ sôi của nước"}, briefs={"c": "brief"}, english_queries={"c": "water boiling point sea level"},
+        )
+    assert asked == [("water boiling point sea level", [], {"newest_first": False, "domains": settings.reference_domains})]
+    assert selected == {"c": ["https://www.britannica.com/science/boiling-point"]} and pages and not failed
+
+
+def test_a_failed_reference_search_is_unavailable_not_insufficient_evidence(fakes):
+    def search_more(query, exclude, **options):
+        raise SearchError("The service is rate-limited.")
+
+    search = SimpleNamespace(search_hits=_search(), search_more=search_more)
+    providers = Providers(llm=SimpleNamespace(research=_researcher("q", urls=())), search=search, fetch=fakes.fetch)
+    with ThreadPoolExecutor(2) as pool:
+        _, _, failed = _retrieve(
+            [Claim(id="c", position=1, text="A factual claim.")], None, providers, Settings(), pool, briefs={"c": "brief"},
+        )
+    assert failed == {"c"}
+
+
+def test_every_reference_site_is_green_rated():
+    assert all(is_allowed_source(f"https://{domain}/page") for domain in Settings().reference_domains)
+
+
+def test_an_address_copied_with_another_scheme_or_slash_still_counts():
+    hit = SearchHit("https://reuters.com/world/story")
+    found = research_sources(
+        "A claim.", "brief", _search(hits=[hit]), _researcher("q", urls=("http://www.reuters.com/world/story/",)), Settings(), None, True,
+    )
+    assert [item.url for item in found.hits] == [hit.url]
+    assert found.picked_count == 1
 
 
 def test_a_full_choice_is_left_alone():
@@ -185,7 +233,7 @@ def test_when_research_fails_tavily_still_finds_sources_and_the_failure_stays_vi
     assert sources
     row = next(event for event in progress if event["task"] == "researching")
     assert (row["status"], row["summary"]) == ("failed", TIMED_OUT)
-    assert not any(event.get("actualModel") == "third/model" for event in progress)
+    assert not any(event.get("actualModel") == "third/model" for event in progress if event["task"] != "reviewing")
 
 
 def test_the_research_model_is_told_what_a_chart_needs(tmp_path, fakes):

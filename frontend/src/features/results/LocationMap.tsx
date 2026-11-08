@@ -1,3 +1,4 @@
+import { ChartReply } from './ChartReply';
 import { lazy, Suspense, useEffect, useRef, useState, type RefObject } from 'react';
 import type { LocationMapData, MapDetail } from '../../types/models';
 import { safeHref } from '../../lib/format';
@@ -78,7 +79,8 @@ function FigureRows({ rows }: { rows: MapDetail[] }) {
   );
 }
 
-export function LocationMap({ map }: { map: LocationMapData }) {
+export function LocationMap({ map, onReply }: { map: LocationMapData; onReply?: (title: string) => void }) {
+  const title = t('Places in this claim');
   const places = map.places
     .map(({ name, named, regions }) => {
       if (regions?.length) return `${regions.map((region) => region.name).join(', ')}, ${name}`;
@@ -104,9 +106,12 @@ export function LocationMap({ map }: { map: LocationMapData }) {
     <section aria-labelledby="location-map-heading" className="mt-8">
       {/* A white panel, the same as the price chart's. */}
       <div className="rounded-2xl border border-ink bg-white p-4 sm:p-6">
-        <h2 id="location-map-heading" className="text-[24px] font-medium leading-[1.2] tracking-[-0.02em] text-ink">
-          {t('Places in this claim')}
-        </h2>
+        <div className="flex items-start justify-between gap-3">
+          <h2 id="location-map-heading" className="text-[24px] font-medium leading-[1.2] tracking-[-0.02em] text-ink">
+            {title}
+          </h2>
+          <ChartReply title={title} onReply={onReply} />
+        </div>
         <p className="mt-1.5 text-sm text-ink-soft">{places}</p>
         {canDrillDown && (
           <p className="mt-1 text-[13px] text-ink-muted">{t('Click a highlighted country to see the region the claim names.')}</p>

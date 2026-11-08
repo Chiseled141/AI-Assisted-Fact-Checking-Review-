@@ -10,7 +10,7 @@ from dataclasses import dataclass
 
 from ..core.config import Settings
 from ..providers.llm import LLMError
-from ..search.tavily import CHART_DOMAINS, SearchError, SearchHit, TimeWindow
+from ..search.tavily import CHART_DOMAINS, SearchError, SearchHit, TimeWindow, source_url_key
 from .prompts import RESEARCH_SYSTEM, ResearchPicks, tagged
 
 logger = logging.getLogger(__name__)
@@ -26,6 +26,7 @@ class Research:
     llm_error: str | None = None
     search_error: str | None = None
     candidate_count: int = 0
+    picked_count: int = 0  # What the model chose, before any address no search returned is dropped.
 
 
 def research_sources(
@@ -86,10 +87,16 @@ def research_sources(
     result.candidate_count = len(seen)
     if not seen and result.search_error:
         return result
-    # An address no search returned is dropped, so a model can't add a source of its own.
-    chosen = [seen[url] for url in dict.fromkeys(answer.urls) if url in seen]
+    result.picked_count = len(answer.urls)
+    # An address no search returned is dropped, so a model can't add a source of its own. A model copying one
+    # with another scheme or a trailing slash still means that page.
+    by_key = {source_url_key(hit.url): hit for hit in seen.values()}
+    chosen = list({key: by_key[key] for key in map(source_url_key, answer.urls) if key in by_key}.values())
     # Never fill a short choice with pages the researcher did not select just to reach a source target.
     result.hits = chosen[: max_picks or settings.research_max_picks]
     if not result.hits:
-        logger.warning("Research found no page after %d searches for: %s", result.searches, claim_text[:120])
+        logger.warning(
+            "Research kept none of %d results (%d chosen) after %d searches for: %s",
+            result.candidate_count, result.picked_count, result.searches, claim_text[:120],
+        )
     return result

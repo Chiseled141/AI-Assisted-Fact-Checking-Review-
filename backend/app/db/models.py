@@ -1,4 +1,8 @@
-"""The database tables. `verdicts` is append-only: a correction adds a row."""
+"""The database tables. `verdicts` is append-only: a correction adds a row.
+
+Every check belongs to the user who started it. Checks saved before accounts existed have no owner and stay hidden
+until `python -m app.db.transfer claim USERNAME` gives them one.
+"""
 
 import uuid
 from datetime import UTC, datetime
@@ -17,10 +21,35 @@ def utcnow() -> datetime:
     return datetime.now(UTC)
 
 
+class User(Base):
+    __tablename__ = "users"
+
+    id: Mapped[str] = mapped_column(String(32), primary_key=True, default=lambda: new_id("usr"))
+    # Saved in lower case, so "Lan" and "lan" are the same account.
+    username: Mapped[str] = mapped_column(String(64), unique=True)
+    password_hash: Mapped[str] = mapped_column(Text)  # Argon2id, with its salt and settings.
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
+
+
+class UserSession(Base):
+    """A signed-in browser. Only a hash of the cookie's token is saved, so a leaked table can't sign anyone in."""
+
+    __tablename__ = "user_sessions"
+
+    id: Mapped[str] = mapped_column(String(32), primary_key=True, default=lambda: new_id("ses"))
+    user_id: Mapped[str] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"), index=True)
+    token_hash: Mapped[str] = mapped_column(String(64), unique=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
+    expires_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+
+    user: Mapped[User] = relationship()
+
+
 class Check(Base):
     __tablename__ = "checks"
 
     id: Mapped[str] = mapped_column(String(32), primary_key=True, default=lambda: new_id("chk"))
+    user_id: Mapped[str | None] = mapped_column(ForeignKey("users.id"), index=True)
     title: Mapped[str] = mapped_column(Text)
     input_type: Mapped[str] = mapped_column(String(8))
     input_text: Mapped[str | None] = mapped_column(Text)
@@ -31,11 +60,14 @@ class Check(Base):
     error_message: Mapped[str | None] = mapped_column(Text)
     judge_ids: Mapped[list] = mapped_column(JSON)
     progress: Mapped[list | None] = mapped_column(JSON)
+    review: Mapped[dict | None] = mapped_column(JSON)  # What the reader was asked before the search. See pipeline/review.py.
+    cleared_followups: Mapped[int] = mapped_column(Integer, server_default="0")
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow, index=True)
     updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow, onupdate=utcnow)
     completed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
 
     claims: Mapped[list["Claim"]] = relationship(back_populates="check", order_by="Claim.position")
+    messages: Mapped[list["CheckMessage"]] = relationship(order_by="CheckMessage.created_at")
 
 
 class Source(Base):
@@ -68,6 +100,7 @@ class Claim(Base):
     unavailable_reason: Mapped[str | None] = mapped_column(Text)
     price_chart: Mapped[dict | None] = mapped_column(JSON)
     location_map: Mapped[dict | None] = mapped_column(JSON)
+    incident_map: Mapped[dict | None] = mapped_column(JSON)
     heat_map: Mapped[dict | None] = mapped_column(JSON)
     country_map: Mapped[dict | None] = mapped_column(JSON)
     seat_chart: Mapped[dict | None] = mapped_column(JSON)
@@ -118,4 +151,20 @@ class Feedback(Base):
     check_id: Mapped[str] = mapped_column(ForeignKey("checks.id"), index=True)
     helpful: Mapped[bool] = mapped_column(Boolean)
     comment: Mapped[str | None] = mapped_column(Text)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
+
+
+class CheckMessage(Base):
+    """A follow-up question about a finished check, and the answer from the selected model, with optional web search."""
+
+    __tablename__ = "check_messages"
+
+    id: Mapped[str] = mapped_column(String(32), primary_key=True, default=lambda: new_id("msg"))
+    check_id: Mapped[str] = mapped_column(ForeignKey("checks.id"), index=True)
+    question: Mapped[str] = mapped_column(Text)
+    files: Mapped[list | None] = mapped_column(JSON)
+    reference: Mapped[dict | None] = mapped_column(JSON)
+    sources: Mapped[list | None] = mapped_column(JSON)
+    answer: Mapped[str] = mapped_column(Text)
+    model: Mapped[str | None] = mapped_column(Text)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)

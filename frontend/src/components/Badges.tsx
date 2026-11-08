@@ -4,6 +4,7 @@ import {
   CalendarSearch,
   CalendarX,
   CircleCheck,
+  GitCompare,
   CircleHelp,
   CircleX,
   CloudOff,
@@ -74,7 +75,7 @@ export function StatusBadge({ status }: { status: CheckStatus }) {
   return (
     <span className="inline-flex items-center gap-1.5 font-sans text-xs text-ink-muted">
       <span
-        className={`h-1.5 w-1.5 rounded-full ${failed ? 'bg-rose-600' : done ? 'bg-brand-600' : 'bg-brand-500'} ${
+        className={`h-1.5 w-1.5 rounded-full ${failed ? 'bg-rose-600' : done ? 'bg-brand-600' : status === 'stopped' ? 'bg-ink-faint' : 'bg-brand-500'} ${
           isTerminal(status) ? '' : 'motion-safe:animate-pulse'
         }`}
         aria-hidden="true"
@@ -104,9 +105,17 @@ export function VerdictMark({ verdict, className = '' }: { verdict: Verdict; cla
 }
 
 /** The selected claim's verdict, as the largest thing in its panel. */
-export function VerdictHeadline({ verdict }: { verdict: Verdict | null }) {
+export function VerdictHeadline({ verdict }: { verdict: Verdict | 'disagreement' | null }) {
   const className = 'text-[24px] font-medium leading-[1.2] tracking-[-0.025em] sm:text-[30px]';
-  if (!verdict) return <p className={`${className} text-ink-muted`}>{t('Verification unavailable.')}</p>;
+  if (verdict === 'disagreement') {
+    return (
+      <h2 className="inline-flex items-center gap-2 text-base font-semibold text-rose-700">
+        <GitCompare className="h-4 w-4 shrink-0" aria-hidden="true" />
+        {t('AI judges disagree')}
+      </h2>
+    );
+  }
+  if (!verdict) return <p className={`${className} text-ink-muted`}>{t('Verification interrupted by a technical error.')}</p>;
   return <p className={`${className} ${verdictTone[verdict].text}`}>{verdictLabel[verdict]}.</p>;
 }
 
@@ -135,12 +144,20 @@ const verdictIconStyle: Record<Verdict, { Icon: typeof CircleCheck; className: s
 };
 
 /** Verdict as an icon (shape differs per verdict) with an accessible label. */
-export function VerdictIcon({ verdict, className = 'h-5 w-5' }: { verdict: Verdict | null; className?: string }) {
+export function VerdictIcon({ verdict, className = 'h-5 w-5' }: { verdict: Verdict | 'disagreement' | null; className?: string }) {
+  if (verdict === 'disagreement') {
+    return (
+      <>
+        <GitCompare className={`${className} shrink-0 text-ink-muted`} aria-hidden="true" />
+        <span className="sr-only">{t('AI judges disagree')}</span>
+      </>
+    );
+  }
   if (!verdict) {
     return (
       <>
         <CloudOff className={`${className} shrink-0 text-ink-faint`} aria-hidden="true" />
-        <span className="sr-only">{t('Verification unavailable')}</span>
+        <span className="sr-only">{t('Verification interrupted by a technical error.')}</span>
       </>
     );
   }

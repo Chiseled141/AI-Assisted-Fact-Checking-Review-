@@ -3,6 +3,8 @@
 
 const memory = new Map<string, string>();
 
+export const RUNNING_CHECK_KEY = 'claimtrace.runningCheck';
+
 export function readItem(key: string): string | null {
   try {
     return window.localStorage.getItem(key);

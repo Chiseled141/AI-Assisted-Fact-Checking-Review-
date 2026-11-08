@@ -3,15 +3,23 @@
 import type { Check, CheckDetail, CreateCheckInput, ListChecksParams } from '../types/models';
 import { t } from '../lib/i18n';
 import type { CheckService } from './contract';
-import { NotFoundError, ValidationError, VersionConflictError } from './errors';
+import { NotFoundError, UnauthorizedError, ValidationError, VersionConflictError } from './errors';
 import { apiUrl } from './api';
+import { signInRequired } from './account';
 
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
   const response = await fetch(`${apiUrl}${path}`, {
     ...init,
+    // The session cookie also goes to a backend on another origin (VITE_API_URL).
+    credentials: 'include',
     headers: init?.body ? { 'Content-Type': 'application/json' } : undefined,
   });
   if (response.ok) return response.json() as Promise<T>;
+  if (response.status === 401) {
+    // Opening a page sends you to log in. Sending a form keeps it, with the message beside it.
+    if (!init?.method || init.method === 'GET') signInRequired();
+    throw new UnauthorizedError(t('Log in to continue.'));
+  }
 
   const detail = await response
     .json()
@@ -67,7 +75,25 @@ export const httpCheckService: CheckService = {
 
   getClaimRevisions: (claimId) => request(`/api/claims/${encodeURIComponent(claimId)}/revisions`),
 
-  // Note: the UI's correction flow is hidden for now (`showReviewButton` in config).
   publishCorrection: (claimId, body) =>
     request(`/api/claims/${encodeURIComponent(claimId)}/corrections`, { method: 'POST', body: JSON.stringify(body) }),
+
+  askFollowUp: (checkId, question, files = [], modelId, replyToId, target) =>
+    request(`/api/check/${encodeURIComponent(checkId)}/messages`, {
+      method: 'POST',
+      body: JSON.stringify({
+        question,
+        ...(files.length ? { files } : {}),
+        ...(modelId ? { modelId } : {}),
+        ...(replyToId ? { replyToId } : {}),
+        ...(target ? { target } : {}),
+      }),
+    }),
+
+  stopCheck: (checkId) => request(`/api/check/${encodeURIComponent(checkId)}/stop`, { method: 'POST' }),
+
+  answerReview: (checkId, answer) =>
+    request(`/api/check/${encodeURIComponent(checkId)}/review`, { method: 'POST', body: JSON.stringify(answer) }),
+
+  findEarlier: (input, signal) => request('/api/checks/similar', { method: 'POST', body: JSON.stringify(input), signal }),
 };

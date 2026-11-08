@@ -10,6 +10,7 @@ export default {
     extend: {
       fontFamily: {
         sans: ['"Schibsted Grotesk"', 'ui-sans-serif', 'system-ui', '-apple-system', 'Segoe UI', 'sans-serif'],
+        wordmark: ['"Space Grotesk"', 'ui-sans-serif', 'system-ui', 'sans-serif'],
         logo: ['"Space Grotesk"', 'ui-sans-serif', 'system-ui', 'sans-serif'],
       },
       // Ground-style weight ladder: book text, strong labels, extrabold headlines.

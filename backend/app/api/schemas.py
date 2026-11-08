@@ -8,8 +8,13 @@ from pydantic.alias_generators import to_camel
 
 from ..core.labels import Freshness, InputCategory, Relation, Verdict
 
-# SQLite drops time zones, and every time here is UTC. Without the offset, browsers would read them as local time.
-UtcTime = Annotated[datetime, PlainSerializer(lambda value: value.replace(tzinfo=UTC).isoformat(), return_type=str)]
+
+def _utc(value: datetime) -> str:
+    # SQLite drops time zones, and every time here is UTC. Without the offset, browsers would read them as local time.
+    return (value.astimezone(UTC) if value.tzinfo else value.replace(tzinfo=UTC)).isoformat()
+
+
+UtcTime = Annotated[datetime, PlainSerializer(_utc, return_type=str)]
 
 
 class ApiModel(BaseModel):
@@ -60,6 +65,12 @@ class CheckOut(ApiModel):
     input_category: InputCategory | None = None
 
 
+class JudgeCitationOut(ApiModel):
+    evidence_id: str
+    quote: str | None = None
+    translations: dict[str, str] | None = None
+
+
 class JudgeVerdictOut(ApiModel):
     judge: str
     verdict: Verdict
@@ -67,6 +78,7 @@ class JudgeVerdictOut(ApiModel):
     review: str
     translations: dict[str, str] | None = None
     primary: bool
+    citations: list[JudgeCitationOut] | None = None
     model: str | None = None
 
 
@@ -100,11 +112,43 @@ class ClaimOut(ApiModel):
     unavailable_reason: str | None = None
     price_chart: dict | None = None
     location_map: dict | None = None
+    incident_map: dict | None = None
     heat_map: dict | None = None
     country_map: dict | None = None
     seat_chart: dict | None = None
     election_map: dict | None = None
     rephrased_from: str | None = None
+
+
+class ReviewClaimOut(ApiModel):
+    position: int
+    text: str
+
+
+class ReviewQuestionOut(ApiModel):
+    claim: int
+    question: str
+    options: list[str]
+
+
+class ReviewReply(ApiModel):
+    claim: int
+    answer: str | None = Field(default=None, max_length=300)  # None checks the claim as written.
+
+
+class ReviewAnswer(ApiModel):
+    claim: int | None = None  # None is every claim.
+    answers: list[ReviewReply] = Field(default_factory=list, max_length=5)
+    typed_claim: str | None = Field(default=None, max_length=300)  # What to check instead, in the reader's own words.
+
+
+class ReviewOut(ApiModel):
+    """What the reader was asked before the search, and what they said. Only these fields of `Check.review` leave the server."""
+
+    claims: list[ReviewClaimOut]
+    choose: bool
+    questions: list[ReviewQuestionOut]
+    answer: ReviewAnswer | None = None
 
 
 class TaskProgressOut(ApiModel):
@@ -138,9 +182,77 @@ class TaskProgressOut(ApiModel):
     verdict: Verdict | None = None
 
 
+class MessageReference(ApiModel):
+    kind: Literal["judge", "chart", "source", "message", "answer"]
+    title: str
+    url: str | None = None
+    model_name: str | None = None
+
+
+class FollowUpSource(ApiModel):
+    title: str
+    url: str
+
+
+class MessageOut(ApiModel):
+    id: str
+    question: str
+    files: list[SubmittedFile] = []
+    answer: str
+    reference: MessageReference | None = None
+    sources: list[FollowUpSource] = []
+    model_name: str | None = None
+    created_at: UtcTime
+
+
+class FollowUpTarget(ApiModel):
+    claim_id: str = Field(max_length=32)
+    kind: Literal["judge", "chart", "source"]
+    key: str = Field(max_length=160)
+    label: str | None = Field(default=None, max_length=300)
+
+
+class FollowUpIn(ApiModel):
+    question: str
+    files: list[SubmittedFile] = []
+    # A key from the judge list. Without one, `followup_model` answers.
+    model_id: str | None = None
+    reply_to_id: str | None = Field(default=None, max_length=32)
+    target: FollowUpTarget | None = None
+
+
+class SimilarIn(ApiModel):
+    text: str | None = Field(default=None, max_length=5000)
+    url: str | None = Field(default=None, max_length=2048)
+
+
+class EarlierClaimOut(ApiModel):
+    check_id: str
+    claim_id: str
+    position: int
+    text: str
+    verdict: Verdict
+    checked_at: UtcTime
+    similarity: float
+
+
+class EarlierLinkOut(ApiModel):
+    check_id: str
+    title: str
+    claim_count: int
+    checked_at: UtcTime
+
+
+class SimilarOut(ApiModel):
+    claims: list[EarlierClaimOut] = []
+    link: EarlierLinkOut | None = None
+
+
 class CheckDetailOut(CheckOut):
     claims: list[ClaimOut]
     progress: list[TaskProgressOut] = []
+    messages: list[MessageOut] = []
+    review: ReviewOut | None = None
 
 
 class EvidenceOut(ApiModel):
@@ -182,6 +294,23 @@ class CorrectionOut(ApiModel):
 class FeedbackIn(ApiModel):
     helpful: bool
     comment: str | None = Field(default=None, max_length=1000)
+
+
+# Lengths are checked in `auth.py` against settings; these caps only keep huge bodies away from the hasher.
+class RegisterIn(ApiModel):
+    username: str = Field(max_length=256)
+    password: str = Field(max_length=1024)
+    password_confirmation: str = Field(max_length=1024)
+
+
+class LoginIn(ApiModel):
+    username: str = Field(max_length=256)
+    password: str = Field(max_length=1024)
+
+
+class AccountOut(ApiModel):
+    id: str
+    username: str
 
 
 class StatsOut(ApiModel):

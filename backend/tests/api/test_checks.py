@@ -76,11 +76,13 @@ def test_text_check_returns_claims_both_judges_and_saved_evidence(client, fakes)
     assert first["relation"] == "supporting"
     assert first["publishedAt"] == "2021-11-06"
     assert current["citedEvidenceIds"] == [first["id"]]
+    assert current["judges"][0]["citations"][0]["evidenceId"] == first["id"]
+    assert current["judges"][0]["citations"][0]["quote"] == "opened to passengers"
     assert current["citationFreshness"][first["id"]]["status"] == "current"
     assert evidence[1]["relation"] == "contextual"
 
     assert "analysis" not in first
-    assert len(fakes.llm.calls) == 3  # Extraction and the two claim judges only.
+    assert len(fakes.llm.calls) == 4  # Extraction, the claim review and the two claim judges only.
 
 
 def test_a_quote_split_over_lines_in_the_page_is_still_shown(client, fakes):
@@ -131,7 +133,7 @@ def test_sources_are_fetched_once_without_extra_source_reviews(client, fakes):
     check = run(client)
     assert check["claimCount"] == 2
     assert fakes.fetch.fetched == ["https://reuters.com/a"]
-    assert len(fakes.llm.calls) == 5  # Extraction and two judges for each claim.
+    assert len(fakes.llm.calls) == 6  # Extraction, the claim review and two judges for each claim.
 
 
 def test_disagreement_keeps_both_verdicts_and_shows_the_first(client, fakes):
@@ -380,7 +382,7 @@ def test_a_check_saved_with_task_names_from_an_older_version_still_opens(client)
     from app.db.session import SessionLocal
 
     with SessionLocal() as session:
-        check = Check(title="Old", input_type="text", input_text="Text", judge_ids=[], status="completed", progress=[
+        check = Check(user_id=client.user_id, title="Old", input_type="text", input_text="Text", judge_ids=[], status="completed", progress=[
             {"id": "a", "kind": "search", "task": "chart_sources", "chart": "seats", "status": "completed", "startedAt": "2026-11-05T01:00:00"},
             {"id": "b", "kind": "ai", "task": "a_task_since_renamed", "status": "completed", "startedAt": "2026-11-05T01:00:00"},
         ])

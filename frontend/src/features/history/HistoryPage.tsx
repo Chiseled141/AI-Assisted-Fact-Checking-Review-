@@ -136,12 +136,12 @@ export function HistoryPage() {
             );
           })}
         </div>
-        <div className="relative w-full sm:w-64">
+        <div id="find-check" className="relative w-full scroll-mt-28 sm:w-64">
           <label htmlFor={ids.search} className="sr-only">
             {t('Search checks')}
           </label>
           <Search
-            className="pointer-events-none absolute left-0 top-[22px] h-3.5 w-3.5 -translate-y-1/2 text-ink-muted"
+            className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-brand-700"
             aria-hidden="true"
           />
           <input
@@ -150,7 +150,7 @@ export function HistoryPage() {
             value={draftQuery}
             onChange={(e) => setDraftQuery(e.target.value)}
             placeholder={t('Search checks')}
-            className="h-11 w-full border-0 border-b border-transparent bg-transparent pl-6 pr-2 font-sans text-[14px] text-ink placeholder:text-ink-muted transition-colors focus:border-brand-600 focus:outline-none"
+            className="h-11 w-full rounded-xl border border-line-strong bg-white pl-10 pr-3 font-sans text-[14px] text-ink shadow-sm transition-colors placeholder:text-ink-muted hover:border-ink-muted focus-visible:border-brand-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-700"
           />
         </div>
       </div>

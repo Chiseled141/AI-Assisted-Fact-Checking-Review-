@@ -55,9 +55,11 @@ def add_chart_requests(item: ExtractedClaim) -> ExtractedClaim:
     if item.seat_chart is None and (chamber := CHAMBER.search(text)) and is_election_claim(text, chamber.group(1)):
         item.seat_chart = SeatChartRequest(body=chamber.group(1), year=year)
     if item.election_map is None and year:
-        # Without the year, so only a claim that names the office and the US counts here. A chamber comes first, because a
-        # claim about it can mention the president too.
-        office = next((name for name in ("house", "senate", "president") if is_us_election_claim(text, name)), None)
+        # Don't use the presidential year heuristic here. Prefer the House for a claim about both chambers.
+        office = next(
+            (name for name in ("house", "senate", "president") if is_us_election_claim(text, name, topic=item.topic)),
+            None,
+        )
         if office:
             item.election_map = ElectionMapRequest(office=office, year=year)
     if item.country_stat is None and item.heat_map is None:

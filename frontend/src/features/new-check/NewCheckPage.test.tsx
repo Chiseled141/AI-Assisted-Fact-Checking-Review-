@@ -36,16 +36,29 @@ describe('New Check', () => {
     renderApp('/');
     await user.type(screen.getByLabelText('Text to check'), 'https://example.org/story');
     await user.click(screen.getByRole('button', { name: 'Judges: GPT Luna + Claude Haiku 5.5' }));
-    await user.click(screen.getByRole('checkbox', { name: 'Gemma 4 31B' }));
+    await user.click(screen.getByRole('checkbox', { name: 'Gemini 3.5 Flash-Lite' }));
     await user.keyboard('{Escape}');
     await user.click(screen.getByRole('button', { name: 'Check claims' }));
     expect(await screen.findByRole('heading', { name: 'Checking claims' })).toBeInTheDocument();
     expect(screen.getByText('Looking up and saving source snapshots')).toBeInTheDocument();
     const post = fetchMock.mock.calls.find(([, init]) => init?.method === 'POST')!;
     expect(JSON.parse(String(post[1]?.body))).toEqual({
-      inputType: 'url', url: 'https://example.org/story', judgeIds: ['claude-haiku', 'gemma-4-31b'],
+      inputType: 'url', url: 'https://example.org/story', judgeIds: ['claude-haiku', 'gemini-flash-lite'],
     });
     expect(screen.queryByText(/simulated|demo/i)).not.toBeInTheDocument();
+  });
+
+  it('asks a signed-out visitor to log in and keeps what they typed', async () => {
+    interceptRequests((url) => url.pathname === '/api/checks/similar'
+      ? jsonResponse({ claims: [], link: null })
+      : jsonResponse({ detail: 'Log in to continue.' }, 401));
+    const user = userEvent.setup();
+    renderApp('/');
+    await user.type(screen.getByLabelText('Text to check'), 'The route opened in March 2024.');
+    await user.click(screen.getByRole('button', { name: 'Check claims' }));
+    expect(await screen.findByRole('alert')).toHaveTextContent('Log in to continue.');
+    expect(screen.getByLabelText('Text to check')).toHaveValue('The route opened in March 2024.');
+    expect(screen.queryByRole('heading', { name: 'Log in' })).not.toBeInTheDocument();
   });
 
   it('shows missing-key errors without fabricating results', async () => {
@@ -92,21 +105,21 @@ describe('New Check', () => {
     const fetchMock = interceptRequests(() => { throw new Error('Examples must not submit automatically.'); });
     const user = userEvent.setup();
     renderApp('/');
-    await user.click(screen.getByRole('button', { name: 'Transit news' }));
+    await user.click(screen.getByRole('button', { name: 'Verify a news fact' }));
     expect((screen.getByLabelText('Text to check') as HTMLTextAreaElement).value).toContain('Cát Linh');
     expect(fetchMock).not.toHaveBeenCalled();
     expect(screen.queryByRole('button', { name: /demo scenario/i })).not.toBeInTheDocument();
   });
 
-  it('expands the explanation of evidence retrieval', async () => {
-    const user = userEvent.setup();
+  it('explains each stage of a check in its own card, with the pictures hidden from screen readers', () => {
     renderApp('/');
     const guide = screen.getByRole('region', { name: 'How it works' });
-    const step = within(guide).getByRole('button', { name: /find evidence/i });
-    expect(step).toHaveAttribute('aria-expanded', 'false');
-    await user.click(step);
-    expect(step).toHaveAttribute('aria-expanded', 'true');
-    expect(within(guide).getByText(/at most ten sources/i)).toBeInTheDocument();
+    const titles = within(guide).getAllByRole('heading', { level: 3 }).map((heading) => heading.textContent);
+    expect(titles).toEqual(['Split into claims', 'Search rated sources', 'Two models judge', 'Ask about the results']);
+    expect(within(guide).getByText(/only on sites rated reliable/i)).toBeInTheDocument();
+    expect(within(guide).getByText('Both models agree').closest('[aria-hidden="true"]')).not.toBeNull();
+    // Without motion, each picture rests on its last frame, so nothing is left half drawn.
+    expect(within(guide).getByText('Verdict unchanged')).toBeInTheDocument();
   });
 
   it.each([

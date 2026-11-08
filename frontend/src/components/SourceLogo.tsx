@@ -14,9 +14,8 @@ export function SourceLogo({ source, decorative = false }: Props) {
   if (source.logo && source.logo !== failedLogo) {
     return (
       <img
-        src={`/source-logos/${source.logo}`}
+        src={`${import.meta.env.BASE_URL}source-logos/${source.logo}`}
         alt={decorative ? '' : `${source.name} logo`}
-        loading="lazy"
         decoding="async"
         onError={() => setFailedLogo(source.logo ?? null)}
         className="block h-5 w-auto max-w-[72px] object-contain object-left"

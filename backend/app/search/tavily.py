@@ -142,6 +142,8 @@ class TavilySearch:
         end_date: str | None = None,
         newest_first: bool = True,
         domains: list[str] | None = None,
+        max_results: int | None = None,
+        include_images: bool = True,
     ) -> list[SearchHit]:
         """Keep images attributed to a specific result; query-wide images aren't article previews."""
         if len(SEARCH_DOMAINS) > 300:
@@ -152,7 +154,7 @@ class TavilySearch:
                 headers={"Authorization": f"Bearer {self.settings.tavily_api_key}"},
                 json={
                     "query": query[:400],
-                    "max_results": min(20, max(
+                    "max_results": min(20, max(1, max_results)) if max_results is not None else min(20, max(
                         self.settings.tavily_candidates_per_search, self.settings.target_publishers_per_claim,
                     )),
                     "include_domains": [domain for domain in (domains or SEARCH_DOMAINS) if not any(
@@ -164,7 +166,7 @@ class TavilySearch:
                     "auto_parameters": False,
                     "include_answer": False,
                     "include_raw_content": "text",
-                    "include_images": True,
+                    "include_images": include_images,
                     "include_published_date": True,
                     # Tavily keeps undated results by default, which is what we want: they may still be current.
                     **({"start_date": start_date} if start_date else {}),

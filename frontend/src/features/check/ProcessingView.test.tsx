@@ -17,6 +17,33 @@ function aiTask(fields: Partial<TaskProgress>): TaskProgress {
 }
 
 describe('Real processing progress', () => {
+  it('reports minutes of completed work without adding timeouts or overlapping steps', () => {
+    render(<ProcessingView check={makeCheck({
+      createdAt: startedAt,
+      updatedAt: '2026-11-05T04:00:00+00:00',
+      progress: [
+        aiTask({ id: 'first', status: 'completed', finishedAt: '2026-11-05T01:01:00+00:00' }),
+        aiTask({ id: 'second', status: 'completed', startedAt: '2026-11-05T01:00:30+00:00', finishedAt: '2026-11-05T01:01:30+00:00' }),
+        aiTask({ id: 'timeout', status: 'failed', finishedAt: '2026-11-05T03:00:00+00:00' }),
+      ],
+    })} />);
+    expect(screen.getByRole('button', { name: 'Checked in 1 min 30 sec' })).toBeInTheDocument();
+  });
+
+  it('reports a check under one minute in seconds', () => {
+    render(<ProcessingView check={makeCheck({ progress: [
+      aiTask({ status: 'completed', finishedAt: '2026-11-05T01:00:42+00:00' }),
+    ] })} />);
+    expect(screen.getByRole('button', { name: 'Checked in 42 sec' })).toBeInTheDocument();
+  });
+
+  it('omits duration when every recorded task failed', () => {
+    render(<ProcessingView check={makeCheck({ status: 'failed', progress: [
+      aiTask({ status: 'failed', finishedAt: '2026-11-05T01:03:00+00:00' }),
+    ] })} />);
+    expect(screen.getByRole('button', { name: 'Failed' })).toBeInTheDocument();
+  });
+
   it('distinguishes saved claim decisions from unfinished visual details', () => {
     render(<ProcessingView check={makeCheck({ status: 'assessing' })} />);
     expect(screen.getByText('Finishing visual details')).toBeInTheDocument();
@@ -46,7 +73,8 @@ describe('Real processing progress', () => {
       { id: 'data', kind: 'data', task: 'chart_data', service: 'Yahoo Finance', chart: 'price', status: 'running', claimPosition: 1, startedAt },
     ] })} />);
     const ai = screen.getByRole('region', { name: 'AI models' });
-    expect(within(ai).getByText('Claude Haiku 5.5')).toBeInTheDocument();
+    expect(within(ai).getByText('ClaimTrace')).toBeInTheDocument();
+    expect(within(ai).queryByText('Claude Haiku 5.5')).not.toBeInTheDocument();
     expect(within(ai).queryByText('Tavily')).not.toBeInTheDocument();
     const search = screen.getByRole('region', { name: 'Source search' });
     expect(within(search).getByText('Tavily')).toBeInTheDocument();
@@ -57,12 +85,15 @@ describe('Real processing progress', () => {
     expect(within(data).getByText('Price chart data')).toBeInTheDocument();
   });
 
-  it('shows the third model finding sources beside the Tavily searches it makes', () => {
+  it('shows ClaimTrace finding sources beside the Tavily searches it makes', () => {
     render(<ProcessingView check={makeCheck({ status: 'retrieving', claims: [], progress: [
       aiTask({ id: 'research', task: 'researching', modelName: 'Third model', requestedModel: 'third/model' }),
       { id: 'search', kind: 'search', task: 'searching', service: 'Tavily', phase: 'searching', searchCount: 2, sourceCount: 0, sourceTarget: 5, status: 'running', claimPosition: 1, startedAt },
     ] })} />);
-    expect(within(screen.getByRole('region', { name: 'AI models' })).getByText('Finding sources with Tavily')).toBeInTheDocument();
+    const models = within(screen.getByRole('region', { name: 'AI models' }));
+    expect(models.getByText('ClaimTrace')).toBeInTheDocument();
+    expect(models.getByText('Finding sources with Tavily')).toBeInTheDocument();
+    expect(models.queryByText('Third model')).not.toBeInTheDocument();
     expect(within(screen.getByRole('region', { name: 'Source search' })).getByText('Tavily')).toBeInTheDocument();
   });
 

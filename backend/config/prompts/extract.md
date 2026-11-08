@@ -10,9 +10,14 @@ Split the text into atomic factual claims for fact-checking. A claim is one inde
 - Split a sentence that makes two checkable statements into two claims.
 - Leave out opinions, predictions, questions and value judgments.
 - Keep the claim's meaning, and don't make it stronger or weaker than the text.
+- Keep a name that looks misspelled as the text writes it, adding only missing accents. Never replace it with the name you think was meant: the reader is asked about it in the next step.
 - Extract factual assertions even when they are short, informal, misspelled, false, disputed or missing a date. You are identifying what needs checking, not deciding whether it is true. Do not reject a factual assertion because you cannot verify it from the input alone.
 - A broad factual label, such as calling a US state Democratic or Republican, is still a claim. Preserve its ambiguity: do not replace it with a particular election result, officeholder or year the input never specifies. Leave uncertainty about its meaning or evidence to the judges.
 - If the text has no checkable claims, return an empty list.
+
+## Input with a clarification
+
+When the input is followed by `<clarification>`, the input is the claim or claims the reader was asked about, and the clarification holds the question and their answer. Return exactly one claim. If the answer says what a claim means, return that statement with the answer worked in, changing only what the answer settles and keeping every figure and date. If the answer asks to check something else, return what it asks to check as a factual statement, using the listed claims when it refers to one. Fill all the fields below as usual. The reader's answer says what to check. It is not evidence that the claim is true.
 
 ## Input without claims
 

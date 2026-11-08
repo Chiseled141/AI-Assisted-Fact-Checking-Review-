@@ -18,6 +18,7 @@ from ..pipeline.prompts import (
     ELECTION_MAP_SYSTEM,
     ELECTION_RESULTS_SYSTEM,
     SEAT_CHART_SYSTEM,
+    ElectionMapRequest,
     ExtractedClaim,
     ReportedElection,
     ReportedSeats,
@@ -42,7 +43,11 @@ from .seat_chart import (
 logger = logging.getLogger(__name__)
 
 US_WORDS = re.compile(r"(?<!\w)(us|u\.s\.|usa|united states|american?|mỹ|hoa kỳ)(?!\w)", re.IGNORECASE)
-ELECTION_WORDS = re.compile(r"(?<!\w)(elections?|elected|won|win|wins|carried|bầu cử|tuyển cử|thắng)(?!\w)", re.IGNORECASE)
+ELECTION_WORDS = re.compile(r"\b(elections?|elected|won|win|wins|carried|midterms?|bầu cử|tuyển cử|thắng)\b", re.IGNORECASE)
+MIDTERM_WORDS = re.compile(r"\b(midterms?|giữa k[ỳì])\b", re.IGNORECASE)
+BOTH_CHAMBERS = re.compile(r"\b(both (?:houses|chambers)|(?:cả )?(?:hai|2) viện)\b", re.IGNORECASE)
+CONTROL_WORDS = re.compile(r"\b(control|majorit(?:y|ies)|won|wins|swept|kiểm soát|chiếm ưu thế|đa số|thắng)\b", re.IGNORECASE)
+FUTURE_WORDS = re.compile(r"\b(will|sẽ)\b", re.IGNORECASE)
 OFFICE_WORDS = {
     "president": re.compile(r"(?<!\w)(president|presidential|presidency|electoral|tổng thống)(?!\w)", re.IGNORECASE),
     "house": re.compile(r"(?<!\w)(house|hạ viện|congress|quốc hội)(?!\w)", re.IGNORECASE),
@@ -52,17 +57,26 @@ NOT_US_WORDS = re.compile(r"(?<!\w)(parliament|lok sabha|commons|bundestag|quố
 OFFICE_QUERY = {"president": "presidential", "house": "House of Representatives", "senate": "Senate"}
 
 
-def is_us_election_claim(text: str, office: str, year: int | None = None) -> bool:
-    """The model's choice must hold up in the claim's own words, so a stray guess draws nothing."""
+def is_us_election_claim(text: str, office: str, year: int | None = None, *, topic: str | None = None) -> bool:
+    """Check the claim's wording, using its topic to disambiguate the country for midterm results."""
     if office not in OFFICE_WORDS or not ELECTION_WORDS.search(text):
         return False
     # "Biden won the 2020 election" names no office or country, but the model's reading of it fits a presidential year.
     if office == "president" and year and year % 4 == 0 and re.search(r"(?<!\w)(election|bầu cử)(?!\w)", text, re.IGNORECASE):
         if not NOT_US_WORDS.search(text):
             return True
-    if not OFFICE_WORDS[office].search(text):
-        return False
-    return bool(US_WORDS.search(text) or any(_names_state(name, text) for name in PLACES["us_states"].values()))
+    names_office = OFFICE_WORDS[office].search(text)
+    names_us = US_WORDS.search(text)
+    if names_office and (names_us or any(_names_state(name, text) for name in PLACES["us_states"].values())):
+        return True
+    # A midterm result may refer to "both chambers" and name the US only in the extracted topic.
+    return bool(
+        office in ("house", "senate")
+        and (names_office or BOTH_CHAMBERS.search(text))
+        and CONTROL_WORDS.search(text)
+        and not (UNFINISHED_WORDS.search(text) or FUTURE_WORDS.search(text))
+        and (names_us or (MIDTERM_WORDS.search(text) and US_WORDS.search(topic or "")))
+    )
 
 
 def _names_state(name: str, text: str) -> bool:
@@ -108,9 +122,8 @@ def _stated_party(report: ReportedState, source_text: str) -> str | None:
     return report.party if word and word in source_text.lower() else None
 
 
-def _map_from(request, answer: ReportedStates, labels: dict[str, Source], settings: Settings) -> dict | None:
-    states = _verified_states(answer, labels)
-    if len(states) < settings.election_map_min_states:
+def _map_from(request: ElectionMapRequest, states: list[dict], settings: Settings) -> dict | None:
+    if not states or (request.office == "president" and len(states) < settings.election_map_min_states):
         return None
     return {"office": request.office, "year": request.year, "retrievedAt": utcnow().isoformat(), "states": states}
 
@@ -119,7 +132,8 @@ def _wants(item: ExtractedClaim) -> tuple[bool, bool]:
     seats, election = item.seat_chart, item.election_map
     return (
         seats is not None and is_election_claim(item.text, seats.body),
-        election is not None and bool(election.year) and is_us_election_claim(item.text, election.office, election.year),
+        election is not None and bool(election.year)
+        and is_us_election_claim(item.text, election.office, election.year, topic=item.topic),
     )
 
 
@@ -148,9 +162,14 @@ def _needs(item: ExtractedClaim, wants_seats: bool, wants_map: bool, seat_chart:
     """What the chart still lacks, in words for the research model. Empty when it is complete."""
     lines = []
     if wants_map:
-        missing = [name for code, name in PLACES["us_states"].items() if code not in {state["code"] for state in states}]
+        office = item.election_map.office
+        covered = {state["code"] for state in states}
+        if office != "president":
+            covered.add("us-dc")
+        missing = [name for code, name in PLACES["us_states"].items() if code not in covered]
         if missing:
-            lines.append(f"Who won these US states: {', '.join(missing)}.")
+            qualifier = " where a Senate race took place" if office == "senate" else ""
+            lines.append(f"Who won these US states{qualifier}: {', '.join(missing)}.")
     if wants_seats:
         body = item.seat_chart.body
         if seat_chart is None:
@@ -227,13 +246,15 @@ def _research_visuals(
             merged.states += states_written_as_results(fresh)
         seat_chart = _verified_chart(item.seat_chart, merged, labels) if wants_seats else None
         states = _verified_states(merged, labels) if wants_map else []
+        if wants_map and election.office != "president":
+            states = [state for state in states if state["code"] != "us-dc"]
         needs = _needs(item, wants_seats, wants_map, seat_chart, states)
         task.update(stateCount=len(states)) if wants_map else None
         # A round that found nothing still leaves the next one to look elsewhere, until `new` above runs dry.
         if not needs:
             break
 
-    election_map = _map_from(election, merged, labels, settings) if wants_map else None
+    election_map = _map_from(election, states, settings) if wants_map else None
     seat_chart = complete_chart(seat_chart, settings)
     if task and ((wants_map and not election_map) or (wants_seats and not seat_chart)):
         task.update(summary=CHART_INCOMPLETE)

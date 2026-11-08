@@ -1,11 +1,10 @@
 import { type CSSProperties, useCallback, useEffect, useRef, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { ArrowLeft, ArrowRight } from 'lucide-react';
-import type { AssessmentRevision, CheckDetail, Claim } from '../../types/models';
+import type { AssessmentRevision, ChatReference, CheckDetail, Claim, FollowUpTarget } from '../../types/models';
 import { checkService } from '../../services';
 import { verdictLabel } from '../../lib/format';
 import { ClaimCard } from './ClaimCard';
-import { InputSource } from './InputSource';
 import { EvidencePanel, type EvidenceState } from './EvidencePanel';
 import { CorrectionDialog } from './CorrectionDialog';
 import { RevisionDrawer } from './RevisionDrawer';
@@ -13,12 +12,15 @@ import { t } from '../../lib/i18n';
 import { UncheckableResult } from './UncheckableResult';
 
 interface Props {
+  /** Goes up by one each time the chat asks to edit the result on screen. */
+  reviewRequest?: number;
+  onReplyToResult: (target: FollowUpTarget, reference: Omit<ChatReference, 'kind'>, modelId?: string) => void;
   check: CheckDetail;
   /** Re-fetches the check; resolves with the fresh detail or null on failure. */
   onReload: () => Promise<CheckDetail | null>;
 }
 
-export function ResultsView({ check, onReload }: Props) {
+export function ResultsView({ check, onReload, reviewRequest = 0, onReplyToResult }: Props) {
   // The selected claim lives in the URL (?claim=2) so a view can be shared or bookmarked.
   const [params, setParams] = useSearchParams();
   const fromUrl = check.claims.find((claim) => String(claim.position) === params.get('claim'));
@@ -61,6 +63,13 @@ export function ResultsView({ check, onReload }: Props) {
     if (selected && !evidenceByClaim[selected.id]) void loadEvidence(selected.id);
   }, [selected, evidenceByClaim, loadEvidence]);
 
+  const handledReviewRequest = useRef(reviewRequest);
+  useEffect(() => {
+    if (handledReviewRequest.current === reviewRequest) return;
+    handledReviewRequest.current = reviewRequest;
+    setDialog('review');
+  }, [reviewRequest]);
+
   function selectClaim(claim: Claim) {
     setSelectedId(claim.id);
     // After scrolling down to the sources, bring the newly selected claim back into view.
@@ -99,12 +108,10 @@ export function ResultsView({ check, onReload }: Props) {
   const nextClaim = check.claims[selectedIndex + 1];
 
   return (
-    <div className="mx-auto w-full max-w-[1240px] px-4 pb-24 pt-8 sm:px-8 sm:pt-12">
+    <div className="mx-auto w-full max-w-[1240px] px-4 pb-10 pt-8 sm:px-8 sm:pt-10">
       <p role="status" aria-live="polite" className="sr-only">
         {announcement}
       </p>
-
-      <InputSource check={check} />
 
       <section ref={claimsRef} aria-labelledby="claims-heading" className="scroll-mt-20">
         <h2 id="claims-heading" className="sr-only">
@@ -135,6 +142,7 @@ export function ResultsView({ check, onReload }: Props) {
               </ul>
             )}
             <EvidencePanel
+              onReplyToResult={onReplyToResult}
               claim={selected}
               claimCount={check.claims.length}
               evidence={selectedEvidence ?? { kind: 'loading' }}

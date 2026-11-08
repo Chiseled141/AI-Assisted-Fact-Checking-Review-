@@ -1,3 +1,6 @@
+import { ChartReply } from './ChartReply';
+import { PartyLogo } from '../../components/PartyLogo';
+import { findPartyIdentity, seatChartCountry } from '../../data/partyRegistry';
 import { lazy, Suspense, type ReactNode } from 'react';
 import type { SeatChartData } from '../../types/models';
 import { formatCalendarDate, safeHref } from '../../lib/format';
@@ -31,7 +34,9 @@ function SourceLink({ url, children }: { url: string; children: ReactNode }) {
  * Seats won in an election, drawn as a parliament. Claims without `seatChart` never reach this,
  * so Highcharts only loads when there is a chart to show.
  */
-export function SeatChart({ chart }: { chart: SeatChartData }) {
+export function SeatChart({ chart, onReply }: { chart: SeatChartData; onReply?: (title: string) => void }) {
+  const title = t('Seats in {body}', { body: chart.body });
+  const country = seatChartCountry(chart.body, chart.parties.map((party) => party.name));
   const listed = chart.parties.reduce((sum, party) => sum + party.seats, 0);
   const notListed = chart.total - listed;
   const majority = Math.floor(chart.total / 2) + 1;
@@ -42,9 +47,12 @@ export function SeatChart({ chart }: { chart: SeatChartData }) {
     <section aria-labelledby="seat-chart-heading" className="mt-8">
       {/* A white panel, the same as the other charts'. */}
       <div className="rounded-2xl border border-ink bg-white p-4 sm:p-6">
-        <h2 id="seat-chart-heading" className="text-[24px] font-medium leading-[1.2] tracking-[-0.02em] text-ink">
-          {t('Seats in {body}', { body: chart.body })}
-        </h2>
+        <div className="flex items-start justify-between gap-3">
+          <h2 id="seat-chart-heading" className="text-[24px] font-medium leading-[1.2] tracking-[-0.02em] text-ink">
+            {title}
+          </h2>
+          <ChartReply title={title} onReply={onReply} />
+        </div>
         <p className="mt-1.5 text-sm text-ink-soft">
           {[chart.year, t('{count} seats', { count: seats(chart.total) })].filter(Boolean).join(' · ')}
         </p>
@@ -65,12 +73,9 @@ export function SeatChart({ chart }: { chart: SeatChartData }) {
                 <dl className="divide-y divide-line">
                   {chart.parties.map((party, index) => (
                     <div key={party.name} className="grid grid-cols-[minmax(0,1fr)_auto] items-baseline gap-x-5 px-4 py-2.5">
-                      <dt className="flex items-baseline gap-2 text-[13px] leading-[1.4] text-ink-soft">
-                        <span
-                          className="h-2.5 w-2.5 shrink-0 translate-y-px rounded-[3px]"
-                          style={{ backgroundColor: seatChart.partyColors[index % seatChart.partyColors.length] }}
-                          aria-hidden="true"
-                        />
+                      <dt className="flex items-center gap-2 text-[13px] leading-[1.4] text-ink-soft">
+                        <PartyLogo party={findPartyIdentity(party.name, country)}
+                          color={seatChart.partyColors[index % seatChart.partyColors.length]} />
                         <span>
                           {party.name}
                           {party.others.length > 0 && (

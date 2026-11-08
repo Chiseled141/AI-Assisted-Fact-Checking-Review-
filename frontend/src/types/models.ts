@@ -3,8 +3,8 @@
 
 export type InputType = 'text' | 'url';
 
-/** Processing lifecycle of a check. `completed` and `failed` are terminal. */
-export type CheckStatus = 'queued' | 'extracting' | 'retrieving' | 'assessing' | 'completed' | 'failed';
+/** Processing lifecycle of a check. `completed`, `failed` and `stopped` are terminal. `awaiting_input` waits for the reader, with nothing running. */
+export type CheckStatus = 'queued' | 'extracting' | 'awaiting_input' | 'retrieving' | 'assessing' | 'completed' | 'failed' | 'stopped';
 
 export type Verdict = 'supported' | 'contradicted' | 'insufficient_evidence' | 'outdated';
 
@@ -116,6 +116,7 @@ export interface JudgeVerdict {
   /** The review in each language, written by the judge itself. */
   translations?: ModelTranslations | null;
   primary: boolean;
+  citations?: { evidenceId: string; quote?: string | null; translations?: ModelTranslations | null }[] | null;
   model?: string | null;
 }
 
@@ -295,6 +296,34 @@ export interface AssessmentRevision {
   createdAt: string;
 }
 
+export interface IncidentMapData {
+  city: string;
+  district?: string;
+  roads: string[];
+  position: [longitude: number, latitude: number] | null;
+  bounds: [west: number, south: number, east: number, north: number] | null;
+  toward?: [longitude: number, latitude: number];
+  wholeRoad?: boolean;
+  areas?: IncidentMapArea[];
+  quote: string;
+  publisher: string;
+  url: string;
+}
+
+export interface IncidentMapArea {
+  name: string;
+  bounds: NonNullable<IncidentMapData['bounds']>;
+  geometry?: { type: 'MultiPolygon'; coordinates: number[][][][] };
+  road?: string;
+}
+
+export type ChartKey = 'priceChart' | 'locationMap' | 'incidentMap' | 'heatMap' | 'countryMap' | 'seatChart' | 'electionMap';
+
+export type FollowUpTarget = { claimId: string } & (
+  | { kind: 'source' | 'judge'; key: string }
+  | { kind: 'chart'; key: ChartKey; label?: string }
+);
+
 export interface Claim {
   id: string;
   checkId: string;
@@ -314,6 +343,7 @@ export interface Claim {
   unavailableReason?: string;
   priceChart?: PriceChartData;
   locationMap?: LocationMapData;
+  incidentMap?: IncidentMapData;
   heatMap?: HeatMapData;
   countryMap?: CountryMapData;
   seatChart?: SeatChartData;
@@ -334,7 +364,7 @@ export interface TaskProgress {
   kind: 'ai' | 'search' | 'data';
   task:
     | 'extracting' | 'judging' | 'reading_seats' | 'reading_prices' | 'reading_figures' | 'reading_states' | 'reading_election' | 'rephrasing' | 'researching' | 'researching_chart'
-    | 'searching' | 'chart_sources' | 'chart_data';
+    | 'reading_incident_location' | 'searching' | 'chart_sources' | 'chart_data' | 'reviewing' | 'clarifying';
   status: 'running' | 'completed' | 'failed';
   /** AI tasks. `modelName` and `requestedModel` are what was asked for; `actualModel` is what the provider says answered. */
   modelName?: string | null;
@@ -360,9 +390,79 @@ export interface TaskProgress {
   verdict?: Verdict | null;
 }
 
+/** A claim checked before that says the same as what is being typed. Found by text alone, without a model. */
+export interface EarlierClaim {
+  checkId: string;
+  claimId: string;
+  position: number;
+  text: string;
+  verdict: Verdict;
+  checkedAt: string;
+  similarity: number;
+}
+
+/** The newest finished check of the same link. */
+export interface EarlierLink {
+  checkId: string;
+  title: string;
+  claimCount: number;
+  checkedAt: string;
+}
+
+export interface EarlierChecks {
+  claims: EarlierClaim[];
+  link: EarlierLink | null;
+}
+
+/** A follow-up question about a finished check, and the answer from the selected model, with optional web search. */
+export interface ChatReference {
+  kind: 'judge' | 'chart' | 'source' | 'answer';
+  title: string;
+  url?: string | null;
+  modelName?: string | null;
+}
+
+export interface ChatMessage {
+  id: string;
+  question: string;
+  files?: SubmittedFile[];
+  answer: string;
+  sources?: { title: string; url: string }[];
+  reference?: ChatReference | null;
+  modelName?: string | null;
+  createdAt: string;
+}
+
+export interface ReviewQuestion {
+  /** The position of the claim in `CheckReview.claims`. */
+  claim: number;
+  question: string;
+  options: string[];
+}
+
+export interface ReviewAnswer {
+  /** One claim's position, or null for every claim. */
+  claim: number | null;
+  /** A null answer checks that claim as written. */
+  answers: { claim: number; answer: string | null }[];
+  /** What to check instead of the listed claims, in the reader's own words. */
+  typedClaim?: string | null;
+}
+
+/** What a check asks the reader before it searches. */
+export interface CheckReview {
+  claims: { position: number; text: string }[];
+  /** Whether the reader picks one claim or all of them. */
+  choose: boolean;
+  questions: ReviewQuestion[];
+  answer?: ReviewAnswer | null;
+}
+
 export interface CheckDetail extends Check {
   claims: Claim[];
   progress?: TaskProgress[];
+  messages?: ChatMessage[];
+  review?: CheckReview | null;
 }
 
 export interface CorrectionRequest {
@@ -406,5 +506,11 @@ export interface Page<T> {
 export const PROCESSING_STAGES = ['queued', 'extracting', 'retrieving', 'assessing', 'completed'] as const;
 
 export function isTerminal(status: CheckStatus): boolean {
-  return status === 'completed' || status === 'failed';
+  return status === 'completed' || status === 'failed' || status === 'stopped';
+}
+
+/** The signed-in user. Matches `AccountOut` in backend/app/api/schemas.py. */
+export interface Account {
+  id: string;
+  username: string;
 }
