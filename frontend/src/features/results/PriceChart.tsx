@@ -13,6 +13,7 @@ export const priceTitle = translated<MarketAsset>({
   gold: 'Gold price',
   silver: 'Silver price',
   oil: 'Brent crude oil price',
+  usd_vnd: 'USD/VND exchange rate',
   sjc_gold: 'SJC gold price',
 });
 
@@ -24,6 +25,7 @@ export const assetColor: Record<MarketAsset, string> = {
   ethereum: '#627eea',
   silver: '#8a94a6',
   oil: '#374151',
+  usd_vnd: '#0f766e',
 };
 
 export const formatPrice = (value: number, currency: string) =>
@@ -63,7 +65,9 @@ export function PriceChart({ chart, onReply }: { chart: PriceChartData; onReply?
               { date: formatCalendarDate(chart.retrievedAt.slice(0, 10)) },
             )
           : t(
-              'Daily closing price from {source}, retrieved {date}. A peak within a day may not show. The AI judges also read these prices.',
+              chart.asset === 'usd_vnd'
+                ? 'Daily closing market rate from {source}, retrieved {date}. A bank’s or the State Bank’s rate can differ. The AI judges also read these rates.'
+                : 'Daily closing price from {source}, retrieved {date}. A peak within a day may not show. The AI judges also read these prices.',
               { source: chart.source, date: formatCalendarDate(chart.retrievedAt.slice(0, 10)) },
             )}
       </p>

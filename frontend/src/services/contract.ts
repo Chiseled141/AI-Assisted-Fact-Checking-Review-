@@ -27,8 +27,9 @@ export interface CheckService {
   createCheck(input: CreateCheckInput): Promise<Check>;
   /** GET /api/check/{id} → CheckDetail, including claims saved so far. */
   getCheck(id: string): Promise<CheckDetail>;
+  suggestCheckInputs(id: string): Promise<{ suggestions: string[] }>;
   /** GET /api/checks?query=&status=&page= → Page<Check> */
-  listChecks(params?: ListChecksParams): Promise<Page<Check>>;
+  listChecks(params?: ListChecksParams, options?: { redirectOnUnauthorized?: boolean; signal?: AbortSignal }): Promise<Page<Check>>;
   /** GET /api/claims/{id}/evidence → EvidenceSnapshot[] */
   getClaimEvidence(claimId: string): Promise<EvidenceSnapshot[]>;
   /** GET /api/claims/{id}/revisions → AssessmentRevision[] (oldest first) */
@@ -44,6 +45,8 @@ export interface CheckService {
   stopCheck(checkId: string): Promise<unknown>;
   /** POST /api/check/{id}/review → the reader's answer to what the check asked, and the check goes on. */
   answerReview(checkId: string, answer: ReviewAnswer): Promise<unknown>;
+  /** DELETE /api/check/{id} → the check and everything saved under it are gone. A running check is refused. */
+  deleteCheck(checkId: string): Promise<unknown>;
   /** POST /api/checks/similar → earlier checks of the same claim or link. Reads the database; no model is called. */
   findEarlier(input: { text?: string; url?: string }, signal?: AbortSignal): Promise<EarlierChecks>;
 }

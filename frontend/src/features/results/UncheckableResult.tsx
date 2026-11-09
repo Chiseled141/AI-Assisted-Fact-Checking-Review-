@@ -1,5 +1,6 @@
 import type { Check, CheckDetail } from '../../types/models';
 import { t } from '../../lib/i18n';
+import { RelatedChecks } from './RelatedChecks';
 
 export function inputCategoryLabel(category: Check['inputCategory']): string {
   switch (category) {
@@ -26,20 +27,26 @@ export function UncheckableResult({ check }: { check: CheckDetail }) {
   const failed = check.progress?.some((task) => task.task === 'rephrasing' && task.status === 'failed');
   return (
     <div className="mx-auto w-full max-w-3xl px-4 pb-10 pt-6 sm:px-6">
-      <section className="ml-10 rounded-2xl border border-line bg-white p-5 sm:p-6" aria-labelledby="input-result-heading">
-        <p className="text-sm font-medium text-ink-muted">{t('Input assessment')}</p>
-        <h2 id="input-result-heading" className="mt-2 text-[20px] font-medium leading-snug tracking-[-0.02em] text-ink">
+      <section className="sm:ml-10" aria-labelledby="input-result-heading">
+        <header className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
+          <p className="text-sm font-semibold text-brand-700">{t('Input assessment')}</p>
+          <p className="text-xs font-medium text-ink-muted">{t('No factual verdict')}</p>
+        </header>
+        <div aria-hidden="true" className="mb-4 mt-3 h-px bg-gradient-to-r from-brand-500/60 via-brand-200 to-transparent" />
+        <h2 id="input-result-heading" className="text-balance text-xl font-strong leading-tight tracking-tight text-ink sm:text-2xl">
           {inputCategoryLabel(check.inputCategory)}
         </h2>
-        <span className="mt-3 inline-block rounded-full border border-indigo-200 bg-indigo-50 px-3 py-1 text-sm text-indigo-700">{t('No factual verdict')}</span>
-        <p className="mt-4 text-[15px] leading-relaxed text-ink-soft">
+        <p className="mt-2 max-w-prose text-[15px] leading-relaxed text-ink-soft">
           {failed ? t('The model could not finish interpreting this input. Try again; no factual verdict was produced.') : explanation(check.inputCategory)}
         </p>
-        <h3 className="mt-5 text-sm font-semibold text-ink">{t('How to make this checkable')}</h3>
-        <p className="mt-2 text-sm leading-relaxed text-ink-soft">
-          {t('State a specific fact and, when relevant, a date, place or measurable criterion.')}
-          {check.inputCategory === 'subjective' && <> {t('For a “GOAT” question, choose a competition and a record to compare instead of asking who is best.')}</>}
-        </p>
+        <div className="mt-5 border-l-2 border-brand-500/60 pl-3.5 sm:pl-4">
+          <h3 className="text-sm font-semibold text-brand-700">{t('How to make this checkable')}</h3>
+          <p className="mt-1 max-w-prose text-sm leading-relaxed text-ink-soft">
+            {t('State a specific fact and, when relevant, a date, place or measurable criterion.')}
+            {check.inputCategory === 'subjective' && <> {t('For a “GOAT” question, choose a competition and a record to compare instead of asking who is best.')}</>}
+          </p>
+        </div>
+        <RelatedChecks checkId={check.id} saved={check.inputSuggestions} />
       </section>
     </div>
   );

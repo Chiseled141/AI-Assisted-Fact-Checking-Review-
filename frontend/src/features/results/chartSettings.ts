@@ -4,6 +4,12 @@ export const priceChart = { height: 400 };
 
 export const heatMap = { height: 480 };
 
+export const barChart = {
+  categoryColors: ['#4338ca', '#0f766e', '#c2410c', '#0369a1', '#be185d', '#a16207', '#7e22ce', '#4d7c0f'],
+};
+
+export const populationPyramid = { height: 480, menColor: '#4338ca', womenColor: '#c2410c' };
+
 export const seatChart = {
   /** Parties have no shared colors worldwide, so these go by size. */
   partyColors: ['#c2410c', '#4338ca', '#0f766e', '#a16207', '#be185d', '#0369a1', '#65a30d', '#7c3aed'],
@@ -28,6 +34,7 @@ export const electionMap = {
 export const countryMap = {
   /** One color for each country being compared, the first being the map's highlight. */
   compareColors: ['#c2410c', '#4338ca', '#0f766e', '#a16207', '#be185d'],
+  islandLabel: { fontSize: '10px', fontWeight: '500', textOutline: '2px #fff' },
 };
 
 export const locationMap = {

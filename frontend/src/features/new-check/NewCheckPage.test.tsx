@@ -5,6 +5,9 @@ import { renderApp } from '../../test/renderApp';
 import { makeCheck } from '../../test/fixtures';
 import { interceptRequests, jsonResponse } from '../../test/http';
 
+const isCreateCheck = ([input, init]: [string | URL | Request, RequestInit?]) =>
+  init?.method === 'POST' && new URL(String(input), 'http://localhost').pathname === '/api/check';
+
 describe('New Check', () => {
   it('validates short text before sending a request', async () => {
     const user = userEvent.setup();
@@ -41,7 +44,7 @@ describe('New Check', () => {
     await user.click(screen.getByRole('button', { name: 'Check claims' }));
     expect(await screen.findByRole('heading', { name: 'Checking claims' })).toBeInTheDocument();
     expect(screen.getByText('Looking up and saving source snapshots')).toBeInTheDocument();
-    const post = fetchMock.mock.calls.find(([, init]) => init?.method === 'POST')!;
+    const post = fetchMock.mock.calls.find(isCreateCheck)!;
     expect(JSON.parse(String(post[1]?.body))).toEqual({
       inputType: 'url', url: 'https://example.org/story', judgeIds: ['claude-haiku', 'gemini-flash-lite'],
     });
@@ -82,7 +85,7 @@ describe('New Check', () => {
     expect(await screen.findByRole('list', { name: 'Attached files' })).toHaveTextContent('statement.txt');
     await user.click(screen.getByRole('button', { name: 'Check claims' }));
     await screen.findByRole('heading', { name: 'Checking claims' });
-    const post = fetchMock.mock.calls.find(([, init]) => init?.method === 'POST')!;
+    const post = fetchMock.mock.calls.find(isCreateCheck)!;
     expect(JSON.parse(String(post[1]?.body)).files).toEqual([{ name: 'statement.txt', size: text.length, text }]);
   });
 
@@ -133,7 +136,7 @@ describe('New Check', () => {
     await user.type(screen.getByLabelText('Text to check'), typed);
     expect(screen.getByText('This link will be read as an article.')).toBeInTheDocument();
     await user.click(screen.getByRole('button', { name: 'Check claims' }));
-    const post = fetchMock.mock.calls.find(([, init]) => init?.method === 'POST')!;
+    const post = fetchMock.mock.calls.find(isCreateCheck)!;
     expect(JSON.parse(String(post[1]?.body))).toMatchObject({ inputType: 'url', url });
   });
 
@@ -148,7 +151,7 @@ describe('New Check', () => {
     await user.type(screen.getByLabelText('Text to check'), typed);
     expect(screen.queryByText('This link will be read as an article.')).not.toBeInTheDocument();
     await user.click(screen.getByRole('button', { name: 'Check claims' }));
-    const post = fetchMock.mock.calls.find(([, init]) => init?.method === 'POST')!;
+    const post = fetchMock.mock.calls.find(isCreateCheck)!;
     expect(JSON.parse(String(post[1]?.body))).toMatchObject({ inputType: 'text', text: typed });
   });
 

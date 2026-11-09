@@ -1,11 +1,11 @@
 import httpx
 import pytest
 
-from app.charts.country_map import build_country_map, is_stat_claim
-from app.charts.data_sources import CountryDataError, DataUsa, StateDataError, WorldBankData
+from app.charts.country_map import build_country_map, build_population_pyramid, is_age_claim, is_stat_claim
+from app.charts.data_sources import AGE_BANDS, CountryDataError, DataUsa, StateDataError, WorldBankData
 from app.charts.location_map import PLACES
 from app.core.config import Settings
-from app.pipeline.prompts import CountryStatRequest, ExtractedClaim, MapPlace
+from app.pipeline.prompts import CountryStatRequest, ExtractedClaim, MapPlace, PopulationPyramidRequest
 from tests.conftest import FakeStateData, fake_country_rows
 from tests.helpers import run
 
@@ -192,3 +192,88 @@ def test_data_usa_answers_become_values(monkeypatch):
     monkeypatch.setattr(httpx, "get", lambda *a, **k: httpx.Response(500, request=request))
     with pytest.raises(StateDataError):
         DataUsa(Settings()).population_by_state()
+
+
+AGEING = "Người từ 65 tuổi trở lên chiếm 9% dân số Việt Nam năm 2023."
+
+
+class AgeData:
+    name = "Test source"
+
+    def __init__(self, found=None, fails=False):
+        self.found, self.fails, self.asked = found, fails, []
+
+    def population_by_age(self, iso3, start, end):
+        self.asked.append((iso3, start, end))
+        if self.fails:
+            raise CountryDataError("down")
+        return self.found
+
+
+def _pyramid(data, text=AGEING, name="Việt Nam", country="VN", year=2023):
+    request = PopulationPyramidRequest(name=name, country=country, year=year)
+    return build_population_pyramid(ExtractedClaim(text=text, checkworthiness=0.9, population_pyramid=request), data, Settings())
+
+
+@pytest.mark.parametrize(
+    ("text", "expected"),
+    [
+        (AGEING, True),
+        ("Vietnam's population is ageing rapidly.", True),
+        ("Tháp dân số Nhật Bản năm 2023 có đáy hẹp.", True),
+        ("People aged 65 and over make up 30% of Japan's population.", True),
+        ("Tỷ số giới tính khi sinh ở Việt Nam là 112 bé trai trên 100 bé gái.", True),
+        # A rule about an age, not the size of an age group.
+        ("Người dưới 18 tuổi ở Việt Nam không được mua rượu.", False),
+        ("Dân số Việt Nam đạt 100 triệu người năm 2023.", False),
+    ],
+)
+def test_only_a_claim_about_age_or_sex_gets_a_pyramid(text, expected):
+    assert is_age_claim(text) is expected
+
+
+def test_a_pyramid_uses_the_newest_complete_year_up_to_the_claims():
+    data = AgeData({2021: ([1.0] * 17, [2.0] * 17), 2023: ([3.4] * 17, [4.0] * 17)})
+    chart = _pyramid(data)
+    assert data.asked == [("VNM", 2020, 2023)]
+    assert (chart["country"], chart["named"], chart["year"]) == ("vn", "Việt Nam", 2023)
+    assert chart["men"] == [3] * 17 and chart["women"] == [4] * 17
+
+
+@pytest.mark.parametrize(
+    "fields",
+    [
+        {"text": "Dân số Việt Nam đạt 100 triệu người năm 2023."},  # The claim isn't about age.
+        {"name": "Nhật Bản", "country": "JP"},  # The claim doesn't name this country.
+        {"name": "Việt Nam", "country": "XX"},  # The data has no such country.
+    ],
+)
+def test_a_stray_pyramid_request_draws_nothing_and_asks_for_nothing(fields):
+    data = AgeData({})
+    assert _pyramid(data, **fields) is None
+    assert data.asked == []
+
+
+@pytest.mark.parametrize("data", [AgeData({}), AgeData(fails=True)])
+def test_a_pyramid_without_data_costs_only_the_chart(data):
+    assert _pyramid(data) is None
+
+
+def test_the_world_bank_returns_only_years_with_every_band(monkeypatch):
+    def row(code, year, value):
+        return {"indicator": {"id": code}, "date": str(year), "value": value}
+
+    codes = [f"SP.POP.{band}.{sex}" for sex in ("MA", "FE") for band in AGE_BANDS]
+    rows = [row(code, 2023, 10) for code in codes] + [row(code, 2024, 10) for code in codes[:-1]] + [row(codes[-1], 2024, None)]
+
+    class Response:
+        status_code = 200
+
+        def raise_for_status(self):
+            pass
+
+        def json(self):
+            return [{}, rows]
+
+    monkeypatch.setattr(httpx, "get", lambda *args, **kwargs: Response())
+    assert WorldBankData(Settings()).population_by_age("VNM", 2020, 2024) == {2023: ([10] * 17, [10] * 17)}

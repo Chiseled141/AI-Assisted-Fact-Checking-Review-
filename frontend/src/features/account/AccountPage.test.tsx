@@ -88,17 +88,17 @@ describe('Account form', () => {
   it('shows the signed-in username in the header, and "Account" when signed out', async () => {
     interceptRequests((url) => url.pathname === '/api/auth/me'
       ? jsonResponse({ id: 'usr_1', username: 'lan' })
-      : jsonResponse({ claims: [], link: null }));
+      : jsonResponse({ items: [], page: 1, totalPages: 1 }));
     const { unmount } = renderApp('/');
-    const link = await screen.findByRole('link', { name: 'Account: lan' });
-    expect(link).toHaveTextContent('lan');
-    expect(link).toHaveAttribute('href', '/login');
+    const accountButton = await screen.findByRole('button', { name: 'Account: lan' });
+    expect(accountButton).toHaveTextContent('lan');
+    expect(accountButton).toHaveAttribute('aria-haspopup', 'dialog');
     unmount();
 
     forgetAccount();
     interceptRequests(signedOut);
     renderApp('/');
-    expect(await screen.findByRole('link', { name: 'Account' })).toHaveTextContent('Account');
+    expect(await screen.findByRole('button', { name: 'Account' })).toHaveTextContent('Account');
   });
 
   it('sends a signed-out visitor from History to the login page and back', async () => {

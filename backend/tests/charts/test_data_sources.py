@@ -43,6 +43,19 @@ def test_invalid_numeric_provider_data_is_rejected_before_it_reaches_a_visual(mo
         DataUsa(Settings()).population_by_state()
 
 
+def test_pm25_is_the_average_of_the_days_hours_and_a_patchy_day_has_none(monkeypatch):
+    full = {'hourly': {'pm2_5': [10.0] * 12 + [30.0] * 12}}
+    patchy = {'hourly': {'pm2_5': [10.0] * 6 + [None] * 18}}
+    reply(monkeypatch, [full, patchy])
+    assert OpenMeteoClimate(Settings()).day_values('pm25', date(2025, 1, 15), [21, 10], [105, 106]) == [20.0, None]
+
+
+def test_invalid_pm25_data_is_rejected(monkeypatch):
+    reply(monkeypatch, {'hourly': {'pm2_5': ['bad'] * 24}})
+    with pytest.raises(ClimateError):
+        OpenMeteoClimate(Settings()).day_values('pm25', date(2025, 1, 15), [21], [105])
+
+
 def test_mismatched_price_arrays_raise_the_handled_provider_error(monkeypatch):
     reply(monkeypatch, {'chart': {'result': [{'timestamp': [1700000000, 1700086400], 'indicators': {'quote': [{'close': [100]}]}}]}})
     with pytest.raises(MarketError):

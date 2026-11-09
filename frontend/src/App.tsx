@@ -5,6 +5,7 @@ import { NewCheckPage } from './features/new-check/NewCheckPage';
 import { CheckPage } from './features/check/CheckPage';
 import { HistoryPage } from './features/history/HistoryPage';
 import { AccountPage } from './features/account/AccountPage';
+import { ProfilePage } from './features/account/ProfilePage';
 import { SettingsPage } from './features/settings/SettingsPage';
 import { t, useLanguage } from './lib/i18n';
 import { onSignInRequired } from './services/account';
@@ -45,6 +46,7 @@ export function App() {
         <Route path="checks/:checkId" element={<CheckPage />} />
         <Route path="history" element={<HistoryPage />} />
         <Route path="settings" element={<SettingsPage />} />
+        <Route path="profile" element={<ProfilePage />} />
         <Route path="*" element={<NotFoundPage />} />
       </Route>
     </Routes>

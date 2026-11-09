@@ -6,7 +6,7 @@ from typing import Annotated, Literal
 from pydantic import BaseModel, ConfigDict, Field, PlainSerializer
 from pydantic.alias_generators import to_camel
 
-from ..core.labels import Freshness, InputCategory, Relation, Verdict
+from ..core.labels import Freshness, InputCategory, Relation, StockMarket, Verdict
 
 
 def _utc(value: datetime) -> str:
@@ -69,6 +69,8 @@ class JudgeCitationOut(ApiModel):
     evidence_id: str
     quote: str | None = None
     translations: dict[str, str] | None = None
+    relation: Relation | None = None
+    freshness: Freshness | None = None
 
 
 class JudgeVerdictOut(ApiModel):
@@ -111,11 +113,17 @@ class ClaimOut(ApiModel):
     current: RevisionOut | None = None
     unavailable_reason: str | None = None
     price_chart: dict | None = None
+    stock_heatmap_markets: list[StockMarket] | None = None
     location_map: dict | None = None
     incident_map: dict | None = None
     heat_map: dict | None = None
     country_map: dict | None = None
+    population_pyramid: dict | None = None
     seat_chart: dict | None = None
+    pie_chart: dict | None = None
+    bar_chart: dict | None = None
+    route_map: dict | None = None
+    match_result: dict | None = None
     election_map: dict | None = None
     rephrased_from: str | None = None
 
@@ -250,9 +258,14 @@ class SimilarOut(ApiModel):
 
 class CheckDetailOut(CheckOut):
     claims: list[ClaimOut]
+    input_suggestions: list[str] | None = None
     progress: list[TaskProgressOut] = []
     messages: list[MessageOut] = []
     review: ReviewOut | None = None
+
+
+class InputSuggestionsOut(ApiModel):
+    suggestions: list[str]
 
 
 class EvidenceOut(ApiModel):
@@ -308,9 +321,29 @@ class LoginIn(ApiModel):
     password: str = Field(max_length=1024)
 
 
+SourceLanguage = Literal["vi", "en"]
+MAX_AVATAR_BYTES = 4 * 1024 * 1024
+
+
+class ProfileIn(ApiModel):
+    username: str | None = Field(default=None, max_length=256)
+    avatar: str | None = Field(default=None, max_length=4 * ((MAX_AVATAR_BYTES + 2) // 3))
+    preferred_source_language: SourceLanguage | None = None
+    preferred_search_model_id: str | None = Field(default=None, min_length=1, max_length=64)
+
+
+class ChangePasswordIn(ApiModel):
+    current_password: str = Field(max_length=1024)
+    new_password: str = Field(max_length=1024)
+    password_confirmation: str = Field(max_length=1024)
+
+
 class AccountOut(ApiModel):
     id: str
     username: str
+    avatar: str | None = None
+    preferred_source_language: SourceLanguage | None = None
+    preferred_search_model_id: str | None = None
 
 
 class StatsOut(ApiModel):

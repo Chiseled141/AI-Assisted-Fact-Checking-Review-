@@ -5,9 +5,10 @@ import type { CountryMapData } from '../../types/models';
 import { locale, t } from '../../lib/i18n';
 import { useMediaQuery } from '../../lib/useMediaQuery';
 import { countryMap } from './chartSettings';
+import { drawOcean, graticule, type GlobeChart } from './globe';
 import { flagUrl, formatExactStat, valueAt, type ChosenCountry } from './CountryMap';
-import { islandShapes, islandsInView, type IslandCode } from './islands';
-import { viewOfPlaces, withIslandRoom, type TopoMap } from './mapViews';
+import { islandMiddles, islandShapes, islandsInView, type IslandCode } from './islands';
+import { middles, viewOfPlaces, withIslandRoom, type TopoMap } from './mapViews';
 
 // The same map files as the location map, in public/maps.
 const worldFile = '/maps/world-palestine.topo.json';
@@ -31,7 +32,14 @@ const scale: Record<CountryMapData['indicator'], Highcharts.ColorAxisOptions> = 
 interface Props {
   map: CountryMapData;
   height: number;
+  globe: boolean;
+  focus: ChosenCountry | null;
   onChoose: (countries: ChosenCountry[]) => void;
+}
+
+function globeRotation(topo: TopoMap, code: string): Highcharts.ProjectionRotationOption | undefined {
+  const center = middles(topo, [code]).get(code);
+  return center && [-center[0], -center[1]];
 }
 
 interface PointWithCode extends Highcharts.Point {
@@ -44,7 +52,7 @@ const pickedStyle = (index: number, label: string): Highcharts.PointOptionsObjec
     labelrank: 100, // A picked place keeps its label when others give way.
     color: countryMap.compareColors[index % countryMap.compareColors.length],
     borderColor: ink,
-    borderWidth: 1,
+    borderWidth: 1.4,
     custom: { picked: true, label },
   }) as Highcharts.PointOptionsObject;
 
@@ -56,21 +64,32 @@ const plainStyle = {
 } as unknown as Highcharts.PointOptionsObject;
 
 /** The map. Clicking a country adds it to the comparison, and clicking it again takes it off. */
-export default function CountryPlot({ map, height, onChoose }: Props) {
+export default function CountryPlot({ map, height, globe, focus, onChoose }: Props) {
   const [topo, setTopo] = useState<TopoMap | null>(null);
   const [islands, setIslands] = useState<unknown>(null);
   const phone = useMediaQuery('(max-width: 639px)');
   const states = map.scope === 'us-states';
   const choose = useRef(onChoose);
   choose.current = onChoose;
-  const picked = useRef(map.selected.map(({ code }) => code));
+  const picked = useRef<ChosenCountry[]>(map.selected.map(({ code, named }) => ({ code, label: named })));
   const chart = useRef<HighchartsReact.RefObject>(null);
-  const firstHeight = useRef(height);
+  const chartHeight = useRef(height);
+  chartHeight.current = height;
 
   // Resized in place, because new options would redraw the map and undo the reader's zoom and clicks.
   useEffect(() => {
     chart.current?.chart?.setSize(null, height, false);
   }, [height]);
+
+  useEffect(() => {
+    const current = chart.current?.chart as GlobeChart | undefined;
+    if (!globe || !focus || !topo || !current) return;
+    const rotation = globeRotation(topo, focus.code);
+    if (!rotation) return;
+    current.mapView.update({ projection: { rotation } }, false);
+    current.mapView.fitToBounds(undefined, undefined, false);
+    current.redraw(false);
+  }, [focus, globe, topo]);
 
   useEffect(() => {
     let current = true;
@@ -90,37 +109,43 @@ export default function CountryPlot({ map, height, onChoose }: Props) {
   const options = useMemo<Highcharts.Options | null>(() => {
     if (!topo || !islands) return null;
     const codes = map.selected.map(({ code }) => code);
-    // Every state stays in view, because the map's point is comparing them. Countries zoom to the claim's region.
-    const view = codes.length && !states ? withIslandRoom(viewOfPlaces(topo, codes, regionMargin)) : null;
-    // Only a region that includes the islands carries them, so the whole world and regions elsewhere don't.
-    const shown: IslandCode[] = view ? islandsInView(view) : [];
+    const longitudes = [...middles(topo, codes).values()].map(([lon]) => lon);
+    // Far-apart countries need the world extent, including shapes split by the antimeridian.
+    const regional = !states && longitudes.length > 0 && Math.max(...longitudes) - Math.min(...longitudes) < 150;
+    const view = regional ? withIslandRoom(viewOfPlaces(topo, codes, regionMargin)) : null;
+    const shown: IslandCode[] = globe || states ? [] : view ? islandsInView(view) : ['hoang-sa', 'truong-sa'];
     const islandLabels: Record<IslandCode, string> = {
       'hoang-sa': t('Hoàng Sa Islands (Vietnam)'),
       'truong-sa': t('Trường Sa Islands (Vietnam)'),
     };
     // The figures sit beside this map, so there is no room for the long name on one line.
-    const islandLabel = (code: IslandCode) => islandLabels[code].replace(/^Quần đảo | Islands/g, '').replace(' (', '<br>(');
+    const islandLabel = (code: IslandCode) =>
+      islandLabels[code].replace(/^Quần đảo | Islands/g, '').replace(' (', '<br>(');
 
     return {
       accessibility: { enabled: false }, // CountryMap gives screen readers the same figures as text.
-      chart: { height: firstHeight.current, backgroundColor: 'transparent', style: { fontFamily: 'inherit' } },
+      chart: {
+        height: chartHeight.current,
+        backgroundColor: 'transparent',
+        style: { fontFamily: 'inherit' },
+        events: globe ? { render: drawOcean } : undefined,
+      },
       title: { text: undefined },
-      mapView: view ? { fitToGeometry: { type: 'MultiPoint', coordinates: view }, padding: 4 } : {},
-      mapNavigation: { enabled: true, enableMouseWheelZoom: false, buttonOptions: { verticalAlign: 'bottom' } },
+      mapView: globe
+        ? {
+            projection: {
+              name: 'Orthographic',
+              rotation: globeRotation(topo, picked.current[0]?.code ?? '') ?? [0, -15],
+              projectedBounds: 'world',
+            },
+            padding: 12,
+          }
+        : view ? { fitToGeometry: { type: 'MultiPoint', coordinates: view }, padding: 16 } : { padding: 12 },
+      mapNavigation: { enabled: !globe, enableMouseWheelZoom: false, buttonOptions: { verticalAlign: 'bottom' } },
       legend: { symbolWidth: phone ? 220 : 280, itemStyle: { color: inkSoft, fontWeight: 'normal' } },
       colorAxis: {
         ...(states ? { type: 'logarithmic' as const, min: 500_000 } : scale[map.indicator]),
-        stops: states
-          ? [
-              [0, '#EFEFFF'],
-              [0.67, '#4444FF'],
-              [1, '#000022'],
-            ]
-          : [
-              [0, '#eef0fb'],
-              [0.5, '#8f8fe0'],
-              [1, '#312e81'],
-            ],
+        stops: [[0, '#f1f5f9'], [0.5, '#cbd5e1'], [1, '#94a3b8']],
         startOnTick: false,
         endOnTick: false,
         gridLineColor: '#fff',
@@ -139,8 +164,12 @@ export default function CountryPlot({ map, height, onChoose }: Props) {
         shadow: false,
         style: { color: inkSoft, fontSize: '13px' },
         headerFormat: '',
+        hideDelay: globe ? 0 : undefined,
         useHTML: true,
         formatter() {
+          if (this.series.type === 'mappoint') {
+            return this.plotX === undefined ? false : `<b>${this.name}</b>`;
+          }
           const point = this as unknown as PointWithCode;
           const own = point['hc-key'] ? valueAt(map, point['hc-key'], map.year) : null;
           if (!own) return false;
@@ -152,6 +181,17 @@ export default function CountryPlot({ map, height, onChoose }: Props) {
         },
       },
       series: [
+        ...(globe ? [{
+          type: 'mapline' as const,
+          data: graticule,
+          color: '#a7b1d2',
+          lineWidth: 0.5,
+          enableMouseTracking: false,
+          showInLegend: false,
+          affectsMapView: false,
+          colorAxis: false as const,
+          states: { inactive: { opacity: 1 } },
+        }] : []),
         {
           type: 'map',
           mapData: topo as unknown as Highcharts.GeoJSON,
@@ -168,22 +208,18 @@ export default function CountryPlot({ map, height, onChoose }: Props) {
                 const point = this as PointWithCode;
                 const code = point['hc-key'] ?? '';
                 // Highcharts' own selected state can only give every country the same color.
-                picked.current = picked.current.includes(code)
-                  ? picked.current.filter((other) => other !== code)
-                  : [...picked.current, code];
+                picked.current = picked.current.some((country) => country.code === code)
+                  ? picked.current.filter((country) => country.code !== code)
+                  : [...picked.current, { code, label: point.options.custom?.label ?? point.name ?? code }];
                 const series = point.series;
+                const picks = new Map(picked.current.map(({ code, label }, index) => [code, { index, label }]));
                 (series.points as PointWithCode[]).forEach((other) => {
-                  const index = picked.current.indexOf(other['hc-key'] ?? '');
-                  if (index >= 0) other.update(pickedStyle(index, other.options.custom?.label ?? other.name), false);
+                  const pick = picks.get(other['hc-key'] ?? '');
+                  if (pick) other.update(pickedStyle(pick.index, pick.label), false);
                   else if (other.options.custom?.picked) other.update(plainStyle, false);
                 });
                 series.chart.redraw();
-                choose.current(
-                  picked.current.map((pick) => {
-                    const found = (series.points as PointWithCode[]).find((other) => other['hc-key'] === pick);
-                    return { code: pick, label: found?.options.custom?.label ?? found?.name ?? pick };
-                  }),
-                );
+                choose.current(picked.current);
                 return false;
               },
             },
@@ -191,11 +227,11 @@ export default function CountryPlot({ map, height, onChoose }: Props) {
           data: Object.keys(map.values)
             .filter((code) => code !== 'world')
             .map((code) => {
-              const index = map.selected.findIndex((place) => place.code === code);
+              const index = picked.current.findIndex((place) => place.code === code);
               return {
                 'hc-key': code,
                 value: valueAt(map, code, map.year)?.value ?? null,
-                ...(index >= 0 ? pickedStyle(index, map.selected[index].named) : {}),
+                ...(index >= 0 ? pickedStyle(index, picked.current[index].label) : {}),
               };
             }),
           dataLabels: {
@@ -212,6 +248,27 @@ export default function CountryPlot({ map, height, onChoose }: Props) {
             style: { color: ink, fontSize: '12px', fontWeight: '500', textOutline: '2.5px #fff' },
           },
         } as Highcharts.SeriesOptionsType,
+        ...(globe ? [{
+          type: 'mappoint' as const,
+          affectsMapView: false,
+          animation: false as const,
+          showInLegend: false,
+          color: islandColor,
+          dataLabels: { enabled: false },
+          stickyTracking: false,
+          states: { hover: { halo: null } },
+          marker: {
+            symbol: 'circle',
+            radius: 1,
+            lineWidth: 0,
+            states: { hover: { radiusPlus: 0, lineWidthPlus: 0 } },
+          },
+          data: Object.entries(islandMiddles).map(([code, [lon, lat]]) => ({
+            name: islandLabels[code as IslandCode],
+            lon,
+            lat,
+          })),
+        }] : []),
         ...(shown.length > 0
           ? [
               {
@@ -226,21 +283,27 @@ export default function CountryPlot({ map, height, onChoose }: Props) {
                 borderWidth: 2,
                 borderColor: islandColor,
                 nullColor: islandColor,
-                data: shown.map((code) => ({ 'hc-key': code, label: islandLabel(code), color: islandColor })),
+                data: shown.map((code) => ({
+                  'hc-key': code,
+                  label: view ? islandLabel(code) : islandLabel(code).split('<br>')[0],
+                  color: islandColor,
+                  dataLabels: { y: code === 'hoang-sa' ? 6 : 18 },
+                })),
                 dataLabels: {
                   enabled: true,
                   format: '{point.label}',
                   allowOverlap: true,
-                  y: 22,
-                  style: { color: inkSoft, fontSize: '12px', fontWeight: '500', textOutline: '2.5px #fff' },
+                  align: 'right',
+                  x: -4,
+                  style: { color: inkSoft, ...countryMap.islandLabel },
                 },
               } as Highcharts.SeriesOptionsType,
             ]
           : []),
       ],
     };
-  }, [topo, islands, map, phone, states]);
+  }, [topo, islands, map, phone, states, globe]);
 
   if (!options) return null;
-  return <HighchartsReact ref={chart} highcharts={Highcharts} constructorType="mapChart" options={options} />;
+  return <HighchartsReact key={globe ? 'globe' : 'flat'} ref={chart} highcharts={Highcharts} constructorType="mapChart" options={options} />;
 }

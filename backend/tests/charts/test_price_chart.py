@@ -6,7 +6,15 @@ import httpx
 import pytest
 
 from app.charts.data_sources import MarketError, YahooMarketData
-from app.charts.price_chart import _search_months, build_sjc_chart, is_price_claim, is_verified_report
+from app.charts.price_chart import (
+    _search_months,
+    build_price_chart,
+    build_sjc_chart,
+    drop_bad_rates,
+    is_price_claim,
+    is_verified_report,
+    price_table,
+)
 from app.core.config import Settings
 from app.pipeline.prompts import ExtractedClaim, PriceEvent, ReportedPrice, ReportedPrices
 from app.search.fetcher import FetchError, Page
@@ -36,10 +44,41 @@ SJC = "Giá vàng SJC vượt 90 triệu đồng/lượng ngày 18/3/2024."
         # Local prices we have no data for.
         ("Giá vàng nhẫn DOJI vượt 80 triệu đồng/lượng.", "gold", False),
         ("Giá vàng nhẫn SJC vượt 80 triệu đồng/lượng.", "sjc_gold", False),
+        # The market exchange rate, and only when the claim says it is a rate.
+        ("Tỷ giá USD/VND vượt 26.000 đồng ngày 2/4/2025.", "usd_vnd", True),
+        ("1 USD đổi được 25.000 đồng vào tháng 6/2024.", "usd_vnd", True),
+        ("The dong weakened to 25,000 against the dollar in 2024.", "usd_vnd", True),
+        ("A Tesla costs 30,000 USD, about 750 million VND.", "usd_vnd", False),
+        ("Apple shares rose to 200 USD.", "usd_vnd", False),
+        # Rates with figures of their own.
+        ("Vietcombank bán ra 26.300 đồng/USD, theo tỷ giá hôm nay.", "usd_vnd", False),
+        ("Tỷ giá USD chợ đen vượt 27.000 đồng.", "usd_vnd", False),
+        ("Tỷ giá trung tâm USD/VND là 24.000 đồng.", "usd_vnd", False),
     ],
 )
 def test_only_a_claim_about_the_price_of_a_tracked_asset_gets_a_chart(text, asset, expected):
     assert is_price_claim(text, asset) is expected
+
+
+def test_wrong_days_in_the_exchange_rate_go_and_a_real_devaluation_stays():
+    rates = [19_000, 19_010, 189, 19_020, 19_030, 19_040, 20_500, 20_510, 20_520, 20_530, 20_540]
+    kept = [close for _, close in drop_bad_rates([[index, close] for index, close in enumerate(rates)], 0.015)]
+    assert 189 not in kept
+    assert kept == [close for close in rates if close != 189]
+
+
+def test_an_exchange_rate_chart_is_in_dong():
+    class Market:
+        name = "Test market"
+
+        def daily_closes(self, symbol, start, end):
+            assert symbol == "VND=X"
+            return [[1, 25_000.0], [2, 25_010.0], [3, 25_020.0]]
+
+    item = ExtractedClaim(text="Tỷ giá USD/VND vượt 25.000 đồng.", checkworthiness=0.9, price_asset="usd_vnd")
+    chart = build_price_chart(item, Market(), Settings())
+    assert (chart["asset"], chart["currency"]) == ("usd_vnd", "VND")
+    assert "not a bank's" in price_table(chart)
 
 
 def test_a_price_claim_saves_market_prices_and_its_events(client, fakes):
@@ -286,6 +325,8 @@ def test_the_price_table_keeps_recent_days_and_one_day_a_month_before():
     lines = table.splitlines()
     assert lines[0] == "World gold price, daily closing prices, in USD. Source: Yahoo Finance."
     assert "2026-02-01: 2,031" in lines and "2026-02-02: 2,032" not in table
+    dated_table = price_table({"asset": "gold", "prices": prices, "events": [{"date": "2026-02-02"}]})
+    assert "2026-02-02: 2,032" in dated_table
     assert lines[-1] == "2026-10-27: 2,299"
     assert len(lines) < 80
     assert price_table(None) is None

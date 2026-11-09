@@ -7,7 +7,7 @@ import { NotFoundError, UnauthorizedError, ValidationError, VersionConflictError
 import { apiUrl } from './api';
 import { signInRequired } from './account';
 
-async function request<T>(path: string, init?: RequestInit): Promise<T> {
+async function request<T>(path: string, init?: RequestInit, redirectOnUnauthorized = true): Promise<T> {
   const response = await fetch(`${apiUrl}${path}`, {
     ...init,
     // The session cookie also goes to a backend on another origin (VITE_API_URL).
@@ -17,7 +17,7 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
   if (response.ok) return response.json() as Promise<T>;
   if (response.status === 401) {
     // Opening a page sends you to log in. Sending a form keeps it, with the message beside it.
-    if (!init?.method || init.method === 'GET') signInRequired();
+    if (!init?.method || init.method === 'GET') signInRequired(redirectOnUnauthorized);
     throw new UnauthorizedError(t('Log in to continue.'));
   }
 
@@ -61,13 +61,15 @@ export const httpCheckService: CheckService = {
     return detailFromServer(await request<CheckDetail>(`/api/check/${encodeURIComponent(id)}`));
   },
 
-  async listChecks({ query, status, page, pageSize }: ListChecksParams = {}) {
+  suggestCheckInputs: (id) => request(`/api/check/${encodeURIComponent(id)}/input-suggestions`, { method: 'POST' }),
+
+  async listChecks({ query, status, page, pageSize }: ListChecksParams = {}, { redirectOnUnauthorized, signal } = {}) {
     const search = new URLSearchParams();
     if (query) search.set('query', query);
     if (status) search.set('status', status);
     if (page) search.set('page', String(page));
     if (pageSize) search.set('pageSize', String(pageSize));
-    const result = await request<Awaited<ReturnType<CheckService['listChecks']>>>(`/api/checks?${search}`);
+    const result = await request<Awaited<ReturnType<CheckService['listChecks']>>>(`/api/checks?${search}`, { signal }, redirectOnUnauthorized);
     return { ...result, items: result.items.map(fromServer) };
   },
 
@@ -94,6 +96,8 @@ export const httpCheckService: CheckService = {
 
   answerReview: (checkId, answer) =>
     request(`/api/check/${encodeURIComponent(checkId)}/review`, { method: 'POST', body: JSON.stringify(answer) }),
+
+  deleteCheck: (checkId) => request(`/api/check/${encodeURIComponent(checkId)}`, { method: 'DELETE' }),
 
   findEarlier: (input, signal) => request('/api/checks/similar', { method: 'POST', body: JSON.stringify(input), signal }),
 };

@@ -4,8 +4,8 @@ from datetime import date
 import httpx
 import pytest
 
-from app.charts.data_sources import ClimateError, OpenMeteoClimate
-from app.charts.heat_map import _grid, build_heat_map, is_heat_claim, sample_days
+from app.charts.data_sources import AIR_SOURCE, ClimateError, OpenMeteoClimate
+from app.charts.heat_map import _grid, _period, build_heat_map, is_heat_claim, sample_days
 from app.core.config import Settings
 from app.pipeline.prompts import ExtractedClaim, HeatMapRequest, MapPlace
 from tests.helpers import run
@@ -43,6 +43,9 @@ def _build(text=HEAT, request=VN, climate=None, **settings):
         # It names the area, but not the metric.
         ("Hà Nội mở tuyến metro mới năm 2021.", "temperature", "vn", "Hà Nội", False),
         ("Hanoi had a heat wave.", "rainfall", "vn", "Hanoi", False),
+        ("Nồng độ bụi mịn PM2.5 ở Hà Nội vượt 100 µg/m³ ngày 15/1/2025.", "pm25", "vn", "Hà Nội", True),
+        ("Hanoi's air pollution was the worst in the world on 15 January 2025.", "pm25", "vn", "Hanoi", True),
+        ("Hanoi had a heat wave.", "pm25", "vn", "Hanoi", False),
         # The claim doesn't name the area the model gave.
         ("It was 40°C on Monday.", "temperature", "vn", "Hanoi", False),
         ("Japan had its hottest July.", "temperature", "world", "world", False),
@@ -53,6 +56,28 @@ def _build(text=HEAT, request=VN, climate=None, **settings):
 )
 def test_only_a_claim_about_the_weather_over_an_area_gets_a_heatmap(text, metric, area, name, expected):
     assert is_heat_claim(text, metric, area, name) is expected
+
+
+@pytest.mark.parametrize(
+    ("metric", "start", "end", "usable"),
+    [
+        ("pm25", "2022-08-04", "2022-08-04", True),
+        ("pm25", "2022-08-03", "2022-08-04", False),
+        ("pm25", "2026-11-08", "2026-11-08", True),
+        ("pm25", "2026-11-09", "2026-11-09", False),
+        ("temperature", "2022-08-03", "2022-08-03", True),
+        ("temperature", "2026-11-08", "2026-11-08", False),
+    ],
+)
+def test_each_metric_has_its_own_dates(metric, start, end, usable):
+    assert (_period(metric, start, end, date(2026, 11, 9), Settings()) is not None) is usable
+
+
+def test_a_pm25_map_credits_the_air_quality_data():
+    request = HeatMapRequest(metric="pm25", area="VN", area_name="Hà Nội", start="2025-01-15", end="2025-01-15")
+    result = _build(text="Bụi mịn PM2.5 ở Hà Nội vượt 100 µg/m³ ngày 15/1/2025.", request=request)
+    assert result["metric"] == "pm25"
+    assert result["source"] == AIR_SOURCE
 
 
 def test_values_come_from_climate_data_and_are_averaged_over_the_days():

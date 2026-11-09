@@ -6,3 +6,4 @@ Verdict = Literal["supported", "contradicted", "insufficient_evidence", "outdate
 Relation = Literal["supporting", "contradicting", "contextual"]
 Freshness = Literal["current", "outdated", "unknown"]
 InputCategory = Literal["subjective", "advice", "prediction", "unclear", "no_factual_claim"]
+StockMarket = Literal["us", "cn", "jp", "hk", "in", "vn"]

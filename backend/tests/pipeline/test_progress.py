@@ -2,6 +2,7 @@ from concurrent.futures import ThreadPoolExecutor
 from threading import Barrier, Event
 from types import SimpleNamespace
 
+import pytest
 from sqlalchemy.orm import sessionmaker
 
 from app.core.config import Settings
@@ -28,7 +29,8 @@ def test_finished_judge_progress_arrives_before_the_slower_judge_without_changin
             verdict="supported" if model == first_model else "contradicted",
             confidence=0.8,
             review=f"The supplied opening report was reviewed by {model}.",
-            citations=[Citation(evidence_id="E1", relation="supporting", quote="opened in March")],
+            citations=[Citation(evidence_id="E1", relation="supporting" if model == first_model else "contradicting",
+                                quote="opened in March")],
         )
         check(answer)
         return answer, model if model == first_model else settings.judges["deepseek-flash"].model
@@ -356,7 +358,10 @@ def test_judges_read_the_claims_price_data_and_may_cite_it_alone():
             verdict="contradicted",
             confidence=0.8,
             review="Yahoo Finance shows gold rising from 3,898.90 to 4,113.50 USD.",
-            citations=[Citation(evidence_id="D1", relation="contradicting", quote="2026-11-05: 4,113.50")],
+            citations=[
+                Citation(evidence_id="D1", relation="contradicting", quote="2026-11-05: 4,113.50"),
+                Citation(evidence_id="E1", relation="contextual", quote="Gold may keep falling, analysts say."),
+            ],
         )
         check(answer)
         return answer, model
@@ -378,8 +383,6 @@ def test_judges_read_the_claims_price_data_and_may_cite_it_alone():
 
 
 def test_a_claim_without_price_data_cannot_cite_it():
-    import pytest
-
     settings = Settings()
 
     def complete(model, system, user, schema, check=None):
@@ -396,3 +399,43 @@ def test_a_claim_without_price_data_cannot_cite_it():
     providers = SimpleNamespace(llm=SimpleNamespace(complete=complete))
     with ThreadPoolExecutor(2) as pool:
         assert _judge_claim(claim, [Evidence(id="e", claim_id=claim.id, source=source)], check, providers, settings, pool) is None
+
+
+def test_every_configured_judge_must_quote_each_supplied_source():
+    settings = Settings()
+    called = set()
+
+    def complete(model, system, user, schema, check=None):
+        assert 'evidence_id="E1"' in user and 'evidence_id="E2"' in user
+        answer = JudgeAnswer(
+            verdict="supported", confidence=0.9, review="The official result confirms the claim.",
+            citations=[Citation(evidence_id="E1", relation="supporting", quote="United beat City 2–1.")],
+        )
+        with pytest.raises(ValueError, match="Missing source entries: E2"):
+            check(answer)
+        answer.citations.append(Citation(evidence_id="E2", relation="contextual", quote="United won 2–1."))
+        with pytest.raises(ValueError, match="Quotes for E2"):
+            check(answer)
+        answer.citations[-1].quote = "The teams were due to play on Sunday."
+        answer.citations[0].freshness = "outdated"
+        with pytest.raises(ValueError, match="applies to the claim's period"):
+            check(answer)
+        answer.citations[0].freshness = "current"
+        check(answer)
+        called.add(model)
+        return answer, model
+
+    claim = Claim(id="clm_match", text="United beat City 2–1.", position=1)
+    evidence = [
+        Evidence(id="official", source=Source(title="Final result", text="United beat City 2–1.")),
+        Evidence(id="preview", source=Source(title="Preview", text="The teams were due to play on Sunday.")),
+    ]
+    check = Check(judge_ids=list(settings.judges))
+    providers = SimpleNamespace(llm=SimpleNamespace(complete=complete))
+    with ThreadPoolExecutor(4) as pool:
+        verdict = _judge_claim(claim, evidence, check, providers, settings, pool)
+
+    assert called == {option.model for option in settings.judges.values()}
+    assert verdict.evidence_ids == ["official"]
+    assert all([citation["evidence_id"] for citation in judge["citations"]] == ["official", "preview"]
+               for judge in verdict.judges)

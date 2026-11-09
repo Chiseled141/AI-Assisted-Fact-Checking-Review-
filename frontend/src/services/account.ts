@@ -19,14 +19,15 @@ function setAccount(next: Account | null) {
   listeners.forEach((listener) => listener());
 }
 
-async function send(path: string, body?: unknown): Promise<Response> {
+async function send(path: string, body?: unknown, method = path === 'me' ? 'GET' : 'POST'): Promise<Response> {
   const response = await fetch(`${apiUrl}/api/auth/${path}`, {
-    method: path === 'me' ? 'GET' : 'POST',
+    method,
     credentials: 'include',
     headers: body === undefined ? undefined : { 'Content-Type': 'application/json' },
     body: body === undefined ? undefined : JSON.stringify(body),
   });
-  if (response.ok || (path === 'me' && response.status === 401)) return response;
+  if (response.ok || (method === 'GET' && path === 'me' && response.status === 401)) return response;
+  if (response.status === 401 && (path === 'me' || path === 'me/password')) signInRequired();
   const detail = await response.json().then((data) => data.detail).catch(() => undefined);
   throw new ValidationError(typeof detail === 'string' ? t(detail) : t('Could not reach ClaimTrace. Please try again.'));
 }
@@ -63,6 +64,17 @@ export async function logOut(): Promise<void> {
   setAccount(null);
 }
 
+export async function updateProfile(changes: Partial<Pick<Account, 'avatar' | 'preferredSourceLanguage' | 'preferredSearchModelId'>>): Promise<Account> {
+  const updated = (await (await send('me', changes, 'PATCH')).json()) as Account;
+  setAccount(updated);
+  return updated;
+}
+
+export async function changePassword(currentPassword: string, newPassword: string, passwordConfirmation: string): Promise<void> {
+  const updated = (await (await send('me/password', { currentPassword, newPassword, passwordConfirmation })).json()) as Account;
+  setAccount(updated);
+}
+
 function subscribe(listener: () => void) {
   listeners.add(listener);
   return () => listeners.delete(listener);
@@ -73,9 +85,9 @@ export function useAccount(): Account | null | undefined {
 }
 
 /** Called when a page's data needs an account. The app answers by opening the login page. */
-export function signInRequired(): void {
+export function signInRequired(redirect = true): void {
   if (account !== null) setAccount(null);
-  signInListeners.forEach((listener) => listener());
+  if (redirect) signInListeners.forEach((listener) => listener());
 }
 
 export function onSignInRequired(listener: () => void): () => void {

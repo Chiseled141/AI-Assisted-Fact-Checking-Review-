@@ -1,0 +1,2769 @@
+[
+  {
+    "kind": "esport",
+    "name": "100 Thieves",
+    "aliases": [
+      "100T"
+    ],
+    "asset": "esport-100-thieves.png",
+    "origin": "https://static.lolesports.com/teams/1644966311613_100TVAL.png",
+    "reference": "https://valorantesports.com/en-GB/partner-teams"
+  },
+  {
+    "kind": "esport",
+    "name": "3DMAX",
+    "aliases": [],
+    "asset": "esport-3dmax.png",
+    "origin": "https://assets.blast.tv/images/teams/f40de295-26ff-4972-96ce-428593316c01?height=128&format=webp",
+    "reference": "https://blast.tv/cs/tournaments/esports-world-cup-2026-cs2"
+  },
+  {
+    "kind": "esport",
+    "name": "9z",
+    "aliases": [
+      "9z Globant",
+      "9z Team"
+    ],
+    "asset": "esport-9z.png",
+    "origin": "https://assets.blast.tv/images/teams/15189efb-fdf2-4691-a36c-953dbdad88aa?height=128&format=webp",
+    "reference": "https://blast.tv/cs/tournaments/esports-world-cup-2026-cs2",
+    "darkBackground": true
+  },
+  {
+    "kind": "esport",
+    "name": "All Gamers",
+    "aliases": [
+      "AG"
+    ],
+    "asset": "esport-all-gamers.png",
+    "origin": "https://static.lolesports.com/teams/1707126806655_AG.png",
+    "reference": "https://valorantesports.com/en-GB/partner-teams"
+  },
+  {
+    "kind": "esport",
+    "name": "Alter Ego",
+    "aliases": [
+      "Alter Ego Esports",
+      "AE"
+    ],
+    "asset": "esport-alter-ego.png",
+    "origin": "https://ik.imagekit.io/nloe8dhf7w/mplid/s14/teams/ae-256.png",
+    "reference": "https://id-mpl.com/teams"
+  },
+  {
+    "kind": "esport",
+    "name": "Anyone's Legend",
+    "aliases": [
+      "AL",
+      "Anyones Legend"
+    ],
+    "asset": "esport-anyone-s-legend.png",
+    "origin": "https://static.lolesports.com/teams/1641199582689_.png",
+    "reference": "https://lolesports.com/en-US/gpr/2026/current"
+  },
+  {
+    "kind": "esport",
+    "name": "AP Bren",
+    "aliases": [
+      "AP.Bren",
+      "Bren Esports"
+    ],
+    "asset": "esport-ap-bren.png",
+    "origin": "https://wsrv.nl?url=https://ik.imagekit.io/nloe8dhf7w/mplph/s18/teams/apbren-400.webp",
+    "reference": "https://ph-mpl.com/teams"
+  },
+  {
+    "kind": "esport",
+    "name": "Astralis",
+    "aliases": [],
+    "asset": "esport-astralis.png",
+    "origin": "https://cdn.prod.website-files.com/699f55e7b4d362b6ce396f5d/699f57bbcd6924bfff575cb4_256.png",
+    "reference": "https://astralis.gg/"
+  },
+  {
+    "kind": "esport",
+    "name": "Aurora Gaming",
+    "aliases": [
+      "Aurora"
+    ],
+    "asset": "esport-aurora-gaming.png",
+    "origin": "https://assets.blast.tv/images/teams/d1ba8681-775d-4d28-ad93-f82df21c399f?height=128&format=webp",
+    "reference": "https://blast.tv/dota/tournaments/blast-slam-vii/",
+    "darkBackground": true
+  },
+  {
+    "kind": "esport",
+    "name": "Aurora Gaming PH",
+    "aliases": [
+      "Aurora PH",
+      "RORA",
+      "Aurora Gaming Philippines"
+    ],
+    "asset": "esport-aurora-gaming-ph.png",
+    "origin": "https://wsrv.nl?url=https://ik.imagekit.io/nloe8dhf7w/mplph/s18/teams/aurora-gaming-400.webp",
+    "reference": "https://ph-mpl.com/teams"
+  },
+  {
+    "kind": "esport",
+    "name": "B8",
+    "aliases": [],
+    "asset": "esport-b8.png",
+    "origin": "https://assets.blast.tv/images/teams/7f770d5a-aaa9-4091-b2d0-93a4e02a5219?height=128&format=webp",
+    "reference": "https://blast.tv/cs/tournaments/esports-world-cup-2026-cs2"
+  },
+  {
+    "kind": "esport",
+    "name": "BaiSha Gaming",
+    "aliases": [],
+    "asset": "esport-baisha-gaming.png",
+    "origin": "https://tds-cdn.ewc.efg.gg/assets/clubs/2068035462970216448/LOGO_DARK.png",
+    "reference": "https://ewc-web.prod.esf-systems.com/en/history/2026"
+  },
+  {
+    "kind": "esport",
+    "name": "BBL Esports",
+    "aliases": [],
+    "asset": "esport-bbl-esports.png",
+    "origin": "https://static.lolesports.com/teams/1674060310685_BBL-GOLD-EMBLEM1.png",
+    "reference": "https://valorantesports.com/en-GB/partner-teams"
+  },
+  {
+    "kind": "esport",
+    "name": "BetBoom Team",
+    "aliases": [
+      "BetBoom",
+      "BB Team"
+    ],
+    "asset": "esport-betboom-team.png",
+    "origin": "https://assets.blast.tv/images/teams/58a173b8-df0d-4db2-b221-a8bc3bc2f9ba?width=80&format=webp",
+    "reference": "https://blast.tv/dota/tournaments/blast-slam-vii/"
+  },
+  {
+    "kind": "esport",
+    "name": "BIG",
+    "aliases": [],
+    "asset": "esport-big.png",
+    "origin": "https://assets.blast.tv/images/teams/37c24005-2f69-4049-a4ad-4472879bc36e?height=96&quality=100&format=webp",
+    "reference": "https://blast.tv/cs/team",
+    "darkBackground": true
+  },
+  {
+    "kind": "esport",
+    "name": "Bigetron Esports",
+    "aliases": [
+      "Bigetron",
+      "BTR",
+      "Bigetron Alpha",
+      "Bigetron by Vitality",
+      "Bigetron Vitality"
+    ],
+    "asset": "esport-bigetron-esports.png",
+    "origin": "https://ik.imagekit.io/nloe8dhf7w/mplid/s14/teams/btr_vit.png",
+    "reference": "https://id-mpl.com/teams"
+  },
+  {
+    "kind": "esport",
+    "name": "Bilibili Gaming",
+    "aliases": [
+      "BLG",
+      "Bilibili Gaming DreamSmart"
+    ],
+    "asset": "esport-bilibili-gaming.png",
+    "origin": "https://static.lolesports.com/teams/1682322954525_Bilibili_Gaming_logo_20211.png",
+    "reference": "https://lolesports.com/en-US/gpr/2026/current"
+  },
+  {
+    "kind": "esport",
+    "name": "BNK FEARX",
+    "aliases": [
+      "FearX",
+      "FOX",
+      "BFX"
+    ],
+    "asset": "esport-bnk-fearx.png",
+    "origin": "https://static.lolesports.com/teams/1734691810721_BFXfullcolorfordarkbg.png",
+    "reference": "https://lolesports.com/en-US/gpr/2026/current"
+  },
+  {
+    "kind": "esport",
+    "name": "Cloud9",
+    "aliases": [
+      "C9",
+      "Cloud9 Kia"
+    ],
+    "asset": "esport-cloud9.png",
+    "origin": "https://static.lolesports.com/teams/1736924120254_C9Kia_IconBlue_Transparent_2000x2000.png",
+    "reference": "https://lolesports.com/en-US/gpr/2026/current"
+  },
+  {
+    "kind": "esport",
+    "name": "Crazy Raccoon",
+    "aliases": [],
+    "asset": "esport-crazy-raccoon.png",
+    "origin": "https://static.lolesports.com/teams/1791938015739_CR-white.png",
+    "reference": "https://valorantesports.com/en-GB/partner-teams",
+    "darkBackground": true
+  },
+  {
+    "kind": "esport",
+    "name": "CTBC Flying Oyster",
+    "aliases": [
+      "CFO",
+      "Flying Oyster"
+    ],
+    "asset": "esport-ctbc-flying-oyster.png",
+    "origin": "https://static.lolesports.com/teams/1656307849320_CFO_Logo.png",
+    "reference": "https://lolesports.com/en-US/gpr/2026/current"
+  },
+  {
+    "kind": "esport",
+    "name": "DetonatioN FocusMe",
+    "aliases": [
+      "DFM"
+    ],
+    "asset": "esport-detonation-focusme.png",
+    "origin": "https://static.lolesports.com/teams/1673415140442_dfm.png",
+    "reference": "https://lolesports.com/en-US/gpr/2026/current"
+  },
+  {
+    "kind": "esport",
+    "name": "Dewa United Esports",
+    "aliases": [
+      "Dewa United",
+      "DEWA"
+    ],
+    "asset": "esport-dewa-united-esports.png",
+    "origin": "https://ik.imagekit.io/nloe8dhf7w/mplid/s14/teams/dewa-united-500.png",
+    "reference": "https://id-mpl.com/teams"
+  },
+  {
+    "kind": "esport",
+    "name": "Dignitas",
+    "aliases": [
+      "DIG"
+    ],
+    "asset": "esport-dignitas.png",
+    "origin": "https://static.lolesports.com/teams/DIG-FullonDark.png",
+    "reference": "https://lolesports.com/en-US/gpr/2026/current"
+  },
+  {
+    "kind": "esport",
+    "name": "Disguised",
+    "aliases": [
+      "DSG"
+    ],
+    "asset": "esport-disguised.png",
+    "origin": "https://static.lolesports.com/teams/1731496922454_Disguised-Wordmark-Yellow-Main.png",
+    "reference": "https://lolesports.com/en-US/gpr/2026/current"
+  },
+  {
+    "kind": "esport",
+    "name": "DN SOOPers",
+    "aliases": [
+      "DN Freecs",
+      "Kwangdong Freecs",
+      "Afreeca Freecs",
+      "KDF",
+      "AF",
+      "DNS"
+    ],
+    "asset": "esport-dn-soopers.png",
+    "origin": "https://static.lolesports.com/teams/1767340467921_DN_SOOPerslogo_profile.webp",
+    "reference": "https://lolesports.com/en-US/gpr/2026/current"
+  },
+  {
+    "kind": "esport",
+    "name": "Dplus KIA",
+    "aliases": [
+      "DK",
+      "DWG KIA",
+      "DAMWON Gaming"
+    ],
+    "asset": "esport-dplus-kia.png",
+    "origin": "https://thumb.wikimedia.org/wikipedia/commons/thumb/2/20/DPlus_KIA_Logo.svg/250px-DPlus_KIA_Logo.svg.png?utm_source=en.wikipedia.org&utm_campaign=parser&utm_content=thumbnail",
+    "reference": "https://en.wikipedia.org/wiki/Dplus_KIA"
+  },
+  {
+    "kind": "esport",
+    "name": "Dragon Ranger Gaming",
+    "aliases": [
+      "DRG"
+    ],
+    "asset": "esport-dragon-ranger-gaming.png",
+    "origin": "https://owcdn.net/img/642233fc01f26.png",
+    "reference": "https://www.vlr.gg/vct/standings"
+  },
+  {
+    "kind": "esport",
+    "name": "DRX",
+    "aliases": [
+      "KIWOOM DRX",
+      "KRX",
+      "DragonX"
+    ],
+    "asset": "esport-drx.png",
+    "origin": "https://static.lolesports.com/teams/1774247803537_horizontal_EN_Wh.png",
+    "reference": "https://lolesports.com/en-US/gpr/2026/current",
+    "darkBackground": true
+  },
+  {
+    "kind": "esport",
+    "name": "Edward Gaming",
+    "aliases": [
+      "EDG"
+    ],
+    "asset": "esport-edward-gaming.png",
+    "origin": "https://static.lolesports.com/teams/1631819297476_edg-2021-worlds.png",
+    "reference": "https://lolesports.com/en-US/gpr/2026/current"
+  },
+  {
+    "kind": "esport",
+    "name": "ENCE",
+    "aliases": [],
+    "asset": "esport-ence.png",
+    "origin": "https://assets.blast.tv/images/teams/05f9ebab-f93e-4c7a-9fd8-fcfc447beadb?height=96&quality=100&format=webp",
+    "reference": "https://blast.tv/cs/team"
+  },
+  {
+    "kind": "esport",
+    "name": "Envy",
+    "aliases": [
+      "Team Envy"
+    ],
+    "asset": "esport-envy.png",
+    "origin": "https://owcdn.net/img/5f3ca822464a3.png",
+    "reference": "https://www.vlr.gg/vct/standings"
+  },
+  {
+    "kind": "esport",
+    "name": "Eternal Fire",
+    "aliases": [],
+    "asset": "esport-eternal-fire.png",
+    "origin": "https://owcdn.net/img/6628980dcdaea.png",
+    "reference": "https://www.vlr.gg/vct/standings"
+  },
+  {
+    "kind": "esport",
+    "name": "Evil Geniuses",
+    "aliases": [
+      "EG"
+    ],
+    "asset": "esport-evil-geniuses.png",
+    "origin": "https://owcdn.net/img/667462f046618.png",
+    "reference": "https://www.vlr.gg/vct/standings"
+  },
+  {
+    "kind": "esport",
+    "name": "EVOS Esports",
+    "aliases": [
+      "EVOS",
+      "EVOS Legends",
+      "EVOS Glory"
+    ],
+    "asset": "esport-evos-esports.png",
+    "origin": "https://ik.imagekit.io/nloe8dhf7w/mplid/s14/teams/evos-500.png",
+    "reference": "https://id-mpl.com/teams"
+  },
+  {
+    "kind": "esport",
+    "name": "Execration",
+    "aliases": [],
+    "asset": "esport-execration.png",
+    "origin": "https://assets.blast.tv/images/teams/bc1222ba-e1aa-4385-ad85-eda84fab6bba?width=80&format=webp",
+    "reference": "https://blast.tv/dota/tournaments/blast-slam-v/match",
+    "darkBackground": true
+  },
+  {
+    "kind": "esport",
+    "name": "FaZe Clan",
+    "aliases": [
+      "FaZe"
+    ],
+    "asset": "esport-faze-clan.png",
+    "origin": "https://cdn.shopify.com/s/files/1/0667/9547/1031/files/fcred.png?v=1770238234",
+    "reference": "https://fazeclan.com/pages/about"
+  },
+  {
+    "kind": "esport",
+    "name": "Fire Flux Esports",
+    "aliases": [],
+    "asset": "esport-fire-flux-esports.png",
+    "origin": "https://owcdn.net/img/68e6e1bcca45d.png",
+    "reference": "https://www.vlr.gg/vct/standings"
+  },
+  {
+    "kind": "esport",
+    "name": "Fluxo W7M",
+    "aliases": [
+      "FX"
+    ],
+    "asset": "esport-fluxo-w7m.png",
+    "origin": "https://static.lolesports.com/teams/1766161431111_LogoColorida.png",
+    "reference": "https://lolesports.com/en-US/gpr/2026/current"
+  },
+  {
+    "kind": "esport",
+    "name": "FlyQuest",
+    "aliases": [
+      "FLY"
+    ],
+    "asset": "esport-flyquest.png",
+    "origin": "https://static.lolesports.com/teams/flyquest-new-on-dark.png",
+    "reference": "https://lolesports.com/en-US/gpr/2026/current"
+  },
+  {
+    "kind": "esport",
+    "name": "Fnatic",
+    "aliases": [
+      "FNC"
+    ],
+    "asset": "esport-fnatic.png",
+    "origin": "https://static.lolesports.com/teams/1631819669150_fnc-2021-worlds.png",
+    "reference": "https://lolesports.com/en-US/gpr/2026/current"
+  },
+  {
+    "kind": "esport",
+    "name": "Fukuoka SoftBank HAWKS gaming",
+    "aliases": [
+      "SHG"
+    ],
+    "asset": "esport-fukuoka-softbank-hawks-gaming.png",
+    "origin": "https://static.lolesports.com/teams/1725885083108_SHG_White_Main.png",
+    "reference": "https://lolesports.com/en-US/gpr/2026/current",
+    "darkBackground": true
+  },
+  {
+    "kind": "esport",
+    "name": "FULL SENSE",
+    "aliases": [],
+    "asset": "esport-full-sense.png",
+    "origin": "https://static.lolesports.com/teams/1705915075330_FULLSENSE.png",
+    "reference": "https://valorantesports.com/en-GB/partner-teams"
+  },
+  {
+    "kind": "esport",
+    "name": "FunPlus Phoenix",
+    "aliases": [
+      "FPX"
+    ],
+    "asset": "esport-funplus-phoenix.png",
+    "origin": "https://owcdn.net/img/65a17b313b131.png",
+    "reference": "https://www.vlr.gg/vct/standings"
+  },
+  {
+    "kind": "esport",
+    "name": "FURIA",
+    "aliases": [
+      "FURIA Esports",
+      "FUR"
+    ],
+    "asset": "esport-furia.png",
+    "origin": "https://www.google.com/s2/favicons?domain=furia.gg&sz=128",
+    "reference": "https://furia.gg/"
+  },
+  {
+    "kind": "esport",
+    "name": "FUT Esports",
+    "aliases": [],
+    "asset": "esport-fut-esports.png",
+    "origin": "https://static.lolesports.com/teams/1644342678681_FUT_VRL_DARK.png",
+    "reference": "https://valorantesports.com/en-GB/partner-teams",
+    "darkBackground": true
+  },
+  {
+    "kind": "esport",
+    "name": "G2 Esports",
+    "aliases": [
+      "G2"
+    ],
+    "asset": "esport-g2-esports.png",
+    "origin": "https://cdn.shopify.com/s/files/1/0548/8554/8183/files/favicon.png?crop=center&height=32&v=1660814984&width=32",
+    "reference": "https://g2esports.com/"
+  },
+  {
+    "kind": "esport",
+    "name": "GAM Esports",
+    "aliases": [
+      "GAM",
+      "GIGABYTE Marines"
+    ],
+    "asset": "esport-gam-esports.png",
+    "origin": "https://static.lolesports.com/teams/1643263093448_GAMyellow.png",
+    "reference": "https://lolesports.com/en-US/gpr/2026/current"
+  },
+  {
+    "kind": "esport",
+    "name": "GamerLegion",
+    "aliases": [],
+    "asset": "esport-gamerlegion.png",
+    "origin": "https://assets.blast.tv/images/teams/d37bbe7c-4570-4a40-ae5d-4f12fb21f35f?height=128&format=webp",
+    "reference": "https://blast.tv/cs/tournaments/esports-world-cup-2026-cs2"
+  },
+  {
+    "kind": "esport",
+    "name": "Geek Fam",
+    "aliases": [
+      "Geek Fam ID",
+      "GEEK"
+    ],
+    "asset": "esport-geek-fam.png",
+    "origin": "https://ik.imagekit.io/nloe8dhf7w/mplid/s14/teams/geek-500.png",
+    "reference": "https://id-mpl.com/teams"
+  },
+  {
+    "kind": "esport",
+    "name": "Gen.G",
+    "aliases": [
+      "Gen.G Esports",
+      "Gen G",
+      "GEN"
+    ],
+    "asset": "esport-gen-g.png",
+    "origin": "https://static.lolesports.com/teams/1773829250929_GENGLOGO_GOLD.png",
+    "reference": "https://lolesports.com/en-US/gpr/2026/current"
+  },
+  {
+    "kind": "esport",
+    "name": "Gentle Mates",
+    "aliases": [
+      "M8"
+    ],
+    "asset": "esport-gentle-mates.png",
+    "origin": "https://static.lolesports.com/teams/1772419824776_M8-Logo.png",
+    "reference": "https://valorantesports.com/en-GB/partner-teams"
+  },
+  {
+    "kind": "esport",
+    "name": "GIANTX",
+    "aliases": [
+      "GX"
+    ],
+    "asset": "esport-giantx.png",
+    "origin": "https://static.lolesports.com/teams/1765897105091_GIANTX-logotype-white.png",
+    "reference": "https://lolesports.com/en-US/gpr/2026/current",
+    "darkBackground": true
+  },
+  {
+    "kind": "esport",
+    "name": "Global Esports",
+    "aliases": [
+      "GE"
+    ],
+    "asset": "esport-global-esports.png",
+    "origin": "https://owcdn.net/img/629f316ddd4dd.png",
+    "reference": "https://www.vlr.gg/vct/standings"
+  },
+  {
+    "kind": "esport",
+    "name": "GLYPH",
+    "aliases": [],
+    "asset": "esport-glyph.png",
+    "origin": "https://assets.blast.tv/images/teams/c577ffa5-a2ba-46ea-948b-7543feddff00?height=128&format=webp",
+    "reference": "https://blast.tv/dota/tournaments/blast-slam-vii/"
+  },
+  {
+    "kind": "esport",
+    "name": "Ground Zero Gaming",
+    "aliases": [
+      "GZ"
+    ],
+    "asset": "esport-ground-zero-gaming.png",
+    "origin": "https://static.lolesports.com/teams/1766395585595_LCP_TEAMLogo_GZ_Full_B.png",
+    "reference": "https://lolesports.com/en-US/gpr/2026/current"
+  },
+  {
+    "kind": "esport",
+    "name": "Hanjin BRION",
+    "aliases": [
+      "BRION",
+      "OKSavingsBank BRION",
+      "BRO"
+    ],
+    "asset": "esport-hanjin-brion.png",
+    "origin": "https://static.lolesports.com/teams/1716454325887_Nowyprojekt.png",
+    "reference": "https://lolesports.com/en-US/gpr/2026/current"
+  },
+  {
+    "kind": "esport",
+    "name": "Hanwha Life Esports",
+    "aliases": [
+      "HLE"
+    ],
+    "asset": "esport-hanwha-life-esports.png",
+    "origin": "https://static.lolesports.com/teams/1631819564399_hle-2021-worlds.png",
+    "reference": "https://lolesports.com/en-US/gpr/2026/current"
+  },
+  {
+    "kind": "esport",
+    "name": "HEROIC",
+    "aliases": [],
+    "asset": "esport-heroic.png",
+    "origin": "https://assets.blast.tv/images/teams/c92d19d0-993c-486c-954a-f521367c1238?width=80&format=webp",
+    "reference": "https://blast.tv/dota/tournaments/blast-slam-v/match"
+  },
+  {
+    "kind": "esport",
+    "name": "Invictus Gaming",
+    "aliases": [
+      "iG",
+      "IG"
+    ],
+    "asset": "esport-invictus-gaming.png",
+    "origin": "https://static.lolesports.com/teams/1634762917340_300px-Invictus_Gaming_logo.png",
+    "reference": "https://lolesports.com/en-US/gpr/2026/current"
+  },
+  {
+    "kind": "esport",
+    "name": "JD Gaming",
+    "aliases": [
+      "JDG",
+      "JDG Esports",
+      "Beijing JDG Esports"
+    ],
+    "asset": "esport-jd-gaming.png",
+    "origin": "https://static.lolesports.com/teams/1627457924722_29.png",
+    "reference": "https://lolesports.com/en-US/gpr/2026/current"
+  },
+  {
+    "kind": "esport",
+    "name": "JiJieHao",
+    "aliases": [],
+    "asset": "esport-jijiehao.png",
+    "origin": "https://assets.blast.tv/images/teams/32c950c3-5bd3-4f9c-ba3b-90a2e3aa0fa4?height=128&format=webp",
+    "reference": "https://blast.tv/cs/tournaments/esports-world-cup-2026-cs2"
+  },
+  {
+    "kind": "esport",
+    "name": "k27",
+    "aliases": [],
+    "asset": "esport-k27.png",
+    "origin": "https://assets.blast.tv/images/teams/fc3fb452-7c3f-4f02-9d7c-b51f76dc5432?height=128&format=webp",
+    "reference": "https://blast.tv/cs/tournaments/esports-world-cup-2026-cs2"
+  },
+  {
+    "kind": "esport",
+    "name": "Karmine Corp",
+    "aliases": [
+      "KC"
+    ],
+    "asset": "esport-karmine-corp.png",
+    "origin": "https://static.lolesports.com/teams/1704714951336_KC.png",
+    "reference": "https://lolesports.com/en-US/gpr/2026/current"
+  },
+  {
+    "kind": "esport",
+    "name": "KRÜ Esports",
+    "aliases": [
+      "KRÜ",
+      "KRÜ Visa"
+    ],
+    "asset": "esport-kru-esports.png",
+    "origin": "https://static.lolesports.com/teams/1630017626481_kru.png",
+    "reference": "https://valorantesports.com/en-GB/partner-teams"
+  },
+  {
+    "kind": "esport",
+    "name": "KT Rolster",
+    "aliases": [
+      "KT"
+    ],
+    "asset": "esport-kt-rolster.png",
+    "origin": "https://static.lolesports.com/teams/kt_darkbackground.png",
+    "reference": "https://lolesports.com/en-US/gpr/2026/current"
+  },
+  {
+    "kind": "esport",
+    "name": "Kuaishou Gaming",
+    "aliases": [],
+    "asset": "esport-kuaishou-gaming.png",
+    "origin": "https://tds-cdn.ewc.efg.gg/assets/clubs/2068035478057127936/LOGO_DARK.png",
+    "reference": "https://ewc-web.prod.esf-systems.com/en/history/2026"
+  },
+  {
+    "kind": "esport",
+    "name": "Legacy",
+    "aliases": [],
+    "asset": "esport-legacy.png",
+    "origin": "https://assets.blast.tv/images/teams/7417378d-29a3-4376-85eb-05db707e784d?width=80&format=webp",
+    "reference": "https://blast.tv/cs/tournaments/esports-world-cup-2026-cs2"
+  },
+  {
+    "kind": "esport",
+    "name": "Leviatán",
+    "aliases": [
+      "Leviatán Esports",
+      "LEV"
+    ],
+    "asset": "esport-leviatan.png",
+    "origin": "https://static.lolesports.com/teams/1643795049372_LEV-CLAROWhite.png",
+    "reference": "https://lolesports.com/en-US/gpr/2026/current",
+    "darkBackground": true
+  },
+  {
+    "kind": "esport",
+    "name": "LGD Gaming",
+    "aliases": [
+      "LGD",
+      "PSG.LGD"
+    ],
+    "asset": "esport-lgd-gaming.png",
+    "origin": "https://static.lolesports.com/teams/LGD-FullonDark-1.png",
+    "reference": "https://lolesports.com/en-US/gpr/2026/current"
+  },
+  {
+    "kind": "esport",
+    "name": "LNG Esports",
+    "aliases": [
+      "Suzhou LNG Esports",
+      "LNG"
+    ],
+    "asset": "esport-lng-esports.png",
+    "origin": "https://static.lolesports.com/teams/1717487697003_LNGlogo.png",
+    "reference": "https://lolesports.com/en-US/gpr/2026/current"
+  },
+  {
+    "kind": "esport",
+    "name": "LOS",
+    "aliases": [],
+    "asset": "esport-los.png",
+    "origin": "https://static.lolesports.com/teams/1784013312149_LOS-OLaranja.png",
+    "reference": "https://lolesports.com/en-US/gpr/2026/current"
+  },
+  {
+    "kind": "esport",
+    "name": "LOUD",
+    "aliases": [],
+    "asset": "esport-loud.png",
+    "origin": "https://static.lolesports.com/teams/Logo-LOUD-Esports_Original.png",
+    "reference": "https://lolesports.com/en-US/gpr/2026/current"
+  },
+  {
+    "kind": "esport",
+    "name": "Luminosity",
+    "aliases": [],
+    "asset": "esport-luminosity.png",
+    "origin": "https://assets.blast.tv/images/teams/b5ba64a1-4d7b-48ed-a4a4-1a0dfe046d60?height=128&format=webp",
+    "reference": "https://blast.tv/cs/tournaments/esports-world-cup-2026-cs2"
+  },
+  {
+    "kind": "esport",
+    "name": "Lynn Vision",
+    "aliases": [],
+    "asset": "esport-lynn-vision.png",
+    "origin": "https://assets.blast.tv/images/teams/72a9c955-6575-44cc-ab1c-26d798df51cd?height=128&format=webp",
+    "reference": "https://blast.tv/cs/tournaments/esports-world-cup-2026-cs2"
+  },
+  {
+    "kind": "esport",
+    "name": "LYON",
+    "aliases": [],
+    "asset": "esport-lyon.png",
+    "origin": "https://static.lolesports.com/teams/1743717443673_isotypelyon-03.png",
+    "reference": "https://lolesports.com/en-US/gpr/2026/current"
+  },
+  {
+    "kind": "esport",
+    "name": "M80",
+    "aliases": [],
+    "asset": "esport-m80.png",
+    "origin": "https://assets.blast.tv/images/teams/7c6216dd-d2c5-42e0-a475-8d18d3a7b02f?height=128&format=webp",
+    "reference": "https://blast.tv/cs/tournaments/esports-world-cup-2026-cs2"
+  },
+  {
+    "kind": "esport",
+    "name": "magic",
+    "aliases": [],
+    "asset": "esport-magic.png",
+    "origin": "https://assets.blast.tv/images/teams/8e1c032e-e009-4ae8-8727-057f416f7834?height=128&format=webp",
+    "reference": "https://blast.tv/cs/tournaments/esports-world-cup-2026-cs2"
+  },
+  {
+    "kind": "esport",
+    "name": "MIBR",
+    "aliases": [
+      "Made in Brazil"
+    ],
+    "asset": "esport-mibr.png",
+    "origin": "https://static.lolesports.com/teams/1648844013086_mibr_white-logo.png",
+    "reference": "https://valorantesports.com/en-GB/partner-teams",
+    "darkBackground": true
+  },
+  {
+    "kind": "esport",
+    "name": "Monte",
+    "aliases": [],
+    "asset": "esport-monte.png",
+    "origin": "https://assets.blast.tv/images/teams/622c0637-7d0e-4b78-8db1-cec180e3c08b?height=96&quality=100&format=webp",
+    "reference": "https://blast.tv/cs/team"
+  },
+  {
+    "kind": "esport",
+    "name": "MOUZ",
+    "aliases": [
+      "Mousesports"
+    ],
+    "asset": "esport-mouz.svg",
+    "origin": "https://mousesports.com/wp-content/uploads/2021/10/logo-favicon.svg",
+    "reference": "https://mousesports.com/"
+  },
+  {
+    "kind": "esport",
+    "name": "Movistar KOI",
+    "aliases": [
+      "MKOI"
+    ],
+    "asset": "esport-movistar-koi.png",
+    "origin": "https://static.lolesports.com/teams/1734012609283_MKOI_FullColor_Blue.png",
+    "reference": "https://lolesports.com/en-US/gpr/2026/current"
+  },
+  {
+    "kind": "esport",
+    "name": "MVK Esports",
+    "aliases": [
+      "MVKE",
+      "MGN Vikings Esports",
+      "Vikings Esports",
+      "MVK",
+      "MGN Vikings"
+    ],
+    "asset": "esport-mvk-esports.png",
+    "origin": "https://static.lolesports.com/teams/1767089709161_White_Logo.png",
+    "reference": "https://lolesports.com/en-US/gpr/2026/current"
+  },
+  {
+    "kind": "esport",
+    "name": "Natus Vincere",
+    "aliases": [
+      "NAVI"
+    ],
+    "asset": "esport-natus-vincere.png",
+    "origin": "https://navi.gg/apple-touch-icon.png",
+    "reference": "https://navi.gg/"
+  },
+  {
+    "kind": "esport",
+    "name": "Ninjas in Pyjamas",
+    "aliases": [
+      "NIP",
+      "Shenzhen Ninjas in Pyjamas"
+    ],
+    "asset": "esport-ninjas-in-pyjamas.png",
+    "origin": "https://static.lolesports.com/teams/1673425724696_NIP-Symbol-RGB-NeonYellow1.png",
+    "reference": "https://lolesports.com/en-US/gpr/2026/current"
+  },
+  {
+    "kind": "esport",
+    "name": "Nongshim RedForce",
+    "aliases": [
+      "Nongshim Red Force",
+      "NS"
+    ],
+    "asset": "esport-nongshim-redforce.png",
+    "origin": "https://static.lolesports.com/teams/NSFullonDark.png",
+    "reference": "https://lolesports.com/en-US/gpr/2026/current"
+  },
+  {
+    "kind": "esport",
+    "name": "Nova Esports",
+    "aliases": [
+      "NOVA"
+    ],
+    "asset": "esport-nova-esports.png",
+    "origin": "https://owcdn.net/img/6404c0174250b.png",
+    "reference": "https://www.vlr.gg/vct/standings"
+  },
+  {
+    "kind": "esport",
+    "name": "NRG",
+    "aliases": [],
+    "asset": "esport-nrg.png",
+    "origin": "https://static.lolesports.com/teams/1731490666442_NRGWHT.png",
+    "reference": "https://valorantesports.com/en-GB/partner-teams",
+    "darkBackground": true
+  },
+  {
+    "kind": "esport",
+    "name": "OG",
+    "aliases": [],
+    "asset": "esport-og.png",
+    "origin": "https://assets.blast.tv/images/teams/82fbc445-a545-4c74-8179-ded8b14bfa36?height=128&format=webp",
+    "reference": "https://blast.tv/dota/tournaments/blast-slam-vii/"
+  },
+  {
+    "kind": "esport",
+    "name": "Oh My God",
+    "aliases": [
+      "OMG"
+    ],
+    "asset": "esport-oh-my-god.png",
+    "origin": "https://static.lolesports.com/teams/1686821355861_OMG_2023_logo-01.png",
+    "reference": "https://lolesports.com/en-US/gpr/2026/current"
+  },
+  {
+    "kind": "esport",
+    "name": "One Star Esports",
+    "aliases": [
+      "1S",
+      "OSE"
+    ],
+    "asset": "esport-one-star-esports.png",
+    "origin": "https://liquipedia.net/commons/images/5/5a/One_Star_Esports_no_text_allmode.png",
+    "reference": "https://liquipedia.net/honorofkings/One_Star_Esports"
+  },
+  {
+    "kind": "esport",
+    "name": "ONIC Esports",
+    "aliases": [
+      "ONIC",
+      "Fnatic ONIC",
+      "ONIC ID"
+    ],
+    "asset": "esport-onic-esports.png",
+    "origin": "https://ik.imagekit.io/nloe8dhf7w/mplid/s14/teams/onic-b-256.png",
+    "reference": "https://id-mpl.com/teams"
+  },
+  {
+    "kind": "esport",
+    "name": "ONIC Philippines",
+    "aliases": [
+      "ONIC PH",
+      "ONIC PH Esports"
+    ],
+    "asset": "esport-onic-philippines.png",
+    "origin": "https://wsrv.nl?url=https://ik.imagekit.io/nloe8dhf7w/mplph/s18/teams/onicph-bw-400.webp",
+    "reference": "https://ph-mpl.com/teams"
+  },
+  {
+    "kind": "esport",
+    "name": "paiN Gaming",
+    "aliases": [
+      "PAIN",
+      "paiN"
+    ],
+    "asset": "esport-pain-gaming.png",
+    "origin": "https://static.lolesports.com/teams/1674657011011_pain_logo_white.png",
+    "reference": "https://lolesports.com/en-US/gpr/2026/current",
+    "darkBackground": true
+  },
+  {
+    "kind": "esport",
+    "name": "Paper Rex",
+    "aliases": [
+      "PRX"
+    ],
+    "asset": "esport-paper-rex.png",
+    "origin": "https://static.lolesports.com/teams/1630018120582_paper-rex-2021.png",
+    "reference": "https://valorantesports.com/en-GB/partner-teams",
+    "darkBackground": true
+  },
+  {
+    "kind": "esport",
+    "name": "PARIVISION",
+    "aliases": [
+      "PVISION",
+      "PARI"
+    ],
+    "asset": "esport-parivision.png",
+    "origin": "https://assets.blast.tv/images/teams/8f412174-f269-4f88-b03b-e81ada4f60ee?height=128&format=webp",
+    "reference": "https://blast.tv/dota/tournaments/blast-slam-vii/"
+  },
+  {
+    "kind": "esport",
+    "name": "RED Kalunga",
+    "aliases": [
+      "RED"
+    ],
+    "asset": "esport-red-kalunga.png",
+    "origin": "https://static.lolesports.com/teams/1631820575924_red-2021-worlds.png",
+    "reference": "https://lolesports.com/en-US/gpr/2026/current"
+  },
+  {
+    "kind": "esport",
+    "name": "Relove Deep Cross Gaming",
+    "aliases": [
+      "DCG"
+    ],
+    "asset": "esport-relove-deep-cross-gaming.png",
+    "origin": "https://static.lolesports.com/teams/1785400397160_LCP_DCG_Full_W1.png",
+    "reference": "https://lolesports.com/en-US/gpr/2026/current"
+  },
+  {
+    "kind": "esport",
+    "name": "Rex Regum Qeon",
+    "aliases": [
+      "Team RRQ",
+      "RRQ",
+      "RRQ Hoshi",
+      "RRQ ID"
+    ],
+    "asset": "esport-rex-regum-qeon.png",
+    "origin": "https://static.lolesports.com/teams/1652170365530_VCT22_RexRegumQeon_Logo_WhiteLarge.png",
+    "reference": "https://valorantesports.com/en-GB/partner-teams",
+    "darkBackground": true
+  },
+  {
+    "kind": "esport",
+    "name": "S2G Esports",
+    "aliases": [],
+    "asset": "esport-s2g-esports.png",
+    "origin": "https://tds-cdn.ewc.efg.gg/assets/clubs/2068035490694565888/LOGO_DARK.png",
+    "reference": "https://ewc-web.prod.esf-systems.com/en/history/2026"
+  },
+  {
+    "kind": "esport",
+    "name": "Saigon Phantom",
+    "aliases": [
+      "SGP",
+      "Swing Phantom",
+      "Sài Gòn Phantom"
+    ],
+    "asset": "esport-saigon-phantom.png",
+    "origin": "https://saigonphantom.com/assets/sgp-gold-logo.png",
+    "reference": "https://saigonphantom.com/"
+  },
+  {
+    "kind": "esport",
+    "name": "Sentinels",
+    "aliases": [
+      "SEN"
+    ],
+    "asset": "esport-sentinels.png",
+    "origin": "https://static.lolesports.com/teams/1767769784669_Sentinels_2020_Icon.png",
+    "reference": "https://lolesports.com/en-US/gpr/2026/current"
+  },
+  {
+    "kind": "esport",
+    "name": "Shifters",
+    "aliases": [
+      "SHFT"
+    ],
+    "asset": "esport-shifters.png",
+    "origin": "https://static.lolesports.com/teams/1765897071435_600px-Shifters_allmode.png",
+    "reference": "https://lolesports.com/en-US/gpr/2026/current"
+  },
+  {
+    "kind": "esport",
+    "name": "Shopify Rebellion",
+    "aliases": [
+      "SR"
+    ],
+    "asset": "esport-shopify-rebellion.png",
+    "origin": "https://static.lolesports.com/teams/1701424227458_Teams204_Shopify_1632869404072.png",
+    "reference": "https://lolesports.com/en-US/gpr/2026/current",
+    "darkBackground": true
+  },
+  {
+    "kind": "esport",
+    "name": "SK Gaming",
+    "aliases": [
+      "SK"
+    ],
+    "asset": "esport-sk-gaming.png",
+    "origin": "https://static.lolesports.com/teams/1643979272144_SK_Monochrome.png",
+    "reference": "https://lolesports.com/en-US/gpr/2026/current",
+    "darkBackground": true
+  },
+  {
+    "kind": "esport",
+    "name": "Smart Omega",
+    "aliases": [],
+    "asset": "esport-smart-omega.png",
+    "origin": "https://wsrv.nl?url=https://ik.imagekit.io/nloe8dhf7w/mplph/s18/teams/smart-400.webp",
+    "reference": "https://ph-mpl.com/teams"
+  },
+  {
+    "kind": "esport",
+    "name": "Super Nova",
+    "aliases": [
+      "SN",
+      "Super Nova Esports"
+    ],
+    "asset": "esport-super-nova.png",
+    "origin": "https://liquipedia.net/commons/images/6/66/Super_Nova_AOG_full_allmode.png",
+    "reference": "https://liquipedia.net/honorofkings/Super_Nova"
+  },
+  {
+    "kind": "esport",
+    "name": "T1",
+    "aliases": [
+      "SK Telecom T1",
+      "SKT T1",
+      "SKT"
+    ],
+    "asset": "esport-t1.png",
+    "origin": "https://static.lolesports.com/teams/1726801573959_539px-T1_2019_full_allmode.png",
+    "reference": "https://lolesports.com/en-US/gpr/2026/current"
+  },
+  {
+    "kind": "esport",
+    "name": "Team Falcons",
+    "aliases": [
+      "Falcons",
+      "Team Falcons PH",
+      "FLCN"
+    ],
+    "asset": "esport-team-falcons.png",
+    "origin": "https://www.teamfalcons.sa/images/falcons-logo.png",
+    "reference": "https://www.teamfalcons.sa/about"
+  },
+  {
+    "kind": "esport",
+    "name": "Team Flash",
+    "aliases": [
+      "FPT x Flash",
+      "FPT Flash",
+      "TP.HCM Team Flash",
+      "Team Flash Vietnam",
+      "FL"
+    ],
+    "asset": "esport-team-flash.png",
+    "origin": "https://static.lolesports.com/teams/1737109056884_logoteamflash.png",
+    "reference": "https://lolesports.com/en-US/teams/team-flash"
+  },
+  {
+    "kind": "esport",
+    "name": "Team Heretics",
+    "aliases": [
+      "TH"
+    ],
+    "asset": "esport-team-heretics.png",
+    "origin": "https://static.lolesports.com/teams/1672933861879_Heretics-Full-Color.png",
+    "reference": "https://lolesports.com/en-US/gpr/2026/current"
+  },
+  {
+    "kind": "esport",
+    "name": "Team Liquid",
+    "aliases": [
+      "Liquid",
+      "Team Liquid Alienware",
+      "TLAW",
+      "Team Liquid ID",
+      "Team Liquid Indonesia",
+      "TLID",
+      "Team Liquid PH",
+      "TLPH"
+    ],
+    "asset": "esport-team-liquid.png",
+    "origin": "https://cdn.prod.website-files.com/64bf6e8cda9043babe7ca006/6565ddb4130fe65e888e8794_webclip.png",
+    "reference": "https://teamliquid.com/"
+  },
+  {
+    "kind": "esport",
+    "name": "Team Secret",
+    "aliases": [
+      "TS"
+    ],
+    "asset": "esport-team-secret.png",
+    "origin": "https://owcdn.net/img/629f13085ead6.png",
+    "reference": "https://www.vlr.gg/vct/standings"
+  },
+  {
+    "kind": "esport",
+    "name": "Team Secret Whales",
+    "aliases": [
+      "TSW",
+      "Team Secret x Team Whales"
+    ],
+    "asset": "esport-team-secret-whales.png",
+    "origin": "https://static.lolesports.com/teams/1774598000328_White_EyeText_600p.png",
+    "reference": "https://lolesports.com/en-US/gpr/2026/current",
+    "darkBackground": true
+  },
+  {
+    "kind": "esport",
+    "name": "Team Spirit",
+    "aliases": [
+      "Spirit"
+    ],
+    "asset": "esport-team-spirit.png",
+    "origin": "https://teamspirit.gg/favicon.ico",
+    "reference": "https://teamspirit.gg/"
+  },
+  {
+    "kind": "esport",
+    "name": "Team Tidebound",
+    "aliases": [],
+    "asset": "esport-team-tidebound.png",
+    "origin": "https://assets.blast.tv/images/teams/a6d959f1-340a-4821-b27b-33e391a5dc93?width=80&format=webp",
+    "reference": "https://blast.tv/dota/tournaments/blast-slam-v/match"
+  },
+  {
+    "kind": "esport",
+    "name": "Team Vitality",
+    "aliases": [
+      "Vitality",
+      "VIT"
+    ],
+    "asset": "esport-team-vitality.png",
+    "origin": "https://vitality.gg/cdn/shop/files/Vitality-logo-black-rgb_1_5c36a8d1-0cde-4aef-a074-2b4fafd5ec0b.png?crop=center&height=32&v=1684483759&width=32",
+    "reference": "https://vitality.gg/"
+  },
+  {
+    "kind": "esport",
+    "name": "Team WE",
+    "aliases": [
+      "Xi'an Team WE",
+      "WE",
+      "World Elite"
+    ],
+    "asset": "esport-team-we.png",
+    "origin": "https://static.lolesports.com/teams/1634763008788_220px-Team_WE_logo.png",
+    "reference": "https://lolesports.com/en-US/gpr/2026/current"
+  },
+  {
+    "kind": "esport",
+    "name": "Team Yandex",
+    "aliases": [],
+    "asset": "esport-team-yandex.png",
+    "origin": "https://assets.blast.tv/images/teams/a731fd1a-a245-4cd8-99e1-714c31919d7e?width=80&format=webp",
+    "reference": "https://blast.tv/dota/tournaments/blast-slam-vii/"
+  },
+  {
+    "kind": "esport",
+    "name": "Tearlaments",
+    "aliases": [],
+    "asset": "esport-tearlaments.png",
+    "origin": "https://assets.blast.tv/images/teams/05d5ce60-8d62-4fd3-8386-7a8378af4d3f?width=80&format=webp",
+    "reference": "https://blast.tv/dota/tournaments/blast-slam-v/match"
+  },
+  {
+    "kind": "esport",
+    "name": "The MongolZ",
+    "aliases": [
+      "MongolZ"
+    ],
+    "asset": "esport-the-mongolz.png",
+    "origin": "https://owcdn.net/img/65e948e0390f0.png",
+    "reference": "https://www.vlr.gg/team/15237/the-mongolz"
+  },
+  {
+    "kind": "esport",
+    "name": "THUNDER TALK GAMING",
+    "aliases": [
+      "TT",
+      "ThunderTalk Gaming",
+      "ThunderTalk"
+    ],
+    "asset": "esport-thunder-talk-gaming.png",
+    "origin": "https://static.lolesports.com/teams/TT-FullonDark.png",
+    "reference": "https://lolesports.com/en-US/gpr/2026/current"
+  },
+  {
+    "kind": "esport",
+    "name": "Titan Esports Club",
+    "aliases": [
+      "TEC"
+    ],
+    "asset": "esport-titan-esports-club.png",
+    "origin": "https://owcdn.net/img/65487414b8562.png",
+    "reference": "https://www.vlr.gg/vct/standings"
+  },
+  {
+    "kind": "esport",
+    "name": "TNC Pro Team",
+    "aliases": [],
+    "asset": "esport-tnc-pro-team.png",
+    "origin": "https://wsrv.nl?url=https://ik.imagekit.io/nloe8dhf7w/mplph/s18/teams/tnc-400.webp",
+    "reference": "https://ph-mpl.com/teams"
+  },
+  {
+    "kind": "esport",
+    "name": "Top Esports",
+    "aliases": [
+      "TES"
+    ],
+    "asset": "esport-top-esports.png",
+    "origin": "https://static.lolesports.com/teams/1592592064571_TopEsportsTES-01-FullonDark.png",
+    "reference": "https://lolesports.com/en-US/gpr/2026/current"
+  },
+  {
+    "kind": "esport",
+    "name": "Trace Esports",
+    "aliases": [],
+    "asset": "esport-trace-esports.png",
+    "origin": "https://static.lolesports.com/teams/1736345448590_TE.png",
+    "reference": "https://valorantesports.com/en-GB/partner-teams"
+  },
+  {
+    "kind": "esport",
+    "name": "Tundra Esports",
+    "aliases": [
+      "Tundra"
+    ],
+    "asset": "esport-tundra-esports.png",
+    "origin": "https://assets.blast.tv/images/teams/1d2765ce-34a4-4f99-a95b-b571bfdd1e4a?height=128&format=webp",
+    "reference": "https://blast.tv/dota/tournaments/blast-slam-vii/",
+    "darkBackground": true
+  },
+  {
+    "kind": "esport",
+    "name": "Twisted Minds PH",
+    "aliases": [
+      "TWIS",
+      "Twisted Minds Philippines"
+    ],
+    "asset": "esport-twisted-minds-ph.png",
+    "origin": "https://wsrv.nl?url=https://ik.imagekit.io/nloe8dhf7w/mplph/s18/teams/twistedminds-400.webp",
+    "reference": "https://ph-mpl.com/teams"
+  },
+  {
+    "kind": "esport",
+    "name": "TYLOO",
+    "aliases": [
+      "TYLOO GAMING"
+    ],
+    "asset": "esport-tyloo.png",
+    "origin": "https://static.lolesports.com/teams/1776403069581_TYLLOGO.png",
+    "reference": "https://valorantesports.com/en-GB/partner-teams"
+  },
+  {
+    "kind": "esport",
+    "name": "Ultra Prime",
+    "aliases": [
+      "UP"
+    ],
+    "asset": "esport-ultra-prime.png",
+    "origin": "https://static.lolesports.com/teams/ultraprime.png",
+    "reference": "https://lolesports.com/en-US/gpr/2026/current"
+  },
+  {
+    "kind": "esport",
+    "name": "UNLIMIT",
+    "aliases": [],
+    "asset": "esport-unlimit.png",
+    "origin": "https://tds-cdn.ewc.efg.gg/assets/clubs/2068035502547668992/LOGO_DARK.png",
+    "reference": "https://ewc-web.prod.esf-systems.com/en/history/2026"
+  },
+  {
+    "kind": "esport",
+    "name": "VARREL",
+    "aliases": [],
+    "asset": "esport-varrel.png",
+    "origin": "https://owcdn.net/img/63a74624cc76a.png",
+    "reference": "https://www.vlr.gg/vct/standings"
+  },
+  {
+    "kind": "esport",
+    "name": "Virtus.pro",
+    "aliases": [
+      "Virtus Pro",
+      "VP"
+    ],
+    "asset": "esport-virtus-pro.png",
+    "origin": "https://upload.wikimedia.org/wikipedia/en/3/3b/Virtus_pro_logo_new.png?utm_source=en.wikipedia.org&utm_campaign=parser&utm_content=thumbnail_unscaled",
+    "reference": "https://en.wikipedia.org/wiki/Virtus.pro"
+  },
+  {
+    "kind": "esport",
+    "name": "Vivo Keyd Stars",
+    "aliases": [
+      "VKS"
+    ],
+    "asset": "esport-vivo-keyd-stars.png",
+    "origin": "https://static.lolesports.com/teams/1670542079678_vks.png",
+    "reference": "https://lolesports.com/en-US/gpr/2026/current",
+    "darkBackground": true
+  },
+  {
+    "kind": "esport",
+    "name": "Weibo Gaming",
+    "aliases": [
+      "WeiboGaming",
+      "WBG"
+    ],
+    "asset": "esport-weibo-gaming.png",
+    "origin": "https://static.lolesports.com/teams/1641202879910_3.png",
+    "reference": "https://lolesports.com/en-US/gpr/2026/current"
+  },
+  {
+    "kind": "esport",
+    "name": "Wildcard",
+    "aliases": [],
+    "asset": "esport-wildcard.png",
+    "origin": "https://assets.blast.tv/images/teams/8989deb4-b63e-4cb3-b911-8666e5465a71?height=128&format=webp",
+    "reference": "https://blast.tv/cs/tournaments/esports-world-cup-2026-cs2"
+  },
+  {
+    "kind": "esport",
+    "name": "Wolves Esports",
+    "aliases": [
+      "WOL"
+    ],
+    "asset": "esport-wolves-esports.png",
+    "origin": "https://owcdn.net/img/651d33f8e6a1f.png",
+    "reference": "https://www.vlr.gg/vct/standings"
+  },
+  {
+    "kind": "esport",
+    "name": "Xi Lai Gaming",
+    "aliases": [
+      "XLG"
+    ],
+    "asset": "esport-xi-lai-gaming.png",
+    "origin": "https://static.lolesports.com/teams/1735920774181_XLGA.PNG",
+    "reference": "https://valorantesports.com/en-GB/partner-teams"
+  },
+  {
+    "kind": "esport",
+    "name": "Xtreme Gaming",
+    "aliases": [
+      "XG"
+    ],
+    "asset": "esport-xtreme-gaming.png",
+    "origin": "https://assets.blast.tv/images/teams/5f2e33f9-8656-4e8c-87ea-abac4a72ac7d?height=128&format=webp",
+    "reference": "https://blast.tv/dota/tournaments/blast-slam-vii/",
+    "darkBackground": true
+  },
+  {
+    "kind": "esport",
+    "name": "Yakult Brothers",
+    "aliases": [
+      "Yakult's Brothers"
+    ],
+    "asset": "esport-yakult-brothers.png",
+    "origin": "https://assets.blast.tv/images/teams/de0cacea-f175-42b0-8c51-0d213c350b94?width=80&format=webp",
+    "reference": "https://blast.tv/dota/tournaments/blast-slam-v/match"
+  },
+  {
+    "kind": "esport",
+    "name": "ZETA DIVISION",
+    "aliases": [
+      "ZETA"
+    ],
+    "asset": "esport-zeta-division.png",
+    "origin": "https://static.lolesports.com/teams/1630017899610_zeta.png",
+    "reference": "https://valorantesports.com/en-GB/partner-teams",
+    "darkBackground": true
+  },
+  {
+    "kind": "flag",
+    "name": "ar",
+    "asset": "flag-ar.svg",
+    "origin": "https://raw.githubusercontent.com/lipis/flag-icons/ac7e0eb3259eb62aa6100c435607e2fe03896a97/flags/4x3/ar.svg",
+    "reference": "https://github.com/lipis/flag-icons"
+  },
+  {
+    "kind": "flag",
+    "name": "at",
+    "asset": "flag-at.svg",
+    "origin": "https://raw.githubusercontent.com/lipis/flag-icons/ac7e0eb3259eb62aa6100c435607e2fe03896a97/flags/4x3/at.svg",
+    "reference": "https://github.com/lipis/flag-icons"
+  },
+  {
+    "kind": "flag",
+    "name": "au",
+    "asset": "flag-au.svg",
+    "origin": "https://raw.githubusercontent.com/lipis/flag-icons/ac7e0eb3259eb62aa6100c435607e2fe03896a97/flags/4x3/au.svg",
+    "reference": "https://github.com/lipis/flag-icons"
+  },
+  {
+    "kind": "flag",
+    "name": "be",
+    "asset": "flag-be.svg",
+    "origin": "https://raw.githubusercontent.com/lipis/flag-icons/ac7e0eb3259eb62aa6100c435607e2fe03896a97/flags/4x3/be.svg",
+    "reference": "https://github.com/lipis/flag-icons"
+  },
+  {
+    "kind": "flag",
+    "name": "br",
+    "asset": "flag-br.svg",
+    "origin": "https://raw.githubusercontent.com/lipis/flag-icons/ac7e0eb3259eb62aa6100c435607e2fe03896a97/flags/4x3/br.svg",
+    "reference": "https://github.com/lipis/flag-icons"
+  },
+  {
+    "kind": "flag",
+    "name": "ca",
+    "asset": "flag-ca.svg",
+    "origin": "https://raw.githubusercontent.com/lipis/flag-icons/ac7e0eb3259eb62aa6100c435607e2fe03896a97/flags/4x3/ca.svg",
+    "reference": "https://github.com/lipis/flag-icons"
+  },
+  {
+    "kind": "flag",
+    "name": "ch",
+    "asset": "flag-ch.svg",
+    "origin": "https://raw.githubusercontent.com/lipis/flag-icons/ac7e0eb3259eb62aa6100c435607e2fe03896a97/flags/4x3/ch.svg",
+    "reference": "https://github.com/lipis/flag-icons"
+  },
+  {
+    "kind": "flag",
+    "name": "cl",
+    "asset": "flag-cl.svg",
+    "origin": "https://raw.githubusercontent.com/lipis/flag-icons/ac7e0eb3259eb62aa6100c435607e2fe03896a97/flags/4x3/cl.svg",
+    "reference": "https://github.com/lipis/flag-icons"
+  },
+  {
+    "kind": "flag",
+    "name": "cn",
+    "asset": "flag-cn.svg",
+    "origin": "https://raw.githubusercontent.com/lipis/flag-icons/ac7e0eb3259eb62aa6100c435607e2fe03896a97/flags/4x3/cn.svg",
+    "reference": "https://github.com/lipis/flag-icons"
+  },
+  {
+    "kind": "flag",
+    "name": "co",
+    "asset": "flag-co.svg",
+    "origin": "https://raw.githubusercontent.com/lipis/flag-icons/ac7e0eb3259eb62aa6100c435607e2fe03896a97/flags/4x3/co.svg",
+    "reference": "https://github.com/lipis/flag-icons"
+  },
+  {
+    "kind": "flag",
+    "name": "cr",
+    "asset": "flag-cr.svg",
+    "origin": "https://raw.githubusercontent.com/lipis/flag-icons/ac7e0eb3259eb62aa6100c435607e2fe03896a97/flags/4x3/cr.svg",
+    "reference": "https://github.com/lipis/flag-icons"
+  },
+  {
+    "kind": "flag",
+    "name": "cz",
+    "asset": "flag-cz.svg",
+    "origin": "https://raw.githubusercontent.com/lipis/flag-icons/ac7e0eb3259eb62aa6100c435607e2fe03896a97/flags/4x3/cz.svg",
+    "reference": "https://github.com/lipis/flag-icons"
+  },
+  {
+    "kind": "flag",
+    "name": "de",
+    "asset": "flag-de.svg",
+    "origin": "https://raw.githubusercontent.com/lipis/flag-icons/ac7e0eb3259eb62aa6100c435607e2fe03896a97/flags/4x3/de.svg",
+    "reference": "https://github.com/lipis/flag-icons"
+  },
+  {
+    "kind": "flag",
+    "name": "dk",
+    "asset": "flag-dk.svg",
+    "origin": "https://raw.githubusercontent.com/lipis/flag-icons/ac7e0eb3259eb62aa6100c435607e2fe03896a97/flags/4x3/dk.svg",
+    "reference": "https://github.com/lipis/flag-icons"
+  },
+  {
+    "kind": "flag",
+    "name": "dz",
+    "asset": "flag-dz.svg",
+    "origin": "https://raw.githubusercontent.com/lipis/flag-icons/ac7e0eb3259eb62aa6100c435607e2fe03896a97/flags/4x3/dz.svg",
+    "reference": "https://github.com/lipis/flag-icons"
+  },
+  {
+    "kind": "flag",
+    "name": "ec",
+    "asset": "flag-ec.svg",
+    "origin": "https://raw.githubusercontent.com/lipis/flag-icons/ac7e0eb3259eb62aa6100c435607e2fe03896a97/flags/4x3/ec.svg",
+    "reference": "https://github.com/lipis/flag-icons"
+  },
+  {
+    "kind": "flag",
+    "name": "eg",
+    "asset": "flag-eg.svg",
+    "origin": "https://raw.githubusercontent.com/lipis/flag-icons/ac7e0eb3259eb62aa6100c435607e2fe03896a97/flags/4x3/eg.svg",
+    "reference": "https://github.com/lipis/flag-icons"
+  },
+  {
+    "kind": "flag",
+    "name": "es",
+    "asset": "flag-es.svg",
+    "origin": "https://raw.githubusercontent.com/lipis/flag-icons/ac7e0eb3259eb62aa6100c435607e2fe03896a97/flags/4x3/es.svg",
+    "reference": "https://github.com/lipis/flag-icons"
+  },
+  {
+    "kind": "flag",
+    "name": "fr",
+    "asset": "flag-fr.svg",
+    "origin": "https://raw.githubusercontent.com/lipis/flag-icons/ac7e0eb3259eb62aa6100c435607e2fe03896a97/flags/4x3/fr.svg",
+    "reference": "https://github.com/lipis/flag-icons"
+  },
+  {
+    "kind": "flag",
+    "name": "gb",
+    "asset": "flag-gb.svg",
+    "origin": "https://raw.githubusercontent.com/lipis/flag-icons/ac7e0eb3259eb62aa6100c435607e2fe03896a97/flags/4x3/gb.svg",
+    "reference": "https://github.com/lipis/flag-icons"
+  },
+  {
+    "kind": "flag",
+    "name": "gb-eng",
+    "asset": "flag-gb-eng.svg",
+    "origin": "https://raw.githubusercontent.com/lipis/flag-icons/ac7e0eb3259eb62aa6100c435607e2fe03896a97/flags/4x3/gb-eng.svg",
+    "reference": "https://github.com/lipis/flag-icons"
+  },
+  {
+    "kind": "flag",
+    "name": "gb-sct",
+    "asset": "flag-gb-sct.svg",
+    "origin": "https://raw.githubusercontent.com/lipis/flag-icons/ac7e0eb3259eb62aa6100c435607e2fe03896a97/flags/4x3/gb-sct.svg",
+    "reference": "https://github.com/lipis/flag-icons"
+  },
+  {
+    "kind": "flag",
+    "name": "gb-wls",
+    "asset": "flag-gb-wls.svg",
+    "origin": "https://raw.githubusercontent.com/lipis/flag-icons/ac7e0eb3259eb62aa6100c435607e2fe03896a97/flags/4x3/gb-wls.svg",
+    "reference": "https://github.com/lipis/flag-icons"
+  },
+  {
+    "kind": "flag",
+    "name": "gh",
+    "asset": "flag-gh.svg",
+    "origin": "https://raw.githubusercontent.com/lipis/flag-icons/ac7e0eb3259eb62aa6100c435607e2fe03896a97/flags/4x3/gh.svg",
+    "reference": "https://github.com/lipis/flag-icons"
+  },
+  {
+    "kind": "flag",
+    "name": "gr",
+    "asset": "flag-gr.svg",
+    "origin": "https://raw.githubusercontent.com/lipis/flag-icons/ac7e0eb3259eb62aa6100c435607e2fe03896a97/flags/4x3/gr.svg",
+    "reference": "https://github.com/lipis/flag-icons"
+  },
+  {
+    "kind": "flag",
+    "name": "hr",
+    "asset": "flag-hr.svg",
+    "origin": "https://raw.githubusercontent.com/lipis/flag-icons/ac7e0eb3259eb62aa6100c435607e2fe03896a97/flags/4x3/hr.svg",
+    "reference": "https://github.com/lipis/flag-icons"
+  },
+  {
+    "kind": "flag",
+    "name": "hu",
+    "asset": "flag-hu.svg",
+    "origin": "https://raw.githubusercontent.com/lipis/flag-icons/ac7e0eb3259eb62aa6100c435607e2fe03896a97/flags/4x3/hu.svg",
+    "reference": "https://github.com/lipis/flag-icons"
+  },
+  {
+    "kind": "flag",
+    "name": "id",
+    "asset": "flag-id.svg",
+    "origin": "https://raw.githubusercontent.com/lipis/flag-icons/ac7e0eb3259eb62aa6100c435607e2fe03896a97/flags/4x3/id.svg",
+    "reference": "https://github.com/lipis/flag-icons"
+  },
+  {
+    "kind": "flag",
+    "name": "ie",
+    "asset": "flag-ie.svg",
+    "origin": "https://raw.githubusercontent.com/lipis/flag-icons/ac7e0eb3259eb62aa6100c435607e2fe03896a97/flags/4x3/ie.svg",
+    "reference": "https://github.com/lipis/flag-icons"
+  },
+  {
+    "kind": "flag",
+    "name": "il",
+    "asset": "flag-il.svg",
+    "origin": "https://raw.githubusercontent.com/lipis/flag-icons/ac7e0eb3259eb62aa6100c435607e2fe03896a97/flags/4x3/il.svg",
+    "reference": "https://github.com/lipis/flag-icons"
+  },
+  {
+    "kind": "flag",
+    "name": "in",
+    "asset": "flag-in.svg",
+    "origin": "https://raw.githubusercontent.com/lipis/flag-icons/ac7e0eb3259eb62aa6100c435607e2fe03896a97/flags/4x3/in.svg",
+    "reference": "https://github.com/lipis/flag-icons"
+  },
+  {
+    "kind": "flag",
+    "name": "iq",
+    "asset": "flag-iq.svg",
+    "origin": "https://raw.githubusercontent.com/lipis/flag-icons/ac7e0eb3259eb62aa6100c435607e2fe03896a97/flags/4x3/iq.svg",
+    "reference": "https://github.com/lipis/flag-icons"
+  },
+  {
+    "kind": "flag",
+    "name": "ir",
+    "asset": "flag-ir.svg",
+    "origin": "https://raw.githubusercontent.com/lipis/flag-icons/ac7e0eb3259eb62aa6100c435607e2fe03896a97/flags/4x3/ir.svg",
+    "reference": "https://github.com/lipis/flag-icons"
+  },
+  {
+    "kind": "flag",
+    "name": "is",
+    "asset": "flag-is.svg",
+    "origin": "https://raw.githubusercontent.com/lipis/flag-icons/ac7e0eb3259eb62aa6100c435607e2fe03896a97/flags/4x3/is.svg",
+    "reference": "https://github.com/lipis/flag-icons"
+  },
+  {
+    "kind": "flag",
+    "name": "it",
+    "asset": "flag-it.svg",
+    "origin": "https://raw.githubusercontent.com/lipis/flag-icons/ac7e0eb3259eb62aa6100c435607e2fe03896a97/flags/4x3/it.svg",
+    "reference": "https://github.com/lipis/flag-icons"
+  },
+  {
+    "kind": "flag",
+    "name": "jo",
+    "asset": "flag-jo.svg",
+    "origin": "https://raw.githubusercontent.com/lipis/flag-icons/ac7e0eb3259eb62aa6100c435607e2fe03896a97/flags/4x3/jo.svg",
+    "reference": "https://github.com/lipis/flag-icons"
+  },
+  {
+    "kind": "flag",
+    "name": "jp",
+    "asset": "flag-jp.svg",
+    "origin": "https://raw.githubusercontent.com/lipis/flag-icons/ac7e0eb3259eb62aa6100c435607e2fe03896a97/flags/4x3/jp.svg",
+    "reference": "https://github.com/lipis/flag-icons"
+  },
+  {
+    "kind": "flag",
+    "name": "kh",
+    "asset": "flag-kh.svg",
+    "origin": "https://raw.githubusercontent.com/lipis/flag-icons/ac7e0eb3259eb62aa6100c435607e2fe03896a97/flags/4x3/kh.svg",
+    "reference": "https://github.com/lipis/flag-icons"
+  },
+  {
+    "kind": "flag",
+    "name": "kr",
+    "asset": "flag-kr.svg",
+    "origin": "https://raw.githubusercontent.com/lipis/flag-icons/ac7e0eb3259eb62aa6100c435607e2fe03896a97/flags/4x3/kr.svg",
+    "reference": "https://github.com/lipis/flag-icons"
+  },
+  {
+    "kind": "flag",
+    "name": "kw",
+    "asset": "flag-kw.svg",
+    "origin": "https://raw.githubusercontent.com/lipis/flag-icons/ac7e0eb3259eb62aa6100c435607e2fe03896a97/flags/4x3/kw.svg",
+    "reference": "https://github.com/lipis/flag-icons"
+  },
+  {
+    "kind": "flag",
+    "name": "la",
+    "asset": "flag-la.svg",
+    "origin": "https://raw.githubusercontent.com/lipis/flag-icons/ac7e0eb3259eb62aa6100c435607e2fe03896a97/flags/4x3/la.svg",
+    "reference": "https://github.com/lipis/flag-icons"
+  },
+  {
+    "kind": "flag",
+    "name": "ma",
+    "asset": "flag-ma.svg",
+    "origin": "https://raw.githubusercontent.com/lipis/flag-icons/ac7e0eb3259eb62aa6100c435607e2fe03896a97/flags/4x3/ma.svg",
+    "reference": "https://github.com/lipis/flag-icons"
+  },
+  {
+    "kind": "flag",
+    "name": "mm",
+    "asset": "flag-mm.svg",
+    "origin": "https://raw.githubusercontent.com/lipis/flag-icons/ac7e0eb3259eb62aa6100c435607e2fe03896a97/flags/4x3/mm.svg",
+    "reference": "https://github.com/lipis/flag-icons"
+  },
+  {
+    "kind": "flag",
+    "name": "mx",
+    "asset": "flag-mx.svg",
+    "origin": "https://raw.githubusercontent.com/lipis/flag-icons/ac7e0eb3259eb62aa6100c435607e2fe03896a97/flags/4x3/mx.svg",
+    "reference": "https://github.com/lipis/flag-icons"
+  },
+  {
+    "kind": "flag",
+    "name": "my",
+    "asset": "flag-my.svg",
+    "origin": "https://raw.githubusercontent.com/lipis/flag-icons/ac7e0eb3259eb62aa6100c435607e2fe03896a97/flags/4x3/my.svg",
+    "reference": "https://github.com/lipis/flag-icons"
+  },
+  {
+    "kind": "flag",
+    "name": "ng",
+    "asset": "flag-ng.svg",
+    "origin": "https://raw.githubusercontent.com/lipis/flag-icons/ac7e0eb3259eb62aa6100c435607e2fe03896a97/flags/4x3/ng.svg",
+    "reference": "https://github.com/lipis/flag-icons"
+  },
+  {
+    "kind": "flag",
+    "name": "nl",
+    "asset": "flag-nl.svg",
+    "origin": "https://raw.githubusercontent.com/lipis/flag-icons/ac7e0eb3259eb62aa6100c435607e2fe03896a97/flags/4x3/nl.svg",
+    "reference": "https://github.com/lipis/flag-icons"
+  },
+  {
+    "kind": "flag",
+    "name": "no",
+    "asset": "flag-no.svg",
+    "origin": "https://raw.githubusercontent.com/lipis/flag-icons/ac7e0eb3259eb62aa6100c435607e2fe03896a97/flags/4x3/no.svg",
+    "reference": "https://github.com/lipis/flag-icons"
+  },
+  {
+    "kind": "flag",
+    "name": "nz",
+    "asset": "flag-nz.svg",
+    "origin": "https://raw.githubusercontent.com/lipis/flag-icons/ac7e0eb3259eb62aa6100c435607e2fe03896a97/flags/4x3/nz.svg",
+    "reference": "https://github.com/lipis/flag-icons"
+  },
+  {
+    "kind": "flag",
+    "name": "om",
+    "asset": "flag-om.svg",
+    "origin": "https://raw.githubusercontent.com/lipis/flag-icons/ac7e0eb3259eb62aa6100c435607e2fe03896a97/flags/4x3/om.svg",
+    "reference": "https://github.com/lipis/flag-icons"
+  },
+  {
+    "kind": "flag",
+    "name": "pe",
+    "asset": "flag-pe.svg",
+    "origin": "https://raw.githubusercontent.com/lipis/flag-icons/ac7e0eb3259eb62aa6100c435607e2fe03896a97/flags/4x3/pe.svg",
+    "reference": "https://github.com/lipis/flag-icons"
+  },
+  {
+    "kind": "flag",
+    "name": "ph",
+    "asset": "flag-ph.svg",
+    "origin": "https://raw.githubusercontent.com/lipis/flag-icons/ac7e0eb3259eb62aa6100c435607e2fe03896a97/flags/4x3/ph.svg",
+    "reference": "https://github.com/lipis/flag-icons"
+  },
+  {
+    "kind": "flag",
+    "name": "pl",
+    "asset": "flag-pl.svg",
+    "origin": "https://raw.githubusercontent.com/lipis/flag-icons/ac7e0eb3259eb62aa6100c435607e2fe03896a97/flags/4x3/pl.svg",
+    "reference": "https://github.com/lipis/flag-icons"
+  },
+  {
+    "kind": "flag",
+    "name": "pt",
+    "asset": "flag-pt.svg",
+    "origin": "https://raw.githubusercontent.com/lipis/flag-icons/ac7e0eb3259eb62aa6100c435607e2fe03896a97/flags/4x3/pt.svg",
+    "reference": "https://github.com/lipis/flag-icons"
+  },
+  {
+    "kind": "flag",
+    "name": "qa",
+    "asset": "flag-qa.svg",
+    "origin": "https://raw.githubusercontent.com/lipis/flag-icons/ac7e0eb3259eb62aa6100c435607e2fe03896a97/flags/4x3/qa.svg",
+    "reference": "https://github.com/lipis/flag-icons"
+  },
+  {
+    "kind": "flag",
+    "name": "ro",
+    "asset": "flag-ro.svg",
+    "origin": "https://raw.githubusercontent.com/lipis/flag-icons/ac7e0eb3259eb62aa6100c435607e2fe03896a97/flags/4x3/ro.svg",
+    "reference": "https://github.com/lipis/flag-icons"
+  },
+  {
+    "kind": "flag",
+    "name": "rs",
+    "asset": "flag-rs.svg",
+    "origin": "https://raw.githubusercontent.com/lipis/flag-icons/ac7e0eb3259eb62aa6100c435607e2fe03896a97/flags/4x3/rs.svg",
+    "reference": "https://github.com/lipis/flag-icons"
+  },
+  {
+    "kind": "flag",
+    "name": "ru",
+    "asset": "flag-ru.svg",
+    "origin": "https://raw.githubusercontent.com/lipis/flag-icons/ac7e0eb3259eb62aa6100c435607e2fe03896a97/flags/4x3/ru.svg",
+    "reference": "https://github.com/lipis/flag-icons"
+  },
+  {
+    "kind": "flag",
+    "name": "sa",
+    "asset": "flag-sa.svg",
+    "origin": "https://raw.githubusercontent.com/lipis/flag-icons/ac7e0eb3259eb62aa6100c435607e2fe03896a97/flags/4x3/sa.svg",
+    "reference": "https://github.com/lipis/flag-icons"
+  },
+  {
+    "kind": "flag",
+    "name": "se",
+    "asset": "flag-se.svg",
+    "origin": "https://raw.githubusercontent.com/lipis/flag-icons/ac7e0eb3259eb62aa6100c435607e2fe03896a97/flags/4x3/se.svg",
+    "reference": "https://github.com/lipis/flag-icons"
+  },
+  {
+    "kind": "flag",
+    "name": "sg",
+    "asset": "flag-sg.svg",
+    "origin": "https://raw.githubusercontent.com/lipis/flag-icons/ac7e0eb3259eb62aa6100c435607e2fe03896a97/flags/4x3/sg.svg",
+    "reference": "https://github.com/lipis/flag-icons"
+  },
+  {
+    "kind": "flag",
+    "name": "si",
+    "asset": "flag-si.svg",
+    "origin": "https://raw.githubusercontent.com/lipis/flag-icons/ac7e0eb3259eb62aa6100c435607e2fe03896a97/flags/4x3/si.svg",
+    "reference": "https://github.com/lipis/flag-icons"
+  },
+  {
+    "kind": "flag",
+    "name": "sk",
+    "asset": "flag-sk.svg",
+    "origin": "https://raw.githubusercontent.com/lipis/flag-icons/ac7e0eb3259eb62aa6100c435607e2fe03896a97/flags/4x3/sk.svg",
+    "reference": "https://github.com/lipis/flag-icons"
+  },
+  {
+    "kind": "flag",
+    "name": "th",
+    "asset": "flag-th.svg",
+    "origin": "https://raw.githubusercontent.com/lipis/flag-icons/ac7e0eb3259eb62aa6100c435607e2fe03896a97/flags/4x3/th.svg",
+    "reference": "https://github.com/lipis/flag-icons"
+  },
+  {
+    "kind": "flag",
+    "name": "tn",
+    "asset": "flag-tn.svg",
+    "origin": "https://raw.githubusercontent.com/lipis/flag-icons/ac7e0eb3259eb62aa6100c435607e2fe03896a97/flags/4x3/tn.svg",
+    "reference": "https://github.com/lipis/flag-icons"
+  },
+  {
+    "kind": "flag",
+    "name": "tr",
+    "asset": "flag-tr.svg",
+    "origin": "https://raw.githubusercontent.com/lipis/flag-icons/ac7e0eb3259eb62aa6100c435607e2fe03896a97/flags/4x3/tr.svg",
+    "reference": "https://github.com/lipis/flag-icons"
+  },
+  {
+    "kind": "flag",
+    "name": "tw",
+    "asset": "flag-tw.svg",
+    "origin": "https://raw.githubusercontent.com/lipis/flag-icons/ac7e0eb3259eb62aa6100c435607e2fe03896a97/flags/4x3/tw.svg",
+    "reference": "https://github.com/lipis/flag-icons"
+  },
+  {
+    "kind": "flag",
+    "name": "ua",
+    "asset": "flag-ua.svg",
+    "origin": "https://raw.githubusercontent.com/lipis/flag-icons/ac7e0eb3259eb62aa6100c435607e2fe03896a97/flags/4x3/ua.svg",
+    "reference": "https://github.com/lipis/flag-icons"
+  },
+  {
+    "kind": "flag",
+    "name": "us",
+    "asset": "flag-us.svg",
+    "origin": "https://raw.githubusercontent.com/lipis/flag-icons/ac7e0eb3259eb62aa6100c435607e2fe03896a97/flags/4x3/us.svg",
+    "reference": "https://github.com/lipis/flag-icons"
+  },
+  {
+    "kind": "flag",
+    "name": "uy",
+    "asset": "flag-uy.svg",
+    "origin": "https://raw.githubusercontent.com/lipis/flag-icons/ac7e0eb3259eb62aa6100c435607e2fe03896a97/flags/4x3/uy.svg",
+    "reference": "https://github.com/lipis/flag-icons"
+  },
+  {
+    "kind": "flag",
+    "name": "uz",
+    "asset": "flag-uz.svg",
+    "origin": "https://raw.githubusercontent.com/lipis/flag-icons/ac7e0eb3259eb62aa6100c435607e2fe03896a97/flags/4x3/uz.svg",
+    "reference": "https://github.com/lipis/flag-icons"
+  },
+  {
+    "kind": "flag",
+    "name": "vn",
+    "asset": "flag-vn.svg",
+    "origin": "https://raw.githubusercontent.com/lipis/flag-icons/ac7e0eb3259eb62aa6100c435607e2fe03896a97/flags/4x3/vn.svg",
+    "reference": "https://github.com/lipis/flag-icons"
+  },
+  {
+    "kind": "flag",
+    "name": "za",
+    "asset": "flag-za.svg",
+    "origin": "https://raw.githubusercontent.com/lipis/flag-icons/ac7e0eb3259eb62aa6100c435607e2fe03896a97/flags/4x3/za.svg",
+    "reference": "https://github.com/lipis/flag-icons"
+  },
+  {
+    "kind": "sport",
+    "name": "AC Milan",
+    "aliases": [
+      "Milan",
+      "A.C. Milan"
+    ],
+    "asset": "ita-1-103.png",
+    "origin": "https://a.espncdn.com/i/teamlogos/soccer/500/103.png",
+    "reference": "https://site.api.espn.com/apis/site/v2/sports/soccer/ita.1/teams?limit=100"
+  },
+  {
+    "kind": "sport",
+    "name": "Ajax Amsterdam",
+    "aliases": [
+      "Ajax",
+      "Ajax"
+    ],
+    "asset": "ned-1-139.png",
+    "origin": "https://a.espncdn.com/i/teamlogos/soccer/500/139.png",
+    "reference": "https://site.api.espn.com/apis/site/v2/sports/soccer/ned.1/teams?limit=100"
+  },
+  {
+    "kind": "sport",
+    "name": "Al Ahli",
+    "aliases": [],
+    "asset": "ksa-1-8346.png",
+    "origin": "https://a.espncdn.com/i/teamlogos/soccer/500/8346.png",
+    "reference": "https://site.api.espn.com/apis/site/v2/sports/soccer/ksa.1/teams?limit=100"
+  },
+  {
+    "kind": "sport",
+    "name": "Al Hilal",
+    "aliases": [],
+    "asset": "ksa-1-929.png",
+    "origin": "https://a.espncdn.com/i/teamlogos/soccer/500/929.png",
+    "reference": "https://site.api.espn.com/apis/site/v2/sports/soccer/ksa.1/teams?limit=100"
+  },
+  {
+    "kind": "sport",
+    "name": "Al Ittihad",
+    "aliases": [],
+    "asset": "ksa-1-2276.png",
+    "origin": "https://a.espncdn.com/i/teamlogos/soccer/500/2276.png",
+    "reference": "https://site.api.espn.com/apis/site/v2/sports/soccer/ksa.1/teams?limit=100"
+  },
+  {
+    "kind": "sport",
+    "name": "Al Nassr",
+    "aliases": [],
+    "asset": "ksa-1-817.png",
+    "origin": "https://a.espncdn.com/i/teamlogos/soccer/500/817.png",
+    "reference": "https://site.api.espn.com/apis/site/v2/sports/soccer/ksa.1/teams?limit=100"
+  },
+  {
+    "kind": "sport",
+    "name": "Arsenal",
+    "aliases": [],
+    "asset": "eng-1-359.png",
+    "origin": "https://a.espncdn.com/i/teamlogos/soccer/500/359.png",
+    "reference": "https://site.api.espn.com/apis/site/v2/sports/soccer/eng.1/teams?limit=100"
+  },
+  {
+    "kind": "sport",
+    "name": "AS Monaco",
+    "aliases": [
+      "Monaco"
+    ],
+    "asset": "fra-1-174.png",
+    "origin": "https://a.espncdn.com/i/teamlogos/soccer/500/174.png",
+    "reference": "https://site.api.espn.com/apis/site/v2/sports/soccer/fra.1/teams?limit=100"
+  },
+  {
+    "kind": "sport",
+    "name": "AS Roma",
+    "aliases": [
+      "Roma"
+    ],
+    "asset": "ita-1-104.png",
+    "origin": "https://a.espncdn.com/i/teamlogos/soccer/500/104.png",
+    "reference": "https://site.api.espn.com/apis/site/v2/sports/soccer/ita.1/teams?limit=100"
+  },
+  {
+    "kind": "sport",
+    "name": "Aston Villa",
+    "aliases": [],
+    "asset": "eng-1-362.png",
+    "origin": "https://a.espncdn.com/i/teamlogos/soccer/500/362.png",
+    "reference": "https://site.api.espn.com/apis/site/v2/sports/soccer/eng.1/teams?limit=100"
+  },
+  {
+    "kind": "sport",
+    "name": "Atalanta",
+    "aliases": [],
+    "asset": "ita-1-105.png",
+    "origin": "https://a.espncdn.com/i/teamlogos/soccer/500/105.png",
+    "reference": "https://site.api.espn.com/apis/site/v2/sports/soccer/ita.1/teams?limit=100"
+  },
+  {
+    "kind": "sport",
+    "name": "Athletic Club",
+    "aliases": [
+      "Athletic Bilbao",
+      "Athletic"
+    ],
+    "asset": "esp-1-93.png",
+    "origin": "https://a.espncdn.com/i/teamlogos/soccer/500/93.png",
+    "reference": "https://site.api.espn.com/apis/site/v2/sports/soccer/esp.1/teams?limit=100"
+  },
+  {
+    "kind": "sport",
+    "name": "Atlético Madrid",
+    "aliases": [
+      "Atlético de Madrid",
+      "Atletico Madrid",
+      "Atlético"
+    ],
+    "asset": "esp-1-1068.png",
+    "origin": "https://a.espncdn.com/i/teamlogos/soccer/500/1068.png",
+    "reference": "https://site.api.espn.com/apis/site/v2/sports/soccer/esp.1/teams?limit=100"
+  },
+  {
+    "kind": "sport",
+    "name": "Baltimore Ravens",
+    "aliases": [],
+    "asset": "nfl-33.png",
+    "origin": "https://a.espncdn.com/i/teamlogos/nfl/500/bal.png",
+    "reference": "https://site.api.espn.com/apis/site/v2/sports/football/nfl/teams?limit=100"
+  },
+  {
+    "kind": "sport",
+    "name": "Barcelona",
+    "aliases": [
+      "FC Barcelona",
+      "Barça",
+      "Barca"
+    ],
+    "asset": "esp-1-83.png",
+    "origin": "https://a.espncdn.com/i/teamlogos/soccer/500/83.png",
+    "reference": "https://site.api.espn.com/apis/site/v2/sports/soccer/esp.1/teams?limit=100"
+  },
+  {
+    "kind": "sport",
+    "name": "Bayer Leverkusen",
+    "aliases": [
+      "Bayer 04 Leverkusen",
+      "Leverkusen"
+    ],
+    "asset": "ger-1-131.png",
+    "origin": "https://a.espncdn.com/i/teamlogos/soccer/500/131.png",
+    "reference": "https://site.api.espn.com/apis/site/v2/sports/soccer/ger.1/teams?limit=100"
+  },
+  {
+    "kind": "sport",
+    "name": "Bayern Munich",
+    "aliases": [
+      "Bayern München",
+      "FC Bayern",
+      "Bayern"
+    ],
+    "asset": "ger-1-132.png",
+    "origin": "https://a.espncdn.com/i/teamlogos/soccer/500/132.png",
+    "reference": "https://site.api.espn.com/apis/site/v2/sports/soccer/ger.1/teams?limit=100"
+  },
+  {
+    "kind": "sport",
+    "name": "Benfica",
+    "aliases": [],
+    "asset": "por-1-1929.png",
+    "origin": "https://a.espncdn.com/i/teamlogos/soccer/500/1929.png",
+    "reference": "https://site.api.espn.com/apis/site/v2/sports/soccer/por.1/teams?limit=100"
+  },
+  {
+    "kind": "sport",
+    "name": "Boca Juniors",
+    "aliases": [
+      "Boca "
+    ],
+    "asset": "arg-1-5.png",
+    "origin": "https://a.espncdn.com/i/teamlogos/soccer/500/5.png",
+    "reference": "https://site.api.espn.com/apis/site/v2/sports/soccer/arg.1/teams?limit=100"
+  },
+  {
+    "kind": "sport",
+    "name": "Borussia Dortmund",
+    "aliases": [
+      "BVB",
+      "Dortmund"
+    ],
+    "asset": "ger-1-124.png",
+    "origin": "https://a.espncdn.com/i/teamlogos/soccer/500/124.png",
+    "reference": "https://site.api.espn.com/apis/site/v2/sports/soccer/ger.1/teams?limit=100"
+  },
+  {
+    "kind": "sport",
+    "name": "Boston Celtics",
+    "aliases": [
+      "Celtics"
+    ],
+    "asset": "nba-2.png",
+    "origin": "https://a.espncdn.com/i/teamlogos/nba/500/bos.png",
+    "reference": "https://site.api.espn.com/apis/site/v2/sports/basketball/nba/teams?limit=100"
+  },
+  {
+    "kind": "sport",
+    "name": "Buffalo Bills",
+    "aliases": [],
+    "asset": "nfl-2.png",
+    "origin": "https://a.espncdn.com/i/teamlogos/nfl/500/buf.png",
+    "reference": "https://site.api.espn.com/apis/site/v2/sports/football/nfl/teams?limit=100"
+  },
+  {
+    "kind": "sport",
+    "name": "Chelsea",
+    "aliases": [],
+    "asset": "eng-1-363.png",
+    "origin": "https://a.espncdn.com/i/teamlogos/soccer/500/363.png",
+    "reference": "https://site.api.espn.com/apis/site/v2/sports/soccer/eng.1/teams?limit=100"
+  },
+  {
+    "kind": "sport",
+    "name": "Chicago Bulls",
+    "aliases": [],
+    "asset": "nba-4.png",
+    "origin": "https://a.espncdn.com/i/teamlogos/nba/500/chi.png",
+    "reference": "https://site.api.espn.com/apis/site/v2/sports/basketball/nba/teams?limit=100"
+  },
+  {
+    "kind": "sport",
+    "name": "Cleveland Cavaliers",
+    "aliases": [],
+    "asset": "nba-5.png",
+    "origin": "https://a.espncdn.com/i/teamlogos/nba/500/cle.png",
+    "reference": "https://site.api.espn.com/apis/site/v2/sports/basketball/nba/teams?limit=100"
+  },
+  {
+    "kind": "sport",
+    "name": "Corinthians",
+    "aliases": [],
+    "asset": "bra-1-874.png",
+    "origin": "https://a.espncdn.com/i/teamlogos/soccer/500/874.png",
+    "reference": "https://site.api.espn.com/apis/site/v2/sports/soccer/bra.1/teams?limit=100"
+  },
+  {
+    "kind": "sport",
+    "name": "Công an Hà Nội",
+    "aliases": [
+      "Công an Hà Nội FC",
+      "CAHN"
+    ],
+    "asset": "vleague-cong-an-ha-noi.png",
+    "origin": "https://vpf.vn/wp-content/uploads/2018/10/cong-an-ha-noi-fc-300x300.png",
+    "reference": "https://vpf.vn/team/cong-an-ha-noi/"
+  },
+  {
+    "kind": "sport",
+    "name": "Dallas Cowboys",
+    "aliases": [],
+    "asset": "nfl-6.png",
+    "origin": "https://a.espncdn.com/i/teamlogos/nfl/500/dal.png",
+    "reference": "https://site.api.espn.com/apis/site/v2/sports/football/nfl/teams?limit=100"
+  },
+  {
+    "kind": "sport",
+    "name": "Dallas Mavericks",
+    "aliases": [],
+    "asset": "nba-6.png",
+    "origin": "https://a.espncdn.com/i/teamlogos/nba/500/dal.png",
+    "reference": "https://site.api.espn.com/apis/site/v2/sports/basketball/nba/teams?limit=100"
+  },
+  {
+    "kind": "sport",
+    "name": "Denver Nuggets",
+    "aliases": [],
+    "asset": "nba-7.png",
+    "origin": "https://a.espncdn.com/i/teamlogos/nba/500/den.png",
+    "reference": "https://site.api.espn.com/apis/site/v2/sports/basketball/nba/teams?limit=100"
+  },
+  {
+    "kind": "sport",
+    "name": "Eintracht Frankfurt",
+    "aliases": [
+      "Frankfurt"
+    ],
+    "asset": "ger-1-125.png",
+    "origin": "https://a.espncdn.com/i/teamlogos/soccer/500/125.png",
+    "reference": "https://site.api.espn.com/apis/site/v2/sports/soccer/ger.1/teams?limit=100"
+  },
+  {
+    "kind": "sport",
+    "name": "Everton",
+    "aliases": [],
+    "asset": "eng-1-368.png",
+    "origin": "https://a.espncdn.com/i/teamlogos/soccer/500/368.png",
+    "reference": "https://site.api.espn.com/apis/site/v2/sports/soccer/eng.1/teams?limit=100"
+  },
+  {
+    "kind": "sport",
+    "name": "FC Porto",
+    "aliases": [
+      "Porto"
+    ],
+    "asset": "por-1-437.png",
+    "origin": "https://a.espncdn.com/i/teamlogos/soccer/500/437.png",
+    "reference": "https://site.api.espn.com/apis/site/v2/sports/soccer/por.1/teams?limit=100"
+  },
+  {
+    "kind": "sport",
+    "name": "Feyenoord Rotterdam",
+    "aliases": [
+      "Feyenoord"
+    ],
+    "asset": "ned-1-142.png",
+    "origin": "https://a.espncdn.com/i/teamlogos/soccer/500/142.png",
+    "reference": "https://site.api.espn.com/apis/site/v2/sports/soccer/ned.1/teams?limit=100"
+  },
+  {
+    "kind": "sport",
+    "name": "Flamengo",
+    "aliases": [],
+    "asset": "bra-1-819.png",
+    "origin": "https://a.espncdn.com/i/teamlogos/soccer/500/819.png",
+    "reference": "https://site.api.espn.com/apis/site/v2/sports/soccer/bra.1/teams?limit=100"
+  },
+  {
+    "kind": "sport",
+    "name": "Golden State Warriors",
+    "aliases": [
+      "Golden State",
+      "Warriors"
+    ],
+    "asset": "nba-9.png",
+    "origin": "https://a.espncdn.com/i/teamlogos/nba/500/gs.png",
+    "reference": "https://site.api.espn.com/apis/site/v2/sports/basketball/nba/teams?limit=100"
+  },
+  {
+    "kind": "sport",
+    "name": "Green Bay Packers",
+    "aliases": [],
+    "asset": "nfl-9.png",
+    "origin": "https://a.espncdn.com/i/teamlogos/nfl/500/gb.png",
+    "reference": "https://site.api.espn.com/apis/site/v2/sports/football/nfl/teams?limit=100"
+  },
+  {
+    "kind": "sport",
+    "name": "Houston Rockets",
+    "aliases": [],
+    "asset": "nba-10.png",
+    "origin": "https://a.espncdn.com/i/teamlogos/nba/500/hou.png",
+    "reference": "https://site.api.espn.com/apis/site/v2/sports/basketball/nba/teams?limit=100"
+  },
+  {
+    "kind": "sport",
+    "name": "Hoàng Anh Gia Lai",
+    "aliases": [
+      "HAGL",
+      "Hoang Anh Gia Lai"
+    ],
+    "asset": "vleague-hoang-anh-gia-lai.png",
+    "origin": "https://vpf.vn/wp-content/uploads/2018/10/Logo-HAGL-300x300.jpg",
+    "reference": "https://vpf.vn/team/hoang-anh-gia-lai/"
+  },
+  {
+    "kind": "sport",
+    "name": "Hà Nội FC",
+    "aliases": [
+      "Hà Nội",
+      "Hanoi FC",
+      "CLB Hà Nội"
+    ],
+    "asset": "vleague-ha-noi.png",
+    "origin": "https://vpf.vn/wp-content/uploads/2018/10/HNFC-6-sao-300x300.png",
+    "reference": "https://vpf.vn/team/ha-noi/"
+  },
+  {
+    "kind": "sport",
+    "name": "Inter Miami CF",
+    "aliases": [
+      "Inter Miami",
+      "Miami"
+    ],
+    "asset": "usa-1-20232.png",
+    "origin": "https://a.espncdn.com/i/teamlogos/soccer/500/20232.png",
+    "reference": "https://site.api.espn.com/apis/site/v2/sports/soccer/usa.1/teams?limit=100"
+  },
+  {
+    "kind": "sport",
+    "name": "Internazionale",
+    "aliases": [
+      "Inter Milan",
+      "Inter Milan",
+      "Inter",
+      "FC Internazionale",
+      "FC Internazionale Milano",
+      "Inter Milano"
+    ],
+    "asset": "ita-1-110.png",
+    "origin": "https://a.espncdn.com/i/teamlogos/soccer/500/110.png",
+    "reference": "https://site.api.espn.com/apis/site/v2/sports/soccer/ita.1/teams?limit=100"
+  },
+  {
+    "kind": "sport",
+    "name": "Juventus",
+    "aliases": [],
+    "asset": "ita-1-111.png",
+    "origin": "https://a.espncdn.com/i/teamlogos/soccer/500/111.png",
+    "reference": "https://site.api.espn.com/apis/site/v2/sports/soccer/ita.1/teams?limit=100"
+  },
+  {
+    "kind": "sport",
+    "name": "Kansas City Chiefs",
+    "aliases": [],
+    "asset": "nfl-12.png",
+    "origin": "https://a.espncdn.com/i/teamlogos/nfl/500/kc.png",
+    "reference": "https://site.api.espn.com/apis/site/v2/sports/football/nfl/teams?limit=100"
+  },
+  {
+    "kind": "sport",
+    "name": "LA Clippers",
+    "aliases": [
+      "Los Angeles Clippers",
+      "Clippers"
+    ],
+    "asset": "nba-12.png",
+    "origin": "https://a.espncdn.com/i/teamlogos/nba/500/lac.png",
+    "reference": "https://site.api.espn.com/apis/site/v2/sports/basketball/nba/teams?limit=100"
+  },
+  {
+    "kind": "sport",
+    "name": "LA Galaxy",
+    "aliases": [],
+    "asset": "usa-1-187.png",
+    "origin": "https://a.espncdn.com/i/teamlogos/soccer/500/187.png",
+    "reference": "https://site.api.espn.com/apis/site/v2/sports/soccer/usa.1/teams?limit=100"
+  },
+  {
+    "kind": "sport",
+    "name": "LAFC",
+    "aliases": [
+      "Los Angeles FC"
+    ],
+    "asset": "usa-1-18966.png",
+    "origin": "https://a.espncdn.com/i/teamlogos/soccer/500/18966.png",
+    "reference": "https://site.api.espn.com/apis/site/v2/sports/soccer/usa.1/teams?limit=100"
+  },
+  {
+    "kind": "sport",
+    "name": "Lazio",
+    "aliases": [],
+    "asset": "ita-1-112.png",
+    "origin": "https://a.espncdn.com/i/teamlogos/soccer/500/112.png",
+    "reference": "https://site.api.espn.com/apis/site/v2/sports/soccer/ita.1/teams?limit=100"
+  },
+  {
+    "kind": "sport",
+    "name": "Lille",
+    "aliases": [],
+    "asset": "fra-1-166.png",
+    "origin": "https://a.espncdn.com/i/teamlogos/soccer/500/166.png",
+    "reference": "https://site.api.espn.com/apis/site/v2/sports/soccer/fra.1/teams?limit=100"
+  },
+  {
+    "kind": "sport",
+    "name": "Liverpool",
+    "aliases": [],
+    "asset": "eng-1-364.png",
+    "origin": "https://a.espncdn.com/i/teamlogos/soccer/500/364.png",
+    "reference": "https://site.api.espn.com/apis/site/v2/sports/soccer/eng.1/teams?limit=100"
+  },
+  {
+    "kind": "sport",
+    "name": "Los Angeles Lakers",
+    "aliases": [
+      "LA Lakers",
+      "Lakers"
+    ],
+    "asset": "nba-13.png",
+    "origin": "https://a.espncdn.com/i/teamlogos/nba/500/lal.png",
+    "reference": "https://site.api.espn.com/apis/site/v2/sports/basketball/nba/teams?limit=100"
+  },
+  {
+    "kind": "sport",
+    "name": "Lyon",
+    "aliases": [
+      "Olympique Lyonnais"
+    ],
+    "asset": "fra-1-167.png",
+    "origin": "https://a.espncdn.com/i/teamlogos/soccer/500/167.png",
+    "reference": "https://site.api.espn.com/apis/site/v2/sports/soccer/fra.1/teams?limit=100"
+  },
+  {
+    "kind": "sport",
+    "name": "Manchester City",
+    "aliases": [
+      "Man City"
+    ],
+    "asset": "eng-1-382.png",
+    "origin": "https://a.espncdn.com/i/teamlogos/soccer/500/382.png",
+    "reference": "https://site.api.espn.com/apis/site/v2/sports/soccer/eng.1/teams?limit=100"
+  },
+  {
+    "kind": "sport",
+    "name": "Manchester United",
+    "aliases": [
+      "Man United",
+      "Man Utd",
+      "Man U",
+      "MU"
+    ],
+    "asset": "eng-1-360.png",
+    "origin": "https://a.espncdn.com/i/teamlogos/soccer/500/360.png",
+    "reference": "https://site.api.espn.com/apis/site/v2/sports/soccer/eng.1/teams?limit=100"
+  },
+  {
+    "kind": "sport",
+    "name": "Marseille",
+    "aliases": [
+      "Olympique Marseille",
+      "Olympique de Marseille"
+    ],
+    "asset": "fra-1-176.png",
+    "origin": "https://a.espncdn.com/i/teamlogos/soccer/500/176.png",
+    "reference": "https://site.api.espn.com/apis/site/v2/sports/soccer/fra.1/teams?limit=100"
+  },
+  {
+    "kind": "sport",
+    "name": "Miami Heat",
+    "aliases": [],
+    "asset": "nba-14.png",
+    "origin": "https://a.espncdn.com/i/teamlogos/nba/500/mia.png",
+    "reference": "https://site.api.espn.com/apis/site/v2/sports/basketball/nba/teams?limit=100"
+  },
+  {
+    "kind": "sport",
+    "name": "Milwaukee Bucks",
+    "aliases": [],
+    "asset": "nba-15.png",
+    "origin": "https://a.espncdn.com/i/teamlogos/nba/500/mil.png",
+    "reference": "https://site.api.espn.com/apis/site/v2/sports/basketball/nba/teams?limit=100"
+  },
+  {
+    "kind": "sport",
+    "name": "Napoli",
+    "aliases": [
+      "SSC Napoli"
+    ],
+    "asset": "ita-1-114.png",
+    "origin": "https://a.espncdn.com/i/teamlogos/soccer/500/114.png",
+    "reference": "https://site.api.espn.com/apis/site/v2/sports/soccer/ita.1/teams?limit=100"
+  },
+  {
+    "kind": "sport",
+    "name": "New England Patriots",
+    "aliases": [],
+    "asset": "nfl-17.png",
+    "origin": "https://a.espncdn.com/i/teamlogos/nfl/500/ne.png",
+    "reference": "https://site.api.espn.com/apis/site/v2/sports/football/nfl/teams?limit=100"
+  },
+  {
+    "kind": "sport",
+    "name": "New York Knicks",
+    "aliases": [],
+    "asset": "nba-18.png",
+    "origin": "https://a.espncdn.com/i/teamlogos/nba/500/ny.png",
+    "reference": "https://site.api.espn.com/apis/site/v2/sports/basketball/nba/teams?limit=100"
+  },
+  {
+    "kind": "sport",
+    "name": "Newcastle United",
+    "aliases": [
+      "Newcastle"
+    ],
+    "asset": "eng-1-361.png",
+    "origin": "https://a.espncdn.com/i/teamlogos/soccer/500/361.png",
+    "reference": "https://site.api.espn.com/apis/site/v2/sports/soccer/eng.1/teams?limit=100"
+  },
+  {
+    "kind": "sport",
+    "name": "Nottingham Forest",
+    "aliases": [
+      "Nottm Forest"
+    ],
+    "asset": "eng-1-393.png",
+    "origin": "https://a.espncdn.com/i/teamlogos/soccer/500/393.png",
+    "reference": "https://site.api.espn.com/apis/site/v2/sports/soccer/eng.1/teams?limit=100"
+  },
+  {
+    "kind": "sport",
+    "name": "Oklahoma City Thunder",
+    "aliases": [
+      "OKC Thunder"
+    ],
+    "asset": "nba-25.png",
+    "origin": "https://a.espncdn.com/i/teamlogos/nba/500/okc.png",
+    "reference": "https://site.api.espn.com/apis/site/v2/sports/basketball/nba/teams?limit=100"
+  },
+  {
+    "kind": "sport",
+    "name": "Palmeiras",
+    "aliases": [],
+    "asset": "bra-1-2029.png",
+    "origin": "https://a.espncdn.com/i/teamlogos/soccer/500/2029.png",
+    "reference": "https://site.api.espn.com/apis/site/v2/sports/soccer/bra.1/teams?limit=100"
+  },
+  {
+    "kind": "sport",
+    "name": "Paris Saint-Germain",
+    "aliases": [
+      "PSG",
+      "Paris SG",
+      "Paris St-Germain",
+      "Paris Saint Germain"
+    ],
+    "asset": "fra-1-160.png",
+    "origin": "https://a.espncdn.com/i/teamlogos/soccer/500/160.png",
+    "reference": "https://site.api.espn.com/apis/site/v2/sports/soccer/fra.1/teams?limit=100"
+  },
+  {
+    "kind": "sport",
+    "name": "Philadelphia 76ers",
+    "aliases": [],
+    "asset": "nba-20.png",
+    "origin": "https://a.espncdn.com/i/teamlogos/nba/500/phi.png",
+    "reference": "https://site.api.espn.com/apis/site/v2/sports/basketball/nba/teams?limit=100"
+  },
+  {
+    "kind": "sport",
+    "name": "Philadelphia Eagles",
+    "aliases": [],
+    "asset": "nfl-21.png",
+    "origin": "https://a.espncdn.com/i/teamlogos/nfl/500/phi.png",
+    "reference": "https://site.api.espn.com/apis/site/v2/sports/football/nfl/teams?limit=100"
+  },
+  {
+    "kind": "sport",
+    "name": "Phoenix Suns",
+    "aliases": [],
+    "asset": "nba-21.png",
+    "origin": "https://a.espncdn.com/i/teamlogos/nba/500/phx.png",
+    "reference": "https://site.api.espn.com/apis/site/v2/sports/basketball/nba/teams?limit=100"
+  },
+  {
+    "kind": "sport",
+    "name": "PSV Eindhoven",
+    "aliases": [
+      "PSV"
+    ],
+    "asset": "ned-1-148.png",
+    "origin": "https://a.espncdn.com/i/teamlogos/soccer/500/148.png",
+    "reference": "https://site.api.espn.com/apis/site/v2/sports/soccer/ned.1/teams?limit=100"
+  },
+  {
+    "kind": "sport",
+    "name": "RB Leipzig",
+    "aliases": [],
+    "asset": "ger-1-11420.png",
+    "origin": "https://a.espncdn.com/i/teamlogos/soccer/500/11420.png",
+    "reference": "https://site.api.espn.com/apis/site/v2/sports/soccer/ger.1/teams?limit=100"
+  },
+  {
+    "kind": "sport",
+    "name": "Real Betis",
+    "aliases": [
+      "Betis"
+    ],
+    "asset": "esp-1-244.png",
+    "origin": "https://a.espncdn.com/i/teamlogos/soccer/500/244.png",
+    "reference": "https://site.api.espn.com/apis/site/v2/sports/soccer/esp.1/teams?limit=100"
+  },
+  {
+    "kind": "sport",
+    "name": "Real Madrid",
+    "aliases": [
+      "Real Madrid CF"
+    ],
+    "asset": "esp-1-86.png",
+    "origin": "https://a.espncdn.com/i/teamlogos/soccer/500/86.png",
+    "reference": "https://site.api.espn.com/apis/site/v2/sports/soccer/esp.1/teams?limit=100"
+  },
+  {
+    "kind": "sport",
+    "name": "Real Sociedad",
+    "aliases": [],
+    "asset": "esp-1-89.png",
+    "origin": "https://a.espncdn.com/i/teamlogos/soccer/500/89.png",
+    "reference": "https://site.api.espn.com/apis/site/v2/sports/soccer/esp.1/teams?limit=100"
+  },
+  {
+    "kind": "sport",
+    "name": "River Plate",
+    "aliases": [],
+    "asset": "arg-1-16.png",
+    "origin": "https://a.espncdn.com/i/teamlogos/soccer/500/16.png",
+    "reference": "https://site.api.espn.com/apis/site/v2/sports/soccer/arg.1/teams?limit=100"
+  },
+  {
+    "kind": "sport",
+    "name": "San Antonio Spurs",
+    "aliases": [
+      "San Antonio"
+    ],
+    "asset": "nba-24.png",
+    "origin": "https://a.espncdn.com/i/teamlogos/nba/500/sa.png",
+    "reference": "https://site.api.espn.com/apis/site/v2/sports/basketball/nba/teams?limit=100"
+  },
+  {
+    "kind": "sport",
+    "name": "San Francisco 49ers",
+    "aliases": [],
+    "asset": "nfl-25.png",
+    "origin": "https://a.espncdn.com/i/teamlogos/nfl/500/sf.png",
+    "reference": "https://site.api.espn.com/apis/site/v2/sports/football/nfl/teams?limit=100"
+  },
+  {
+    "kind": "sport",
+    "name": "Seattle Seahawks",
+    "aliases": [],
+    "asset": "nfl-26.png",
+    "origin": "https://a.espncdn.com/i/teamlogos/nfl/500/sea.png",
+    "reference": "https://site.api.espn.com/apis/site/v2/sports/football/nfl/teams?limit=100"
+  },
+  {
+    "kind": "sport",
+    "name": "Sevilla",
+    "aliases": [],
+    "asset": "esp-1-243.png",
+    "origin": "https://a.espncdn.com/i/teamlogos/soccer/500/243.png",
+    "reference": "https://site.api.espn.com/apis/site/v2/sports/soccer/esp.1/teams?limit=100"
+  },
+  {
+    "kind": "sport",
+    "name": "Sporting CP",
+    "aliases": [
+      "Sporting Lisbon",
+      "Sporting Clube de Portugal",
+      "Sporting"
+    ],
+    "asset": "por-1-2250.png",
+    "origin": "https://a.espncdn.com/i/teamlogos/soccer/500/2250.png",
+    "reference": "https://site.api.espn.com/apis/site/v2/sports/soccer/por.1/teams?limit=100"
+  },
+  {
+    "kind": "sport",
+    "name": "Thép Xanh Nam Định",
+    "aliases": [
+      "Nam Định",
+      "Nam Dinh",
+      "Nam Dinh FC"
+    ],
+    "asset": "vleague-thep-xanh-nam-dinh.png",
+    "origin": "https://vpf.vn/wp-content/uploads/2018/10/Logo-TXND-3-sao-300x300.png",
+    "reference": "https://vpf.vn/team/thep-xanh-nam-dinh/"
+  },
+  {
+    "kind": "sport",
+    "name": "Thể Công Viettel",
+    "aliases": [
+      "Viettel",
+      "Thể Công-Viettel"
+    ],
+    "asset": "vleague-the-cong-viettel.png",
+    "origin": "https://vpf.vn/wp-content/uploads/2018/10/TCVT-300x300.png",
+    "reference": "https://vpf.vn/team/the-cong-viettel/"
+  },
+  {
+    "kind": "sport",
+    "name": "Toronto Raptors",
+    "aliases": [],
+    "asset": "nba-28.png",
+    "origin": "https://a.espncdn.com/i/teamlogos/nba/500/tor.png",
+    "reference": "https://site.api.espn.com/apis/site/v2/sports/basketball/nba/teams?limit=100"
+  },
+  {
+    "kind": "sport",
+    "name": "Tottenham Hotspur",
+    "aliases": [
+      "Tottenham",
+      "Spurs"
+    ],
+    "asset": "eng-1-367.png",
+    "origin": "https://a.espncdn.com/i/teamlogos/soccer/500/367.png",
+    "reference": "https://site.api.espn.com/apis/site/v2/sports/soccer/eng.1/teams?limit=100"
+  },
+  {
+    "kind": "sport",
+    "name": "Valencia",
+    "aliases": [],
+    "asset": "esp-1-94.png",
+    "origin": "https://a.espncdn.com/i/teamlogos/soccer/500/94.png",
+    "reference": "https://site.api.espn.com/apis/site/v2/sports/soccer/esp.1/teams?limit=100"
+  },
+  {
+    "kind": "sport",
+    "name": "VfB Stuttgart",
+    "aliases": [
+      "Stuttgart"
+    ],
+    "asset": "ger-1-134.png",
+    "origin": "https://a.espncdn.com/i/teamlogos/soccer/500/134.png",
+    "reference": "https://site.api.espn.com/apis/site/v2/sports/soccer/ger.1/teams?limit=100"
+  },
+  {
+    "kind": "sport",
+    "name": "Villarreal",
+    "aliases": [],
+    "asset": "esp-1-102.png",
+    "origin": "https://a.espncdn.com/i/teamlogos/soccer/500/102.png",
+    "reference": "https://site.api.espn.com/apis/site/v2/sports/soccer/esp.1/teams?limit=100"
+  },
+  {
+    "kind": "sport",
+    "name": "West Ham United",
+    "aliases": [
+      "West Ham",
+      "West Ham"
+    ],
+    "asset": "eng-2-371.png",
+    "origin": "https://a.espncdn.com/i/teamlogos/soccer/500/371.png",
+    "reference": "https://site.api.espn.com/apis/site/v2/sports/soccer/eng.2/teams?limit=100"
+  }
+]

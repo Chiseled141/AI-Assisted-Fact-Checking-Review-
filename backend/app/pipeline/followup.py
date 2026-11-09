@@ -68,9 +68,14 @@ CHART_FIELDS = {
     "priceChart": ("price_chart", "Price chart"),
     "locationMap": ("location_map", "Places in this claim"),
     "incidentMap": ("incident_map", "Incident location"),
-    "heatMap": ("heat_map", "Weather map"),
+    "heatMap": ("heat_map", "Weather or air quality map"),
     "countryMap": ("country_map", "Statistics map"),
+    "populationPyramid": ("population_pyramid", "Population pyramid"),
     "seatChart": ("seat_chart", "Seat chart"),
+    "pieChart": ("pie_chart", "Share of the total"),
+    "barChart": ("bar_chart", "Bar chart"),
+    "routeMap": ("route_map", "Route map"),
+    "matchResult": ("match_result", "Match result"),
     "electionMap": ("election_map", "Election map"),
 }
 

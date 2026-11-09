@@ -16,15 +16,16 @@ from ..providers.errors import get_with_retry, service_failure
 # Daily market prices. The numbers on a price chart only ever come from here, never from a model.
 # ---------------------------------------------------------------------------------------------------------------------
 
-MarketAsset = Literal["bitcoin", "ethereum", "gold", "silver", "oil", "sjc_gold"]
+MarketAsset = Literal["bitcoin", "ethereum", "gold", "silver", "oil", "usd_vnd", "sjc_gold"]
 
-# Each asset's symbol on Yahoo Finance. All are priced in US dollars.
+# Each asset's symbol on Yahoo Finance. All are priced in US dollars, except the exchange rate, which is in dong.
 MARKET_SYMBOLS: dict[str, str] = {
     "bitcoin": "BTC-USD",
     "ethereum": "ETH-USD",
     "gold": "GC=F",
     "silver": "SI=F",
     "oil": "BZ=F",
+    "usd_vnd": "VND=X",
 }
 # SJC gold has its own price in dong, which Yahoo Finance does not carry.
 assert set(MARKET_SYMBOLS) | {"sjc_gold"} == set(get_args(MarketAsset))
@@ -86,6 +87,17 @@ class YahooMarketData:
 
 # Each metric's daily variable on Open-Meteo.
 CLIMATE_VARIABLES = {"temperature": "temperature_2m_max", "rainfall": "precipitation_sum"}
+AIR_METRIC = "pm25"
+AIR_SOURCE = "Open-Meteo, CAMS (Copernicus)"
+# The air quality service has only empty values before this day.
+AIR_FIRST_DAY = date(2022, 8, 4)
+# PM2.5 only comes by the hour. A day missing more than a few hours has no fair average.
+AIR_MIN_HOURS = 18
+
+
+def _day_average(hours: list[float | None]) -> float | None:
+    known = [value for value in hours if value is not None]
+    return sum(known) / len(known) if len(known) >= AIR_MIN_HOURS else None
 
 
 class ClimateError(Exception):
@@ -101,7 +113,7 @@ class ClimateData(Protocol):
 
 
 class OpenMeteoClimate:
-    """The ERA5 reanalysis from Copernicus, through Open-Meteo. Their licence, CC BY 4.0, requires the credit on screen."""
+    """ERA5 weather and CAMS air quality, through Open-Meteo. Their licence, CC BY 4.0, requires the credit on screen."""
 
     name = "Open-Meteo, ERA5 (Copernicus)"
 
@@ -111,17 +123,20 @@ class OpenMeteoClimate:
         self.retry_seconds = settings.heat_map_retry_seconds
 
     def day_values(self, metric: str, day: date, lats: list[float], lons: list[float]) -> list[float | None]:
-        variable = CLIMATE_VARIABLES[metric]
+        air = metric == AIR_METRIC
+        host = "air-quality-api" if air else "archive-api"
+        url = f"https://{host}.open-meteo.com/v1/{'air-quality' if air else 'archive'}"
+        series, variable = ("hourly", "pm2_5") if air else ("daily", CLIMATE_VARIABLES[metric])
         try:
             for _ in range(self.attempts):
                 response = httpx.get(
-                    "https://archive-api.open-meteo.com/v1/archive",
+                    url,
                     params={
                         "latitude": ",".join(map(str, lats)),
                         "longitude": ",".join(map(str, lons)),
                         "start_date": day.isoformat(),
                         "end_date": day.isoformat(),
-                        "daily": variable,
+                        series: variable,
                         "timezone": "UTC",
                     },
                     headers={"User-Agent": "ClaimTrace/0.1 (non-commercial course project)"},
@@ -134,7 +149,7 @@ class OpenMeteoClimate:
             body = response.json()
             # A single point comes back as one object rather than a list.
             places = body if isinstance(body, list) else [body]
-            values = [place["daily"][variable][0] for place in places]
+            values = [_day_average(place[series][variable]) if air else place[series][variable][0] for place in places]
             if any(value is not None and (isinstance(value, bool) or not isinstance(value, (int, float)) or not isfinite(value))
                    for value in values):
                 raise ValueError("Invalid climate value")
@@ -156,6 +171,11 @@ WORLD_BANK_INDICATORS = {
     "gdp_per_capita": "NY.GDP.PCAP.CD",
     "life_expectancy": "SP.DYN.LE00.IN",
 }
+# The World Bank's five-year age bands, youngest first. Each has one count for men and one for women.
+AGE_BANDS = (
+    "0004", "0509", "1014", "1519", "2024", "2529", "3034", "3539", "4044",
+    "4549", "5054", "5559", "6064", "6569", "7074", "7579", "80UP",
+)
 
 
 class CountryDataError(Exception):
@@ -167,6 +187,10 @@ class CountryData(Protocol):
 
     def by_country(self, indicator: str, start: int, end: int) -> dict[str, dict[int, float]]:
         """Returns {three-letter code: {year: value}}. Years with no value are left out."""
+        ...
+
+    def population_by_age(self, iso3: str, start: int, end: int) -> dict[int, tuple[list[float], list[float]]]:
+        """Returns {year: (men, women)}, each with one count for every age band. A year missing any band is left out."""
         ...
 
 
@@ -201,6 +225,37 @@ class WorldBankData:
         except (httpx.HTTPError, ValueError, KeyError, IndexError, TypeError) as error:
             raise CountryDataError(service_failure(error)) from error
         return found
+
+    def population_by_age(self, iso3: str, start: int, end: int) -> dict[int, tuple[list[float], list[float]]]:
+        men = [f"SP.POP.{band}.MA" for band in AGE_BANDS]
+        women = [f"SP.POP.{band}.FE" for band in AGE_BANDS]
+        try:
+            response = get_with_retry(
+                f"https://api.worldbank.org/v2/country/{iso3}/indicator/{';'.join(men + women)}",
+                self.attempts,
+                self.retry_seconds,
+                # These counts are in the Health Nutrition and Population database, not the default one.
+                params={"source": 16, "format": "json", "date": f"{start}:{end}", "per_page": 2000},
+                headers={"User-Agent": "ClaimTrace/0.1 (non-commercial course project)"},
+                timeout=self.timeout,
+            )
+            response.raise_for_status()
+            found: dict[int, dict[str, float]] = {}
+            # A country with no figures comes back as null, which is no data rather than a failure.
+            for row in response.json()[1] or []:
+                value = row["value"]
+                if value is None:
+                    continue
+                if isinstance(value, bool) or not isinstance(value, (int, float)) or not isfinite(value) or value < 0:
+                    raise ValueError("Invalid population figure")
+                found.setdefault(int(row["date"]), {})[row["indicator"]["id"]] = value
+        except (httpx.HTTPError, ValueError, KeyError, IndexError, TypeError) as error:
+            raise CountryDataError(service_failure(error)) from error
+        return {
+            year: ([values[code] for code in men], [values[code] for code in women])
+            for year, values in found.items()
+            if all(code in values for code in men + women)
+        }
 
 
 # ---------------------------------------------------------------------------------------------------------------------

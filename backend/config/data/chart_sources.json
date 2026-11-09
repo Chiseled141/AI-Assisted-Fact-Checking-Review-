@@ -1,5 +1,17 @@
 {
-  "_about": "Domains and pages election and SJC charts may search. Every domain must be green in source_ratings.json.",
+  "_about": "Sources for elections, SJC prices and official sports results. Every domain must be green in source_ratings.json.",
+  "sport_organizers": {
+    "uefa.com": ["UEFA", "Champions League", "Europa League", "UEFA Euro", "Cúp C1"],
+    "fifa.com": ["FIFA", "FIFA World Cup", "FIFA Club World Cup"],
+    "premierleague.com": ["Premier League", "Ngoại hạng Anh"],
+    "nba.com": ["NBA"],
+    "nfl.com": ["NFL", "Super Bowl"],
+    "mlb.com": ["MLB"],
+    "nhl.com": ["NHL"],
+    "formula1.com": ["Formula 1", "F1"],
+    "lolesports.com": ["League of Legends", "LCK", "LPL", "LCS", "LEC"],
+    "valorantesports.com": ["Valorant", "VCT"]
+  },
   "elections": [
     "fec.gov",
     "eac.gov",

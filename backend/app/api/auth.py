@@ -7,13 +7,16 @@ SHA-256, so the token can't be read back. SameSite=Lax keeps other sites from se
 import re
 import secrets
 import time
+from base64 import b64decode, b64encode
 from collections import defaultdict, deque
 from datetime import UTC, datetime, timedelta
+from io import BytesIO
 from threading import Lock
 
 from argon2 import PasswordHasher
 from argon2.exceptions import InvalidHashError, VerificationError
 from fastapi import APIRouter, Depends, HTTPException, Request, Response
+from PIL import Image, ImageOps
 from sqlalchemy import delete, select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
@@ -77,7 +80,43 @@ def _start_session(response: Response, user: models.User, session: Session, sett
 
 
 def _account(user: models.User) -> schemas.AccountOut:
-    return schemas.AccountOut(id=user.id, username=user.username)
+    return schemas.AccountOut(
+        id=user.id, username=user.username, avatar=user.avatar, preferred_source_language=user.preferred_source_language,
+        preferred_search_model_id=user.preferred_search_model_id,
+    )
+
+
+def _username(value: str, settings: Settings) -> str:
+    username = value.strip().lower()
+    shortest, longest = settings.username_min_length, settings.username_max_length
+    if not shortest <= len(username) <= longest or not USERNAME.fullmatch(username):
+        raise HTTPException(422, f"Use {shortest} to {longest} letters, numbers, dots, dashes or underscores.")
+    return username
+
+
+def _validate_password(password: str, confirmation: str, settings: Settings) -> None:
+    shortest, longest = settings.password_min_length, settings.password_max_length
+    if not shortest <= len(password) <= longest:
+        raise HTTPException(422, f"Use a password of {shortest} to {longest} characters.")
+    if password != confirmation:
+        raise HTTPException(422, "The passwords do not match.")
+
+
+def _avatar(encoded: str) -> str:
+    """Decode and re-encode a small raster thumbnail, without the uploaded file's metadata."""
+    try:
+        raw = b64decode(encoded, validate=True)
+        if len(raw) > schemas.MAX_AVATAR_BYTES:
+            raise ValueError
+        with Image.open(BytesIO(raw), formats=["JPEG", "PNG", "WEBP"]) as source:
+            if source.width * source.height > 20_000_000:
+                raise ValueError
+            thumbnail = ImageOps.fit(ImageOps.exif_transpose(source).convert("RGBA"), (192, 192), Image.Resampling.LANCZOS)
+            output = BytesIO()
+            thumbnail.save(output, "WEBP", quality=85)
+    except (ValueError, OSError, Image.DecompressionBombError):
+        raise HTTPException(422, "Choose a JPEG, PNG, or WebP image up to 4 MB and 20 megapixels.") from None
+    return "data:image/webp;base64," + b64encode(output.getvalue()).decode("ascii")
 
 
 @router.post("/register", status_code=201, response_model=schemas.AccountOut)
@@ -90,15 +129,8 @@ def register(
 ):
     address = _address(request)
     _check_attempts(address, settings)
-    username = body.username.strip().lower()
-    shortest, longest = settings.username_min_length, settings.username_max_length
-    if not shortest <= len(username) <= longest or not USERNAME.fullmatch(username):
-        raise HTTPException(422, f"Use {shortest} to {longest} letters, numbers, dots, dashes or underscores.")
-    shortest, longest = settings.password_min_length, settings.password_max_length
-    if not shortest <= len(body.password) <= longest:
-        raise HTTPException(422, f"Use a password of {shortest} to {longest} characters.")
-    if body.password != body.password_confirmation:
-        raise HTTPException(422, "The passwords do not match.")
+    username = _username(body.username, settings)
+    _validate_password(body.password, body.password_confirmation, settings)
     user = models.User(username=username, password_hash=hasher.hash(body.password))
     session.add(user)
     try:
@@ -121,7 +153,7 @@ def login(
 ):
     address = _address(request)
     _check_attempts(address, settings)
-    user = session.scalar(select(models.User).where(models.User.username == body.username.strip().lower()))
+    user = session.scalar(select(models.User).where(models.User.username == body.username.strip().lower()).with_for_update())
     try:
         hasher.verify(user.password_hash if user else _DUMMY_HASH, body.password)
         if user is None:
@@ -150,4 +182,56 @@ def logout(request: Request, session: Session = Depends(get_session), settings: 
 
 @router.get("/me", response_model=schemas.AccountOut)
 def me(user: models.User = Depends(current_user)):
+    return _account(user)
+
+
+@router.patch("/me", response_model=schemas.AccountOut)
+def update_profile(
+    body: schemas.ProfileIn,
+    user: models.User = Depends(current_user),
+    session: Session = Depends(get_session),
+    settings: Settings = Depends(get_settings),
+):
+    search_model_id = body.preferred_search_model_id
+    if search_model_id is not None and search_model_id not in settings.judges:
+        raise HTTPException(422, "Choose a search model from the list.")
+    if body.username is not None:
+        user.username = _username(body.username, settings)
+    if "avatar" in body.model_fields_set:
+        user.avatar = _avatar(body.avatar) if body.avatar is not None else None
+    if body.preferred_source_language is not None:
+        user.preferred_source_language = body.preferred_source_language
+    if "preferred_search_model_id" in body.model_fields_set:
+        user.preferred_search_model_id = search_model_id
+    try:
+        session.commit()
+    except IntegrityError:
+        session.rollback()
+        raise HTTPException(409, "That username is taken.") from None
+    return _account(user)
+
+
+@router.post("/me/password", response_model=schemas.AccountOut)
+def change_password(
+    body: schemas.ChangePasswordIn,
+    request: Request,
+    response: Response,
+    user: models.User = Depends(current_user),
+    session: Session = Depends(get_session),
+    settings: Settings = Depends(get_settings),
+):
+    address = _address(request)
+    _check_attempts(address, settings)
+    _validate_password(body.new_password, body.password_confirmation, settings)
+    user = session.get(models.User, user.id, with_for_update=True, populate_existing=True)
+    if user is None:
+        raise HTTPException(401, "Log in to continue.")
+    try:
+        hasher.verify(user.password_hash, body.current_password)
+    except (VerificationError, InvalidHashError):
+        _count_failure(address)
+        raise HTTPException(422, "The current password is incorrect.") from None
+    user.password_hash = hasher.hash(body.new_password)
+    session.execute(delete(models.UserSession).where(models.UserSession.user_id == user.id))
+    _start_session(response, user, session, settings)
     return _account(user)

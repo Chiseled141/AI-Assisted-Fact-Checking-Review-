@@ -1,7 +1,7 @@
 <!-- Judge models: give one claim its verdict from the sources. -->
 # Task: judge one claim
 
-Judge the claim using only the numbered passages.
+Judge the claim using only the numbered passages and any supplied data. Review every source for its relevance to the claim's subject, scope and period.
 
 ## Verdict
 
@@ -17,6 +17,12 @@ Choose one `verdict`:
 - When reliable, dated passages address the claim's subject, scope and period, give `supported` or `contradicted`. Reliable means an official body, or an established outlet reporting directly rather than repeating what someone said. Do not fall back to `insufficient_evidence` because no passage repeats the claim word for word, or because another source might exist.
 - A claim about a period still in progress, such as "this month" or "this year", is about the part that has passed up to the latest passage date. Judge that part, and say in the review that the period is not over. If the passages show the opposite during that part, such as a price rising when the claim says it fell sharply, use `contradicted`. If they show it clearly happening, use `supported`.
 - Use `insufficient_evidence` only when the passages miss a material part of the claim, conflict with no clearly better source, or cover a different period, place or subject.
+- A historical snapshot can settle a claim about that period. For an undated claim about a changing total, use the latest applicable official figures; mark earlier snapshots as context when they cannot establish the current total.
+
+## Completed match results
+
+- A `<match_result>` block summarizes the final score verified against its numbered passage. If the teams, competition and date match the claim, use that score for a claim about the outcome. Cite the verbatim score from the numbered passage. Compare a stated score in the same team order, and keep the final match score separate from a penalty shootout or series aggregate.
+- A result from a different match or a preview is context only. For a claim that specifies a date or stage, use evidence that establishes that match.
 
 ## How to weigh the evidence
 
@@ -27,13 +33,14 @@ Choose one `verdict`:
 - For claims about named people, verify the same identity and the specific assertion. Namesakes and general topic pages are not evidence about the person. For sensitive personal traits such as sexual orientation or religion, require explicit public self-disclosure or reliable direct reporting of that disclosure; never infer them from appearance, behaviour, relationships, stereotypes or population studies. A lack of public disclosure does not establish the opposite trait. If identity or appropriate evidence is missing, use `insufficient_evidence` and explain the gap without speculating.
 - A passage written before an event can show a plan, but can't prove the event happened. Compare its date with the claim's period.
 - A passage that only repeats what someone said shows that they said it, not that it is true.
-- When the claim and a passage use different units, such as °C and °F, convert to compare them, and give both figures in your review. This and comparing the prices in a `<data>` block are the only working out you may do.
+- Compare explicitly reported counts, scores or prices directly when their units, scope and dates match. When units differ, convert to compare them and give both figures in your review. Do not infer missing figures.
 - When passages disagree, say so in your review, and prefer the primary or better-dated one if the text makes that clear.
 
 ## Price data
 
-- A claim about a price may come with a `<data>` block of dated prices, from market data or from SJC prices verified in the news. Treat it as reliable, dated evidence of how that price moved, and cite it with its `evidence_id`, such as D1, like a passage. Quote one or two of its lines exactly.
+- A claim about a price may come with a `<data>` block of dated prices, from market data or from SJC prices verified in the news. Treat it as reliable, dated evidence of how that price moved, and cite it with its `evidence_id`, such as D1, like a passage. Quote one relevant line exactly.
 - Compare the prices on the days that match the claim's period, and give the figures and dates in your review. Say whether a move is sharp from the size of the change, such as a few percent in days for gold, and state the percentage.
+- A closing price settles a claim about that close. A close below an intraday threshold or a missing trading day does not disprove an intraday move. Do not infer today's price from an older observation, and keep buy, sell, market, intraday and closing quotes separate.
 - The data measures one price, named in its first line. World gold in USD and SJC gold in VND can move differently. If the claim names a different price than the data, say so, and use the data only as context unless the passages bridge the gap. A claim about "giá vàng" with no other detail can be judged on either one.
 
 ## What to give
@@ -42,10 +49,10 @@ Choose one `verdict`:
 - `review`: your reasoning in 2 to 4 sentences, for a general reader. Don't mention evidence ids here; name the source.
 - `review_en`: the same review in English, saying exactly the same thing. Keep names, figures and dates as they are.
 - `review_vi`: the same review in Vietnamese, saying exactly the same thing. Keep names, figures and dates as they are.
-- `citations`: every passage you relied on. A `supported`, `contradicted` or `outdated` verdict must cite at least one passage or `<data>` block. Each citation has:
+- `citations`: exactly one entry for every numbered web source, even when it is irrelevant, outdated or inconclusive. Mark sources that do not establish either side as `contextual` and quote the part that shows their topic or period. Include the `<data>` block if you relied on it. A decisive verdict must have a citation that supports that verdict for the claim's period. Each citation has:
   - `evidence_id`: exactly as given, such as E1.
   - `relation`: `supporting`, `contradicting` or `contextual`.
-  - `quote`: a short exact copy from that passage, at most 25 words. Never change the words or translate them. Prefer a sentence a reader can follow over a table row or a fragment.
+  - `quote`: a short exact, contiguous copy from the supplied text for that id, at most 25 words. Never change the words, use ellipses or translate them. An exact table row is useful when it gives the figure.
   - `quote_en`: an English translation of the quote, or null if the quote is already in English. Keep every figure.
   - `quote_vi`: a Vietnamese translation of the quote, or null if the quote is already in Vietnamese. Keep every figure.
   - `freshness`: `current`, `outdated` or `unknown`, whether the passage applies to the claim's time period. Never decide this from age alone.

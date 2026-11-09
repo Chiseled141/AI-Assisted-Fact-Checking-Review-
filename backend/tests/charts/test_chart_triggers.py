@@ -52,6 +52,19 @@ def test_a_clear_election_claim_gets_its_charts_and_the_models_choice_stands():
     assert _claim("Gold rose above $2,000.", price_asset="silver").price_asset == "silver"
 
 
+def test_a_clear_exchange_rate_gets_a_price_chart_and_a_dollar_price_does_not():
+    assert _claim("Tỷ giá USD/VND vượt 26.000 đồng ngày 2/4/2025.").price_asset == "usd_vnd"
+    assert _claim("Bitcoin rose above 100,000 USD.").price_asset == "bitcoin"
+    assert _claim("Apple shares rose to 200 USD.").price_asset is None
+
+
+def test_an_age_claim_gets_a_pyramid_in_place_of_a_country_map():
+    claim = _claim("Người từ 65 tuổi trở lên chiếm 9% dân số Việt Nam năm 2023.")
+    assert (claim.population_pyramid.country, claim.population_pyramid.year) == ("VN", 2023)
+    assert claim.country_stat is None
+    assert _claim("Japan's population is ageing faster than Vietnam's.").population_pyramid is None
+
+
 def test_a_clear_statistic_gets_a_country_map():
     claim = _claim("Vietnam has 100 million people in 2023.")
     assert claim.country_stat.indicator == "population"

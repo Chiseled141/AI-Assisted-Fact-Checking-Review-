@@ -9,6 +9,7 @@ from app.search.tavily import (
     SJC_DOMAINS,
     SJC_PAGES,
     SOURCE_RATINGS,
+    TAVILY_DOMAIN_LIMIT,
     election_sources,
     is_allowed_source,
     within_domains,
@@ -24,7 +25,8 @@ def test_only_green_domains_can_be_sources():
     assert not is_allowed_source("https://reuters.com.evil.example/a")
     assert "reuters.com" in SEARCH_DOMAINS
     assert "wikipedia.org" not in SEARCH_DOMAINS
-    assert len(SEARCH_DOMAINS) <= 300
+    assert not is_allowed_source("https://discussions.apple.com/thread/123")
+    assert not is_allowed_source("https://community.openai.com/t/example")
 
 
 def test_official_domains_cover_every_visual_and_requested_data_category():
@@ -56,6 +58,33 @@ def test_tavily_strictly_limits_search_and_backfill_to_green_publishers(monkeypa
     assert 'wikipedia.org' not in payloads[0]['include_domains']
     assert 'reuters.com' not in payloads[0]['include_domains']
     assert payloads[0]['exclude_domains'] == ['reuters.com']
+
+
+def test_broad_search_splits_the_allowlist_and_ranks_results_across_requests(monkeypatch):
+    from app.search.tavily import TavilySearch
+
+    payloads = []
+
+    def post(url, **kwargs):
+        payloads.append(kwargs["json"])
+        batch = [
+            [{"url": "https://www.ign.com/articles/test", "score": 0.3}],
+            [
+                {"url": "https://www.wtatennis.com/news/test", "score": 0.9},
+                {"url": "https://www.wtatennis.com/news/another", "score": 0.6},
+            ],
+        ][len(payloads) - 1]
+        return httpx.Response(200, json={"results": batch}, request=httpx.Request("POST", url))
+
+    monkeypatch.setattr(httpx, "post", post)
+    hits = TavilySearch(Settings()).search_hits("specific results", newest_first=False, max_results=2)
+    assert [hit.url for hit in hits] == [
+        "https://www.wtatennis.com/news/test", "https://www.wtatennis.com/news/another",
+    ]
+    assert len(payloads) == 2
+    assert all(0 < len(payload["include_domains"]) <= TAVILY_DOMAIN_LIMIT for payload in payloads)
+    assert [domain for payload in payloads for domain in payload["include_domains"]] == SEARCH_DOMAINS
+    assert all(payload["max_results"] == 2 and payload["include_domains_mode"] == "restrict" for payload in payloads)
 
 
 def test_red_sources_are_never_searched_or_allowed():
@@ -98,7 +127,7 @@ def test_tavily_keeps_source_images_separate_from_query_images(monkeypatch):
     assert payload['include_raw_content'] == 'text'
     assert payload['auto_parameters'] is False
     assert payload['search_depth'] == 'basic'
-    assert payload['include_domains'] == SEARCH_DOMAINS
+    assert payload['include_domains'] == SEARCH_DOMAINS[:TAVILY_DOMAIN_LIMIT]
     assert requests[0]['headers']['Authorization'] == 'Bearer test'
 
 
@@ -142,7 +171,7 @@ def test_tavily_uses_extra_candidates_to_replace_duplicate_links_and_same_site_c
         payloads.append(kwargs['json'])
         return httpx.Response(200, json=body, request=httpx.Request('POST', url))
     monkeypatch.setattr(httpx, 'post', post)
-    hits = TavilySearch(Settings()).search_hits('neutral evidence query')
+    hits = TavilySearch(Settings()).search_hits('neutral evidence query', domains=['bbc.com', 'reuters.com'])
     assert len(payloads) == 1
     assert payloads[0]['max_results'] == 20
     assert len(hits) == 2
@@ -166,7 +195,8 @@ def test_a_start_date_is_only_sent_when_a_claim_has_one(monkeypatch):
     search.search_hits("query", start_date="2026-01-01")
     search.search_more("query", ["bbc.com"], start_date="2026-01-01")
     assert "start_date" not in payloads[0]
-    assert payloads[1]["start_date"] == payloads[2]["start_date"] == "2026-01-01"
+    assert "start_date" not in payloads[1]
+    assert all(payload["start_date"] == "2026-01-01" for payload in payloads[2:])
 
 
 def test_results_go_newest_first_with_undated_ones_last_except_for_a_period_search(monkeypatch):
@@ -212,7 +242,7 @@ def test_every_chart_domain_is_green_and_an_election_search_asks_for_only_those(
     search.search_hits("query")
     assert set(payloads[0]["include_domains"]) == set(CHART_DOMAINS["elections"])
     assert (payloads[0]["start_date"], payloads[0]["end_date"]) == ("2024-01-01", "2025-06-30")
-    assert payloads[1]["include_domains"] == SEARCH_DOMAINS
+    assert [domain for payload in payloads[1:] for domain in payload["include_domains"]] == SEARCH_DOMAINS
 
 
 @pytest.mark.parametrize(("claim", "body", "country", "domain"), [
@@ -274,8 +304,8 @@ def test_quick_chat_can_request_two_text_results_without_changing_check_defaults
     provider = TavilySearch(settings)
     provider.search_hits('quick question', max_results=2, include_images=False)
     provider.search_hits('normal check')
-    assert payloads[0]['max_results'] == 2 and payloads[0]['include_images'] is False
-    assert payloads[1]['max_results'] == min(20, max(
-        settings.tavily_candidates_per_search, settings.target_publishers_per_claim,
-    ))
-    assert payloads[1]['include_images'] is True
+    quick = [payload for payload in payloads if payload['query'] == 'quick question']
+    normal = [payload for payload in payloads if payload['query'] == 'normal check']
+    assert quick and all(payload['max_results'] == 2 and payload['include_images'] is False for payload in quick)
+    normal_limit = min(20, max(settings.tavily_candidates_per_search, settings.target_publishers_per_claim))
+    assert normal and all(payload['max_results'] == normal_limit and payload['include_images'] is True for payload in normal)

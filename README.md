@@ -147,12 +147,15 @@ Imports flow `api → pipeline → charts / search / providers → db`, never ba
 
 | Visual | Builder in `backend/app/charts/` | Numbers from | Frontend in `frontend/src/features/results/` | Settings prefix |
 |---|---|---|---|---|
-| Price chart | `price_chart.py` | Yahoo Finance; SJC gold read from news | `PriceChart.tsx`, `PricePlot.tsx` | `price_chart_`, `sjc_chart_` |
+| Price chart, USD/VND rate | `price_chart.py` | Yahoo Finance; SJC gold read from news | `PriceChart.tsx`, `PricePlot.tsx` | `price_chart_`, `sjc_chart_` |
 | Location map | `location_map.py` | Shapes in `frontend/public/maps/`, figures from the claim's sources | `LocationMap.tsx`, `LocationPlot.tsx` | `location_map_` |
-| Heatmap | `heat_map.py` | Open-Meteo | `HeatMap.tsx`, `HeatPlot.tsx` | `heat_map_` |
+| Heatmap (temperature, rainfall, PM2.5) | `heat_map.py` | Open-Meteo (ERA5; CAMS for PM2.5) | `HeatMap.tsx`, `HeatPlot.tsx` | `heat_map_` |
 | Country / US state map | `country_map.py` | World Bank, Data USA | `CountryMap.tsx`, `CountryPlot.tsx` | `country_map_`, `state_map_` |
+| Population pyramid | `country_map.py` | World Bank | `PopulationPyramid.tsx`, `PyramidPlot.tsx` | `population_pyramid_` |
 | US election map | `election_map.py` | Pages found by the research model | `ElectionMap.tsx`, `ElectionPlot.tsx` | `election_map_` |
 | Parliament chart | `seat_chart.py` | Pages found by the research model | `SeatChart.tsx`, `SeatPlot.tsx`; party identities in `frontend/src/data/partyRegistry.ts` and `frontend/public/party-logos/manifest.json` | `seat_chart_` |
+| Pie chart | `pie_chart.py` | One source with a complete breakdown | `PieChart.tsx`, `PiePlot.tsx` | |
+| Sports and esports match card | `match_result.py` | A completed result and any match details from one of the claim's sources | `MatchResult.tsx` | |
 
 `backend/app/charts/chart_triggers.py` decides which visuals a claim gets. Chart prompts are in `backend/config/prompts/charts/`.
 
@@ -166,8 +169,11 @@ Imports flow `api → pipeline → charts / search / providers → db`, never ba
 - When the research model keeps none of its results, one more search looks at `reference_domains`, in case the claim is general knowledge that news doesn't cover. A claim about one named person or one election stays strict and gets no such search.
 - Page text is data, never instructions. An article can't be its own evidence.
 - Only green-rated domains are searched or used as evidence, and fetching only reaches public addresses.
+- The source catalog includes official company newsrooms, league and tournament results, and specialist game, sport and film sources. Research prefers the organization for its own announcements or results and looks for independent evidence for comparisons and outcomes. Broad Tavily searches split the allowlist into groups of at most 300 domains and merge the results by relevance before applying the usual result limit.
+- For claims in Vietnamese or about Vietnam, research starts with eligible Vietnamese outlets and can search more broadly when other sources would add evidence. The profile preference applies to other claims.
 - Each call uses exactly the configured model, with no fallback to another one.
 - Verdicts are append-only: a human correction adds a new version.
+- Readers can delete a check from History, or all of them at once. Everything saved under a check goes with it, permanently. A running check can't be deleted, and "delete all" leaves those in place.
 - "Checked before" matches earlier claims by text alone, with no model call, and every number must match. Sending still runs a fresh check.
 - The reader can stop a running check from the chat bar. It shows as stopped at once; the pipeline ends at its next step, a call already in flight still finishes, and nothing later is made.
 - There is no demo mode or fake data. Without keys, the backend refuses new checks and still serves saved ones.
@@ -183,13 +189,21 @@ Imports flow `api → pipeline → charts / search / providers → db`, never ba
 ### Charts and maps
 
 - Chart numbers come from data services or are checked word for word against a source quote, never taken from a model as is.
+- Pie charts use one cited source and appear only when the reported categories add up to the stated total or 100%.
 - Judges never see charts. A chart that fails or is incomplete costs only the chart.
+- The match card shows a completed result from the claim's evidence. Shootout scores, match events and esports map scores appear when the same source supports them.
+- Match cards resolve club and esports crests and national-team flags from a local identity catalog. The image sources are recorded in `frontend/public/team-logos/manifest.json`.
+- Country comparisons open on a rotatable globe, with a flat map available through the view toggle. The radial chart compares selected countries with figures for the same year. For GDP and population, slice angles represent shares within that group. For GDP per person and life expectancy, slices have equal angles and their lengths represent the values.
+- Selecting places on the map updates the history chart. One place has a filled area, and multiple places have separate lines. Hovering over a year shows the available figures.
+- A claim about how one country divides by age or sex gets a population pyramid in place of the country map. A rule that only applies to some ages, or a comparison of countries, gets none.
+- PM2.5 heatmaps average each day's hourly values and only cover 4 August 2022 onward, the start of the air quality data.
+- The USD/VND chart is the market rate, so a claim about a bank's, the State Bank's or a free-market rate gets none. Yahoo's history has wrong days, such as 189 dong to the dollar, so a day far from the week around it is dropped.
 - Keep the map and data credits (Highcharts, Open-Meteo, World Bank). Vietnam maps always show Hoàng Sa and Trường Sa.
 
 ### Follow-up chat
 
 - Follow-up questions use the saved check, the selected reply context and earlier exchanges. Answers stay conversational and brief, come from the model the reader selected, and each one is a paid model call, capped per check.
-- When the context is enough, the model answers directly. Otherwise it makes at most one search, with no source quota. No separate research model is used for follow-ups, and search errors do not switch models.
+- When the context is enough, the model answers directly. Otherwise it issues at most one search query, with no source quota. No separate research model is used for follow-ups, and search errors do not switch models.
 - Search uses provider-native web search on endpoints advertising that capability, otherwise a Tavily tool called by the same model. Native requests are pinned to capable endpoints so OpenRouter cannot silently substitute Exa.
 - Tavily returns at most two results and rereads at most one page, reusing returned page text instead of fetching every page again.
 - New search citations are saved on the chat message, separately from the original evidence, and never change a verdict.

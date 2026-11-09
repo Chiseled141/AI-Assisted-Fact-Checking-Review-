@@ -1,0 +1,5 @@
+## Stock heatmap: `stock_heatmap_markets`
+
+- For each claim about the latest trading session's stock market or broad equity index performance, list only the supported markets directly involved. Use `us` for the U.S. (including S&P 500), `cn` for mainland China (including Shanghai and Shenzhen), `jp` for Japan (including Nikkei 225), `hk` for Hong Kong (including Hang Seng), `in` for India (including Sensex and Nifty), and `vn` for Vietnam (including VN-Index and VN30). Keep mainland China and Hong Kong separate.
+- Use an empty list for a historical session, a long-term trend, a forecast, a single company's stock or earnings, or a claim about crypto, commodities, exchange rates or general economic news. Also use an empty list if the market or the latest-session time frame is unclear. The heatmap shows current daily moves, not historical prices.
+- “VN-Index hôm nay có giảm không?” uses `["vn"]`. “U.S. stocks gained while Indian stocks fell in their latest sessions” uses `["us", "in"]`. “The Nikkei fell during the 2008 crisis” uses `[]`.

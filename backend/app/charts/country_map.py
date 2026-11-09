@@ -33,11 +33,31 @@ STAT_WORDS = {
     ),
     "life_expectancy": re.compile(r"(?<!\w)(life expectancy|tuổi thọ)(?!\w)", re.IGNORECASE),
 }
+AGE_STRUCTURE_WORDS = re.compile(
+    r"(?<!\w)(population pyramid|age structure|ag(?:e)?ing population|population (?:is )?ag(?:e)?ing|median age|sex ratio"
+    r"|gender imbalance|working[- ]age|tháp dân số|cơ cấu (?:dân số|tuổi)|già hóa|già hoá|dân số già|dân số vàng"
+    r"|tuổi trung vị|t[ỷỉ] số giới tính|mất cân bằng giới tính)(?!\w)",
+    re.IGNORECASE,
+)
+# A group of people by age only describes the population when the claim also gives its size.
+AGE_GROUP_WORDS = re.compile(
+    r"(?<!\w)(elderly|older people|aged \d+|(?:over|under) (?:the age of )?\d+|people \d+ and over"
+    r"|người cao tuổi|người già|(?:trên|dưới|từ) \d+ tuổi)(?!\w)",
+    re.IGNORECASE,
+)
+AGE_SIZE_WORDS = re.compile(
+    r"%|(?<!\w)(percent|per cent|share|proportion|million|billion|phần trăm|t[ỷỉ] lệ|chiếm|triệu|tỷ người)(?!\w)", re.IGNORECASE
+)
 
 
 def is_stat_claim(text: str, indicator: str) -> bool:
     """The model's choice must hold up in the claim's own words, so a stray guess draws nothing."""
     return indicator in STAT_WORDS and bool(STAT_WORDS[indicator].search(text))
+
+
+def is_age_claim(text: str) -> bool:
+    """Whether the claim is about how a population divides by age or sex."""
+    return bool(AGE_STRUCTURE_WORDS.search(text) or (AGE_GROUP_WORDS.search(text) and AGE_SIZE_WORDS.search(text)))
 
 
 def _named_countries(item: ExtractedClaim) -> list[dict]:
@@ -99,6 +119,45 @@ def _build_state_map(item: ExtractedClaim, data: StateData | None, settings: Set
         "years": years,
         "values": values,
         "selected": selected,
+    }
+
+
+def build_population_pyramid(
+    item: ExtractedClaim, data: CountryData | None, settings: Settings, tasks: TaskLog = NO_TASKS
+) -> dict | None:
+    """One country's people by age and sex. A failure only costs the chart, so the check itself carries on."""
+    request = item.population_pyramid
+    if data is None or request is None:
+        return None
+    code = request.country.lower()
+    named = request.name.strip() and request.name.lower() in item.text.lower()
+    if not is_age_claim(item.text) or not named or code not in PLACES["iso3"]:
+        tasks.chart_skipped("pyramid")
+        return None
+    now = utcnow()
+    end = request.year if request.year and 1960 <= request.year <= now.year else now.year
+    task = tasks.chart_data("pyramid", data.name)
+    try:
+        # The latest years can still be missing, so a few before them are asked for too.
+        found = data.population_by_age(PLACES["iso3"][code], end - settings.population_pyramid_years_back, end)
+    except CountryDataError as error:
+        logger.warning("%s: %s", data.name, error)
+        task.fail(str(error))
+        return None
+    if not found:
+        task.finish(summary=NOT_ENOUGH_DATA)
+        return None
+    task.finish()
+    year = max(found)
+    men, women = found[year]
+    return {
+        "country": code,
+        "named": request.name,
+        "year": year,
+        "source": data.name,
+        "retrievedAt": now.isoformat(),
+        "men": [round(value) for value in men],
+        "women": [round(value) for value in women],
     }
 
 

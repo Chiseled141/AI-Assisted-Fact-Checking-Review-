@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import { act, screen, waitFor } from '@testing-library/react';
+import { act, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { renderApp } from '../../test/renderApp';
 import { checkedAt, makeCheck, makeClaim, makeEvidence, makeRevision } from '../../test/fixtures';
@@ -180,7 +180,8 @@ describe('The box under a check', () => {
     const view = renderApp('/checks/chk_test');
     await user.click(await screen.findByRole('button', { name: 'Ask about Opening report' }));
     await user.keyboard(`${message.question}{Enter}`);
-    const link = await screen.findByRole('link', { name: source.sourceTitle });
+    const question = await screen.findByText(message.question);
+    const link = within(question.parentElement!.parentElement!).getByRole('link', { name: source.sourceTitle });
     expect(link).toHaveAttribute('href', source.url);
     expect(link.parentElement).toHaveTextContent(message.question);
     expect(screen.queryByText('Replying to Opening report')).not.toBeInTheDocument();
@@ -189,8 +190,10 @@ describe('The box under a check', () => {
     await screen.findByText(message.answer);
     view.unmount();
     renderApp('/checks/chk_test');
-    expect(await screen.findByRole('link', { name: source.sourceTitle })).toHaveAttribute('href', source.url);
-    expect(screen.getByText(message.question)).toBeVisible();
+    const savedQuestion = await screen.findByText(message.question);
+    expect(within(savedQuestion.parentElement!.parentElement!).getByRole('link', { name: source.sourceTitle }))
+      .toHaveAttribute('href', source.url);
+    expect(savedQuestion).toBeVisible();
   });
 
   it('removes result context when the reader cancels the reply', async () => {

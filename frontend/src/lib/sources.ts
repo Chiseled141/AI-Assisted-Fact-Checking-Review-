@@ -6,7 +6,8 @@ const byDomain = new Map(sourceRegistry.map((entry) => [entry.domain, entry]));
 export function isVietnameseSource(url: string): boolean {
   try {
     const hostname = new URL(url).hostname.toLowerCase().replace(/^www\./, '');
-    return (hostname.endsWith('.vn') && !hostname.startsWith('en.')) || hostname === 'vnexpress.net';
+    return hostname === 'vnexpress.net' ||
+      (hostname.endsWith('.vn') && !/^(en|english)\./.test(hostname) && hostname !== 'vietnamnews.vn');
   } catch {
     return false;
   }

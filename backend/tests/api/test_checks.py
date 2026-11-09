@@ -53,6 +53,34 @@ def test_an_input_category_cannot_hide_real_extracted_claims(client, fakes):
     assert check["inputCategory"] is None
 
 
+def test_related_check_suggestions_are_generated_once_and_saved(client, fakes):
+    from app.pipeline.prompts import ExtractedClaims, InputSuggestions
+
+    original = "Ronaldo có phải là GOAT?"
+    suggestion = "Ronaldo Nazário có giành nhiều World Cup hơn Cristiano Ronaldo không?"
+    calls = []
+
+    def complete(model, system, user, schema, check=None):
+        if schema is ExtractedClaims:
+            return ExtractedClaims(claims=[], input_category="subjective"), model
+        assert schema is InputSuggestions
+        assert original in user
+        calls.append(user)
+        return InputSuggestions(suggestions=[suggestion, f" {suggestion} ", original]), model
+
+    fakes.llm.complete = complete
+    check = run(client, {"inputType": "text", "text": original})
+    assert check["inputSuggestions"] is None
+    url = f"/api/check/{check['id']}"
+    for _ in range(2):
+        response = client.post(f"{url}/input-suggestions")
+        assert response.status_code == 200
+        assert response.json() == {"suggestions": [suggestion]}
+    assert len(calls) == 1
+    assert client.get(url).json()["inputSuggestions"] == [suggestion]
+    assert fakes.fetch.fetched == []
+
+
 def test_text_check_returns_claims_both_judges_and_saved_evidence(client, fakes):
     check = run(client)
     assert check["status"] == "completed"
@@ -62,6 +90,7 @@ def test_text_check_returns_claims_both_judges_and_saved_evidence(client, fakes)
     claim = check["claims"][0]
     assert claim["status"] == "assessed"
     assert claim["currentVersion"] == 1
+    assert claim["stockHeatmapMarkets"] is None
     current = claim["current"]
     assert current["verdict"] == "supported"
     assert current["kind"] == "ai_assessment"
@@ -85,11 +114,203 @@ def test_text_check_returns_claims_both_judges_and_saved_evidence(client, fakes)
     assert len(fakes.llm.calls) == 4  # Extraction, the claim review and the two claim judges only.
 
 
+def test_stock_question_saves_only_its_relevant_heatmap_markets(client, fakes):
+    from app.pipeline.prompts import ExtractedClaim, ExtractedClaims, QUESTION_SYSTEM
+
+    complete = fakes.llm.complete
+
+    def answer(model, system, user, schema, check=None):
+        if schema is ExtractedClaims:
+            if system != QUESTION_SYSTEM:
+                return ExtractedClaims(claims=[]), model
+            return ExtractedClaims(claims=[ExtractedClaim(
+                text="VN-Index hôm nay giảm.", checkworthiness=0.9, stock_heatmap_markets=["vn"],
+            )]), model
+        return complete(model, system, user, schema, check)
+
+    fakes.llm.complete = answer
+    check = run(client, {"inputType": "text", "text": "VN-Index hôm nay có giảm không?"})
+    assert check["status"] == "completed"
+    assert check["claims"][0]["stockHeatmapMarkets"] == ["vn"]
+    saved = client.get(f"/api/check/{check['id']}").json()
+    assert saved["claims"][0]["stockHeatmapMarkets"] == ["vn"]
+
+
 def test_a_quote_split_over_lines_in_the_page_is_still_shown(client, fakes):
     fakes.fetch.text = "The line opened\n   to passengers on 6 November 2021 after a handover that morning. " * 8
     created = run(client)
     evidence = client.get(f"/api/claims/{created['claims'][0]['id']}/evidence").json()
     assert evidence[0]["excerpt"] == "opened to passengers"
+
+
+@pytest.mark.parametrize("figure,expected", [("1,250.5", True), ("1,250", False)])
+def test_bar_compares_source_figures_without_accepting_a_partial_number(client, fakes, figure, expected):
+    from app.pipeline.prompts import ExtractedClaim, ExtractedClaims, ReportedBarChart
+
+    text = "Rail carried more passengers than coaches."
+    fakes.fetch.text += " Passengers (thousands). Rail: 1,250.5. Coaches: 850."
+    complete = fakes.llm.complete
+
+    def answer(model, system, user, schema, check=None):
+        if schema is ExtractedClaims:
+            return ExtractedClaims(claims=[ExtractedClaim(text=text, checkworthiness=0.9, bar_chart=True)]), model
+        if schema is ReportedBarChart:
+            return ReportedBarChart.model_validate({"comparison": {
+                "evidence_id": "E1", "title": "Passengers by transport mode", "unit": "thousands",
+                "unit_quote": "Passengers (thousands).", "decimal_separator": ".",
+                "points": [
+                    {"name": "Rail", "figure": figure, "quote": "Rail: 1,250.5."},
+                    {"name": "Coaches", "figure": "850", "quote": "Coaches: 850."},
+                ],
+            }}), model
+        return complete(model, system, user, schema, check)
+
+    fakes.llm.complete = answer
+    check = run(client, {"inputType": "text", "text": text})
+    chart = check["claims"][0]["barChart"]
+    if expected:
+        assert chart["unit"] == "thousands"
+        assert chart["points"] == [{"name": "Rail", "value": 1250.5}, {"name": "Coaches", "value": 850}]
+    else:
+        assert chart is None
+
+
+@pytest.mark.parametrize("reverse", [False, True])
+def test_route_uses_reported_stop_order_and_verified_times(client, fakes, monkeypatch, reverse):
+    from app.pipeline.prompts import ExtractedClaim, ExtractedClaims, ReportedRouteMap
+
+    text = "The service travels from Hanoi to Da Nang."
+    fakes.fetch.text += f" {text} It leaves Hanoi at 08:30. It reaches Da Nang at 10:00."
+    complete = fakes.llm.complete
+    calls = []
+
+    def locate(name, settings, **filters):
+        calls.append(name)
+        coordinates = {"Hanoi": [105.85, 21.03], "Da Nang": [108.2, 16.05]}[name]
+        return [{"properties": {"name": name, "countrycode": "VN"},
+                 "geometry": {"type": "Point", "coordinates": coordinates}}]
+
+    def answer(model, system, user, schema, check=None):
+        if schema is ExtractedClaims:
+            return ExtractedClaims(claims=[ExtractedClaim(text=text, checkworthiness=0.9, route_map=True)]), model
+        if schema is ReportedRouteMap:
+            stops = [
+                {"name": "Hanoi", "country": "VN", "schedule": "08:30", "schedule_quote": "It leaves Hanoi at 08:30."},
+                {"name": "Da Nang", "country": "VN", "schedule": "08:30", "schedule_quote": "It leaves Hanoi at 08:30."},
+            ]
+            return ReportedRouteMap.model_validate({"route": {
+                "evidence_id": "E1", "title": "Hanoi to Da Nang", "quote": text,
+                "stops": stops[::-1] if reverse else stops,
+            }}), model
+        return complete(model, system, user, schema, check)
+
+    monkeypatch.setattr("app.charts.route_map.photon_features", locate)
+    fakes.llm.complete = answer
+    check = run(client, {"inputType": "text", "text": text})
+    route = check["claims"][0]["routeMap"]
+    if reverse:
+        assert route is None
+        assert calls == []
+    else:
+        assert calls == ["Hanoi", "Da Nang"]
+        assert route["stops"] == [
+            {"name": "Hanoi", "position": [105.85, 21.03], "schedule": "08:30"},
+            {"name": "Da Nang", "position": [108.2, 16.05]},
+        ]
+        assert 600 < route["straightLineKm"] < 615
+
+
+@pytest.mark.parametrize("text,total,expected", [
+    ("In Vietnam, most registered cars run on petrol.", "1,000", True),
+    ("Phần lớn xe đăng ký chạy bằng xăng.", "1,100", False),
+])
+def test_local_search_and_source_verified_pie_chart(client, fakes, text, total, expected):
+    from app.pipeline.prompts import ExtractedClaim, ExtractedClaims, ReportedPieChart, ResearchPicks
+    from app.search.tavily import SearchHit
+
+    local = "https://vnexpress.net/registered-cars.html"
+    other = "https://reuters.com/registered-cars/"
+    query = "cơ cấu xe đăng ký theo loại nhiên liệu"
+    fakes.fetch.text = f"Total registered cars: {total}. Petrol: 600. Electric: 400. " + fakes.fetch.text
+    searched = []
+    complete = fakes.llm.complete
+
+    def search_hits(value, **options):
+        searched.append((value, options.get("domains")))
+        return [SearchHit(local)] if options.get("domains") else [SearchHit(other)]
+
+    def research(model, system, user, schema, run_search, max_searches):
+        assert "Prefer reliable Vietnamese news outlets" in user
+        run_search("registered cars by fuel")
+        return ResearchPicks(urls=[local, other]), model
+
+    def answer(model, system, user, schema, check=None):
+        if schema is ExtractedClaims:
+            return ExtractedClaims(claims=[ExtractedClaim(
+                text=text, checkworthiness=0.9, pie_chart=True, search_query_vi=query,
+            )]), model
+        if schema is ReportedPieChart:
+            return ReportedPieChart.model_validate({"breakdown": {
+                "evidence_id": "E1", "title": "Registered cars by fuel", "unit": "count",
+                "total": {"figure": total, "quote": f"Total registered cars: {total}."},
+                "parts": [
+                    {"name": "Petrol", "figure": "600", "quote": "Petrol: 600."},
+                    {"name": "Electric", "figure": "400", "quote": "Electric: 400."},
+                ],
+            }}), model
+        return complete(model, system, user, schema, check)
+
+    fakes.search.search_hits = search_hits
+    fakes.llm.research = research
+    fakes.llm.complete = answer
+    check = run(client, {"inputType": "text", "text": text})
+    assert check["status"] == "completed"
+    assert searched[0][0] == query and "vnexpress.net" in searched[0][1]
+    assert searched[1] == ("registered cars by fuel", None)
+    pie = check["claims"][0]["pieChart"]
+    if expected:
+        assert pie["url"] == local
+        assert pie["parts"] == [{"name": "Petrol", "value": 600}, {"name": "Electric", "value": 400}]
+    else:
+        assert pie is None
+
+
+def test_match_research_searches_organizer_first_and_rejects_pre_event_sources(client, fakes):
+    from datetime import date
+
+    from app.pipeline.prompts import ExtractedClaim, ExtractedClaims, ResearchPicks
+    from app.search.tavily import SearchHit
+
+    text = "PSG thắng Inter vào ngày 31/5/2025 ở Champions League."
+    official = "https://www.uefa.com/uefachampionsleague/2025/05/31/result"
+    preview = "https://reuters.com/2025/05/30/preview"
+    searches = []
+    complete = fakes.llm.complete
+
+    def answer(model, system, user, schema, check=None):
+        if schema is ExtractedClaims:
+            return ExtractedClaims(claims=[ExtractedClaim(
+                text=text, checkworthiness=0.9, match_result="sport", event_date=date(2025, 5, 31),
+                search_query_en="PSG Inter Champions League final result", search_query_vi="PSG Inter chung kết",
+            )]), model
+        return complete(model, system, user, schema, check)
+
+    def search_hits(query, **options):
+        searches.append((query, options))
+        return [SearchHit(official)] if options.get("domains") else [SearchHit(preview)]
+
+    def research(model, system, user, schema, run_search, max_searches):
+        assert "official competition source" in user
+        run_search("PSG Inter final result 31 May 2025")
+        return ResearchPicks(urls=[preview, official]), model
+
+    fakes.llm.complete, fakes.llm.research, fakes.search.search_hits = answer, research, search_hits
+    claim = run(client, {"inputType": "text", "text": text})["claims"][0]
+    assert claim["timeContext"] == "2025-05-31"
+    assert searches[0][0].startswith("2025-05-31 PSG Inter")
+    assert searches[0][1]["domains"] == ["uefa.com"]
+    assert all(options["start_date"] == "2025-05-31" for _, options in searches)
+    assert [item["url"] for item in client.get(f"/api/claims/{claim['id']}/evidence").json()] == [official]
 
 
 def test_sources_with_one_title_are_told_apart_by_their_own_words():
@@ -392,3 +613,74 @@ def test_a_check_saved_with_task_names_from_an_older_version_still_opens(client)
     response = client.get(f"/api/check/{check_id}")
     assert response.status_code == 200
     assert response.json()["progress"][0]["chart"] == "seats"
+
+
+def _saved_under(check_id):
+    from sqlalchemy import func, select
+
+    from app.db import models
+    from tests.conftest import SessionLocal
+
+    with SessionLocal() as session:
+        claims = select(models.Claim.id).where(models.Claim.check_id == check_id)
+        count = lambda table, where: session.scalar(select(func.count()).select_from(table).where(where))  # noqa: E731
+        return {
+            "claims": count(models.Claim, models.Claim.check_id == check_id),
+            "sources": count(models.Source, models.Source.check_id == check_id),
+            "evidence": count(models.Evidence, models.Evidence.claim_id.in_(claims)),
+            "verdicts": count(models.Verdict, models.Verdict.claim_id.in_(claims)),
+            "feedback": count(models.Feedback, models.Feedback.check_id == check_id),
+        }
+
+
+def _set_status(check_id, status):
+    from app.db import models
+    from tests.conftest import SessionLocal
+
+    with SessionLocal() as session:
+        session.get(models.Check, check_id).status = status
+        session.commit()
+
+
+def test_deleting_a_check_removes_everything_under_it_and_nothing_else(client):
+    kept, gone = run(client), run(client)
+    assert client.post(f"/api/check/{gone['id']}/feedback", json={"helpful": True}).status_code == 201
+    assert all(_saved_under(gone["id"]).values())
+    assert client.delete(f"/api/check/{gone['id']}").status_code == 200
+    assert client.get(f"/api/check/{gone['id']}").status_code == 404
+    assert not any(_saved_under(gone["id"]).values())
+    assert _saved_under(kept["id"])["evidence"] and client.get(f"/api/check/{kept['id']}").status_code == 200
+
+
+def test_a_running_check_cannot_be_deleted(client):
+    from app.pipeline.run import stop_requests
+
+    check = run(client)
+    _set_status(check["id"], "retrieving")
+    assert client.delete(f"/api/check/{check['id']}").status_code == 422
+    # Stopped on screen, but its pipeline hasn't reached its next step yet.
+    _set_status(check["id"], "stopped")
+    stop_requests.add(check["id"])
+    try:
+        assert client.delete(f"/api/check/{check['id']}").status_code == 422
+    finally:
+        stop_requests.discard(check["id"])
+    assert client.delete(f"/api/check/{check['id']}").status_code == 200
+
+
+def test_delete_all_clears_the_history_except_running_checks(client):
+    first, running = run(client), run(client)
+    _set_status(running["id"], "assessing")
+    assert client.delete("/api/checks").json() == {"deleted": 1, "kept": 1}
+    assert client.get(f"/api/check/{first['id']}").status_code == 404
+    assert [item["id"] for item in client.get("/api/checks").json()["items"]] == [running["id"]]
+
+
+def test_checks_of_another_reader_are_never_deleted(client):
+    from tests.conftest import sign_up
+
+    theirs = run(client)
+    sign_up(client, "someone-else")
+    assert client.delete(f"/api/check/{theirs['id']}").status_code == 404
+    assert client.delete("/api/checks").json() == {"deleted": 0, "kept": 0}
+    assert _saved_under(theirs["id"])["claims"]

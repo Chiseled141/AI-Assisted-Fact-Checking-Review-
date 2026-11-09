@@ -62,12 +62,19 @@ def test_everything_is_copied_and_the_old_file_is_left_alone(tmp_path):
         assert check.user_id is None  # Nobody owns it until someone claims it.
         assert check.judge_ids == ["a", "b"] and check.progress == [{"id": "x"}] and check.cleared_followups == 2
         assert check.input_text == "Bản tin cũ"
+        assert check.input_suggestions is None
+        assert check.search_model is None
         assert connection.scalar(select(models.Claim.price_chart)) == {"prices": [[1, 2]]}
+        assert connection.scalar(select(models.Claim.pie_chart)) is None
+        assert connection.scalar(select(models.Claim.match_result)) is None
+        assert connection.scalar(select(models.Claim.stock_heatmap_markets)) is None
+        assert connection.scalar(select(models.Claim.bar_chart)) is None
+        assert connection.scalar(select(models.Claim.route_map)) is None
         assert connection.scalars(select(models.Verdict.kind).order_by(models.Verdict.version)).all() == [
             "ai_assessment", "human_correction"
         ]
         assert connection.scalar(select(models.Feedback.helpful)) is True
-        assert connection.scalar(text("SELECT version_num FROM alembic_version")) == "0019"
+        assert connection.scalar(text("SELECT version_num FROM alembic_version")) == "0028"
     with source.connect() as connection:
         assert connection.scalar(text("SELECT version_num FROM alembic_version")) == "0015"
         assert "users" not in {row[0] for row in connection.execute(text("SELECT name FROM sqlite_master"))}

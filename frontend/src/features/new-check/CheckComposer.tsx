@@ -13,7 +13,7 @@ import { t } from '../../lib/i18n';
 
 export interface ComposerHandle {
   /** Puts text in the box, as an example does, and focuses it. */
-  fill: (text: string) => void;
+  fill: (text: string, options?: { submitOnEnter?: boolean }) => void;
   focus: () => void;
 }
 
@@ -37,6 +37,7 @@ export const CheckComposer = forwardRef<ComposerHandle, { variant: 'home' | 'cha
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [text, setText] = useState('');
+  const [submitOnEnter, setSubmitOnEnter] = useState(false);
   const [attempted, setAttempted] = useState(false);
   const [serverError, setServerError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
@@ -64,6 +65,7 @@ export const CheckComposer = forwardRef<ComposerHandle, { variant: 'home' | 'cha
 
   async function onSubmit(event?: FormEvent) {
     event?.preventDefault();
+    if (submitting) return;
     setAttempted(true);
     setServerError(null);
     if (clientError) {
@@ -116,10 +118,11 @@ export const CheckComposer = forwardRef<ComposerHandle, { variant: 'home' | 'cha
 
 
   useImperativeHandle(ref, () => ({
-    fill(value: string) {
+    fill(value, options) {
       setAttempted(false);
       setServerError(null);
       setText(value);
+      setSubmitOnEnter(options?.submitOnEnter ?? false);
       requestAnimationFrame(() => textRef.current?.focus());
     },
     focus: () => textRef.current?.focus({ preventScroll: true }),
@@ -148,11 +151,12 @@ export const CheckComposer = forwardRef<ComposerHandle, { variant: 'home' | 'cha
                   value={text}
                   onChange={(e) => {
                     setText(e.target.value);
+                    if (!e.target.value) setSubmitOnEnter(false);
                     setServerError(null);
                   }}
                   onKeyDown={(e) => {
-                    // A link is one line, so Enter sends it. Text keeps Enter for new lines.
-                    if (e.key === 'Enter' && (e.metaKey || e.ctrlKey || (url && !e.shiftKey))) {
+                    if (e.key === 'Enter' && !e.nativeEvent.isComposing &&
+                        (e.metaKey || e.ctrlKey || ((url || submitOnEnter) && !e.shiftKey))) {
                       e.preventDefault();
                       void onSubmit();
                     }

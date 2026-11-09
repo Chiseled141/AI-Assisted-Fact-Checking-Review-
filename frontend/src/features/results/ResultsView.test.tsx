@@ -10,6 +10,7 @@ import { setLanguage } from '../../lib/i18n';
 function serve(check = makeCheck(), evidence: EvidenceSnapshot[] = [makeEvidence()]) {
   return interceptRequests((url) => {
     if (url.pathname === `/api/check/${check.id}`) return jsonResponse(check);
+    if (url.pathname === `/api/check/${check.id}/input-suggestions`) return jsonResponse({ suggestions: [] });
     if (/^\/api\/claims\/[^/]+\/evidence$/.test(url.pathname)) return jsonResponse(evidence);
     throw new Error(`Unexpected request: ${url}`);
   });
@@ -38,6 +39,33 @@ describe('Saved results from the backend', () => {
     expect(screen.queryByText('Subjective opinion')).not.toBeInTheDocument();
   });
 
+  it('opens a related suggestion as an editable draft and submits it only on Enter', async () => {
+    const user = userEvent.setup();
+    const suggestion = 'Did Cristiano Ronaldo win the 2016 UEFA European Championship?';
+    const original = makeCheck({ claims: [], claimCount: 0, inputCategory: 'subjective' });
+    const next = makeCheck({ id: 'chk_suggested', inputText: suggestion, status: 'completed', claims: [], inputSuggestions: [] });
+    const fetchMock = interceptRequests((url, init) => {
+      if (url.pathname === '/api/check/chk_test') return jsonResponse(original);
+      if (url.pathname === '/api/check/chk_test/input-suggestions') return jsonResponse({ suggestions: [suggestion] });
+      if (url.pathname === '/api/checks/similar') return jsonResponse({ claims: [], link: null });
+      if (url.pathname === '/api/check' && init?.method === 'POST') return jsonResponse(next, 202);
+      if (url.pathname === '/api/check/chk_suggested') return jsonResponse(next);
+      throw new Error(`Unexpected request: ${url}`);
+    });
+
+    renderApp('/checks/chk_test');
+    await user.click(await screen.findByRole('button', { name: suggestion }));
+    const composer = await screen.findByRole('textbox', { name: 'Text to check' });
+    expect(composer).toHaveValue(suggestion);
+    expect(fetchMock.mock.calls.some(([url]) => String(url).endsWith('/api/check'))).toBe(false);
+
+    await user.click(composer);
+    await user.keyboard('{Enter}');
+    expect(await screen.findByRole('heading', { level: 1, name: suggestion })).toBeInTheDocument();
+    const post = fetchMock.mock.calls.find(([url]) => String(url).endsWith('/api/check'));
+    expect(JSON.parse(String(post?.[1]?.body))).toMatchObject({ inputType: 'text', text: suggestion });
+  });
+
   it('keeps a selected judge failure visible after the other judge completes', async () => {
     serve(makeCheck({ progress: [{
       id: 'judge-failed', kind: 'ai', task: 'judging', modelName: 'Gemma 4 31B', requestedModel: 'google/gemma-4-31b-it:free',
@@ -55,7 +83,7 @@ describe('Saved results from the backend', () => {
     const user = userEvent.setup();
     renderApp('/checks/chk_test');
     expect(await screen.findByRole('heading', { level: 1 })).toHaveTextContent('The route opened in March 2024.');
-    expect(await screen.findByText('Opening report')).toBeInTheDocument();
+    expect(await screen.findByRole('heading', { name: 'Opening report' })).toBeInTheDocument();
     expect(screen.getByText('Supported.')).toBeInTheDocument();
     await user.click(screen.getByText('View model reasoning'));
     const reviews = screen.getByRole('list', { name: 'AI model reviews' });
@@ -68,10 +96,15 @@ describe('Saved results from the backend', () => {
     const current = makeRevision();
     const [first, second] = current.judges!;
     current.judges = [
-      { ...first, citations: [{ evidenceId: 'evd_test', quote: 'The route opened in March.' }] },
+      { ...first, citations: [
+        { evidenceId: 'evd_test', quote: 'The route opened in March.', relation: 'supporting' },
+        { evidenceId: 'evd_old', quote: 'Construction was due to finish.', relation: 'contextual', freshness: 'outdated' },
+      ] },
       { ...second, verdict: 'contradicted', citations: [{ evidenceId: 'evd_test', quote: 'The opening was delayed.' }] },
     ];
-    serve(makeCheck({ claims: [makeClaim({ current })] }));
+    serve(makeCheck({ claims: [makeClaim({ current })] }), [
+      makeEvidence(), makeEvidence({ id: 'evd_old', sourceTitle: 'Early construction update' }),
+    ]);
     renderApp('/checks/chk_test');
     expect(await screen.findByRole('heading', { name: 'AI judges disagree' })).toBeVisible();
     expect(screen.queryByText('Supported.')).not.toBeInTheDocument();
@@ -79,8 +112,12 @@ describe('Saved results from the backend', () => {
     const [firstReview, secondReview] = Array.from(reviews.children) as HTMLElement[];
     expect(within(firstReview).getByText('Supported')).toBeVisible();
     expect(within(firstReview).getByText('The route opened in March.')).toBeVisible();
+    expect(await within(firstReview).findByText('Quoted 2 of 2 sources provided')).toBeVisible();
+    expect(within(firstReview).getByText('Context only · Outdated')).toBeVisible();
     expect(within(secondReview).getByText('Contradicted')).toBeVisible();
     expect(within(secondReview).getByText('The opening was delayed.')).toBeVisible();
+    expect(within(secondReview).getByRole('link', { name: 'Early construction update' })).toBeVisible();
+    expect(within(secondReview).getByText('Quoted 1 of 2 sources provided')).toBeVisible();
   });
 
   it('shows older model reviews without attributing a shared passage to either judge', async () => {
@@ -126,7 +163,7 @@ describe('Saved results from the backend', () => {
   it('shows the saved passage without an extra source-analysis section', async () => {
     serve();
     renderApp('/checks/chk_test');
-    await screen.findByText('Opening report');
+    await screen.findByRole('heading', { name: 'Opening report' });
     expect(screen.getByText('What this source says')).toBeInTheDocument();
     expect(screen.queryByRole('heading', { name: /^Sources ·/ })).not.toBeInTheDocument();
     expect(screen.queryByText(/supporting · .* contradicting/)).not.toBeInTheDocument();
@@ -154,9 +191,56 @@ describe('Saved results from the backend', () => {
     serve();
     renderApp('/checks/chk_test');
     await screen.findByRole('heading', { level: 1 });
-    for (const name of ['Bitcoin price', 'Population', 'Daily high temperature', 'Places in this claim', 'Incident location']) {
+    for (const name of ['Bitcoin price', 'Stock heatmap', 'Population', 'Daily high temperature', 'Places in this claim', 'Incident location']) {
       expect(screen.queryByRole('heading', { name })).not.toBeInTheDocument();
     }
+    expect(screen.queryByTitle(/stock heatmap/i)).not.toBeInTheDocument();
+    expect(screen.queryByRole('link', { name: 'Markets' })).not.toBeInTheDocument();
+  });
+
+  it('loads a widget only for the selected market from a stock claim', async () => {
+    serve(makeCheck({ claims: [makeClaim({ stockHeatmapMarkets: ['us', 'vn'] })] }));
+    renderApp('/checks/chk_test');
+    const panel = await screen.findByRole('region', { name: 'Stock heatmap' });
+    const selector = within(panel).getByRole('combobox', { name: 'Stock market' });
+    expect(within(selector).getAllByRole('option').map((option) => option.textContent)).toEqual(['United States', 'Vietnam · VN-Index']);
+    const widget = within(panel).getByTitle('United States stock heatmap');
+    expect(widget).toHaveAttribute('loading', 'lazy');
+    expect(decodeURIComponent(widget.getAttribute('src')!)).toContain('"dataSource":"AllUSA"');
+    await userEvent.setup().selectOptions(selector, 'vn');
+    expect(within(panel).queryByTitle('United States stock heatmap')).not.toBeInTheDocument();
+    expect(within(panel).getByRole('link', { name: 'View VN-Index on TradingView' })).toHaveAttribute(
+      'href', 'https://www.tradingview.com/symbols/HOSE-VNINDEX/',
+    );
+    expect(within(panel).getByRole('link', { name: /Vingroup/ }).querySelector('img')).toHaveAttribute('src', '/market-logos/VIC.svg');
+  });
+
+  it('shows a reported total for a source-backed breakdown', async () => {
+    serve(makeCheck({ claims: [makeClaim({ pieChart: {
+      title: 'Car registrations by fuel', unit: 'count', publisher: 'Vehicle Report', url: 'https://example.org/vehicles',
+      parts: [{ name: 'Electric', value: 300 }, { name: 'Petrol', value: 900 }],
+    } })] }));
+    renderApp('/checks/chk_test');
+    const panel = await screen.findByRole('region', { name: 'Car registrations by fuel' });
+    expect(within(panel).getByText('Total')).toBeInTheDocument();
+    expect(within(panel).getByText('1,200')).toBeInTheDocument();
+  });
+
+  it('lists the source figures and route stops alongside their charts', async () => {
+    serve(makeCheck({ claims: [makeClaim({
+      barChart: { title: 'Passenger totals', unit: 'passengers', publisher: 'Transport Report', url: 'https://example.org/passengers',
+        points: [{ name: 'Rail', value: 1250 }, { name: 'Coach', value: 850 }] },
+      routeMap: { title: 'Hanoi to Da Nang', publisher: 'Transport Report', url: 'https://example.org/route', straightLineKm: 606,
+        stops: [{ name: 'Hanoi', position: [105.85, 21.03], schedule: '08:30' }, { name: 'Da Nang', position: [108.2, 16.05] }] },
+    })] }));
+    renderApp('/checks/chk_test');
+    const comparison = await screen.findByRole('region', { name: 'Passenger totals' });
+    await userEvent.setup().click(within(comparison).getByText('View comparison data'));
+    expect(within(comparison).getByText('1,250 passengers')).toBeVisible();
+    const route = screen.getByRole('region', { name: 'Hanoi to Da Nang' });
+    expect(within(route).getAllByRole('listitem')).toHaveLength(2);
+    expect(within(route).getByText('08:30')).toBeVisible();
+    expect(within(route).getByText('606 km')).toBeVisible();
   });
 
   const charts: [string, Partial<Claim>, string][] = [
@@ -167,6 +251,7 @@ describe('Saved results from the backend', () => {
     ['country', { countryMap: { indicator: 'population', source: 'Unit-test statistics', retrievedAt: checkedAt, year: 2023, years: [2023], values: { vn: [100], th: [70] }, selected: [{ code: 'vn', name: 'Vietnam', named: 'Vietnam' }] } }, 'Population'],
     ['election', { electionMap: { office: 'house', year: 2024, retrievedAt: checkedAt, states: [{ code: 'us-oh', name: 'Ohio', winner: 'Republicans', publisher: 'Test News', url: 'https://example.org/oh', others: [] }] } }, 'US election results by state'],
     ['seats', { seatChart: { body: 'Test chamber', year: 2024, total: 10, totalSource: { publisher: 'Test News', url: 'https://example.org/seats' }, retrievedAt: checkedAt, parties: [{ name: 'Party A', seats: 5, publisher: 'Test News', url: 'https://example.org/seats', others: [] }, { name: 'Party B', seats: 3, publisher: 'Test News', url: 'https://example.org/seats', others: [] }] } }, 'Seats in Test chamber'],
+    ['match', { matchResult: { kind: 'esport', teams: ['Spirit', 'MOUZ'], scores: [3, 0], maps: [{ name: 'Mirage', scores: [13, 8] }], publisher: 'HLTV', url: 'https://www.hltv.org/matches/2383844/spirit-vs-mouz-iem-cologne-2025' } }, 'Match result'],
   ];
 
   it.each(charts)('renders the %s panel from its backend field', async (_name, chart, heading) => {

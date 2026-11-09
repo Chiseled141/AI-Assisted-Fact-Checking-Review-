@@ -7,10 +7,16 @@ import { HighlightedText } from '../../components/HighlightedText';
 import { SourceDeck } from './SourceDeck';
 import { EvidenceSourceLinks } from './EvidenceSourceLinks';
 import { PriceChart } from './PriceChart';
+import { StockHeatmap } from './StockHeatmap';
 import { LocationMap } from './LocationMap';
+import { PieChart } from './PieChart';
+import { BarChart } from './BarChart';
+import { RouteMap } from './RouteMap';
+import { MatchResult } from './MatchResult';
 import { IncidentMap } from './IncidentMap';
 import { HeatMap } from './HeatMap';
 import { CountryMap } from './CountryMap';
+import { PopulationPyramid } from './PopulationPyramid';
 import { ElectionMap } from './ElectionMap';
 import { SeatChart } from './SeatChart';
 import { inLanguage, t } from '../../lib/i18n';
@@ -38,6 +44,7 @@ export function EvidencePanel({ claim, claimCount, evidence, onRetry, onReview, 
   const freshness = current?.citationFreshness ?? {};
   const outdatedCount = [...cited].filter((id) => freshness[id]?.status === 'outdated').length;
   const items = evidence.kind === 'ready' ? evidence.items : [];
+  const sourcesProvided = evidence.kind === 'ready' && current?.version === 1 ? items.length : undefined;
   function replyToJudge(judge: string, modelId: string) {
     onReplyToResult({ claimId: claim.id, kind: 'judge', key: judge }, { title: judge }, modelId);
   }
@@ -74,7 +81,7 @@ export function EvidencePanel({ claim, claimCount, evidence, onRetry, onReview, 
         {/* Reasoning. The wide-screen rule sits in the gap, so the columns stay aligned with the sources below. */}
         <div className={disagree ? undefined : 'relative border-t border-line-strong pt-6 lg:border-t-0 lg:pt-0 lg:before:absolute lg:before:inset-y-0 lg:before:-left-7 lg:before:w-px lg:before:bg-line-strong'}>
           {disagree && reviews ? (
-            <JudgeReviews judges={reviews} onReply={replyToJudge} evidence={items} />
+            <JudgeReviews judges={reviews} onReply={replyToJudge} evidence={items} sourcesProvided={sourcesProvided} />
           ) : reviews ? (
             <div>
               <p className="text-[15px] leading-[1.65] text-ink-soft">
@@ -85,7 +92,7 @@ export function EvidencePanel({ claim, claimCount, evidence, onRetry, onReview, 
                   {t('View model reasoning')}
                 </summary>
                 <div className="mt-4">
-                  <JudgeReviews judges={reviews} onReply={replyToJudge} />
+                  <JudgeReviews judges={reviews} onReply={replyToJudge} evidence={items} sourcesProvided={sourcesProvided} />
                 </div>
               </details>
             </div>
@@ -109,12 +116,18 @@ export function EvidencePanel({ claim, claimCount, evidence, onRetry, onReview, 
         </div>
       </div>
 
+      {claim.matchResult && <MatchResult match={claim.matchResult} onReply={(title) => replyToChart('matchResult', title)} />}
       {claim.priceChart && <PriceChart chart={claim.priceChart} onReply={(title) => replyToChart('priceChart', title)} />}
+      {!!claim.stockHeatmapMarkets?.length && <StockHeatmap key={claim.id} marketIds={claim.stockHeatmapMarkets} />}
       {claim.locationMap && <LocationMap map={claim.locationMap} onReply={(title) => replyToChart('locationMap', title)} />}
       {claim.incidentMap && <IncidentMap map={claim.incidentMap} onReply={(title) => replyToChart('incidentMap', title)} />}
       {claim.heatMap && <HeatMap map={claim.heatMap} onReply={(title) => replyToChart('heatMap', title)} />}
       {claim.countryMap && <CountryMap map={claim.countryMap} onReply={(title) => replyToChart('countryMap', title)} />}
+      {claim.populationPyramid && <PopulationPyramid chart={claim.populationPyramid} onReply={(title) => replyToChart('populationPyramid', title)} />}
       {claim.seatChart && <SeatChart chart={claim.seatChart} onReply={(title) => replyToChart('seatChart', title)} />}
+      {claim.pieChart && <PieChart chart={claim.pieChart} onReply={(title) => replyToChart('pieChart', title)} />}
+      {claim.barChart && <BarChart chart={claim.barChart} onReply={(title) => replyToChart('barChart', title)} />}
+      {claim.routeMap && <RouteMap route={claim.routeMap} onReply={(title) => replyToChart('routeMap', title)} />}
       {claim.electionMap && <ElectionMap map={claim.electionMap} onReply={(title) => replyToChart('electionMap', title)} />}
 
       {/* Evidence */}

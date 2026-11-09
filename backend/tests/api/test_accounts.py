@@ -1,9 +1,12 @@
 """Accounts, sign-in sessions, and keeping each user's checks to themselves."""
 
+from base64 import b64decode, b64encode
 from datetime import UTC, datetime, timedelta
+from io import BytesIO
 
 import pytest
 from fastapi.testclient import TestClient
+from PIL import Image
 from sqlalchemy import select
 
 from app.db.models import Check, User, UserSession
@@ -81,6 +84,95 @@ def test_logging_in_and_out(client, anonymous):
     assert stolen.get("/api/auth/me").status_code == 401
     # The shared client's own session is untouched.
     assert client.get("/api/auth/me").status_code == 200
+
+
+def test_profile_updates_keep_account_identity_and_store_a_raster_avatar(client, anonymous, other_client):
+    assert anonymous.patch("/api/auth/me", json={"username": "visitor"}).status_code == 401
+    image = BytesIO()
+    Image.new("RGB", (320, 240), "navy").save(image, "PNG")
+    changed = client.patch("/api/auth/me", json={
+        "username": "  New.Name  ", "preferredSourceLanguage": "vi",
+        "avatar": b64encode(image.getvalue()).decode(),
+    })
+    assert changed.status_code == 200, changed.text
+    profile = changed.json()
+    assert profile["id"] == client.user_id and profile["username"] == "new.name"
+    assert profile["preferredSourceLanguage"] == "vi"
+    assert profile["avatar"].startswith("data:image/webp;base64,")
+    with Image.open(BytesIO(b64decode(profile["avatar"].split(",")[1]))) as avatar:
+        assert avatar.format == "WEBP" and avatar.size == (192, 192)
+    assert client.get("/api/auth/me").json() == profile
+    assert other_client.get("/api/auth/me").json()["avatar"] is None
+    assert login(anonymous, "new.name").status_code == 200
+    assert client.patch("/api/auth/me", json={"avatar": None}).json()["avatar"] is None
+
+
+def test_profile_rejects_duplicate_names_and_non_images(client, other_client):
+    duplicate = client.patch("/api/auth/me", json={"username": "Someone-Else", "preferredSourceLanguage": "vi"})
+    assert duplicate.status_code == 409
+    assert client.get("/api/auth/me").json()["preferredSourceLanguage"] is None
+    payload = b64encode(b'<svg xmlns="http://www.w3.org/2000/svg"></svg>').decode()
+    assert client.patch("/api/auth/me", json={"avatar": payload}).status_code == 422
+    assert client.get("/api/auth/me").json()["avatar"] is None
+
+
+def test_password_change_verifies_current_password_and_rotates_all_sessions(client, anonymous):
+    assert login(anonymous, "tester").status_code == 200
+    previous = client.cookies.get("claimtrace_session")
+    updated_password = "a different password"
+    body = {"newPassword": updated_password, "passwordConfirmation": updated_password}
+    assert client.post("/api/auth/me/password", json={**body, "currentPassword": "incorrect"}).status_code == 422
+    assert anonymous.get("/api/auth/me").status_code == 200
+    response = client.post("/api/auth/me/password", json={**body, "currentPassword": PASSWORD})
+    assert response.status_code == 200 and response.json()["id"] == client.user_id
+    assert client.cookies.get("claimtrace_session") != previous
+    assert client.get("/api/auth/me").status_code == 200
+    assert anonymous.get("/api/auth/me").status_code == 401
+    assert login(anonymous, "tester").status_code == 401
+    assert login(anonymous, "tester", updated_password).status_code == 200
+
+
+@pytest.mark.parametrize("language,first", [("vi", "https://vnexpress.net/b"), ("en", "https://bbc.com/a")])
+def test_source_language_affects_the_order_of_sources_in_new_checks(client, fakes, language, first):
+    assert client.patch("/api/auth/me", json={"preferredSourceLanguage": language}).status_code == 200
+    urls = ["https://bbc.com/a", "https://vnexpress.net/b"]
+    fakes.search.results = sorted(urls, key=lambda url: url == first)
+    check = run(client)
+    evidence = client.get(f"/api/claims/{check['claims'][0]['id']}/evidence").json()
+    assert [item["url"] for item in evidence] == [first, fakes.search.results[0]]
+
+
+def test_search_model_preference_is_validated_and_used_only_for_tavily_research(client, fakes):
+    from app.core.config import get_settings
+    from app.pipeline.prompts import ResearchPicks
+    from app.search.tavily import SearchHit
+
+    settings = get_settings()
+    research_models = []
+    url = "https://reuters.com/a"
+
+    def research(model, system, user, schema, run_search, max_searches):
+        research_models.append(model)
+        run_search("the opening date")
+        return ResearchPicks(urls=[url]), model
+
+    fakes.search.search_hits = lambda query, **options: [SearchHit(url)]
+    fakes.llm.research = research
+    endpoint = "/api/auth/me"
+    assert client.patch(endpoint, json={"preferredSearchModelId": "deepseek-flash"}).status_code == 200
+    assert client.patch(endpoint, json={"preferredSearchModelId": "arbitrary-model"}).status_code == 422
+    assert client.get(endpoint).json()["preferredSearchModelId"] == "deepseek-flash"
+
+    check = run(client)
+    model = settings.judges["deepseek-flash"].model
+    task = next(item for item in check["progress"] if item["task"] == "researching")
+    assert task["requestedModel"] == model
+    assert all(requested != model for requested, _ in fakes.llm.calls)
+    assert client.patch(endpoint, json={"preferredSearchModelId": None}).json()["preferredSearchModelId"] is None
+    run(client)
+    assert research_models == [model, settings.research_model]
+    with SessionLocal() as session:
+        assert session.get(Check, check["id"]).search_model == model
 
 
 def test_an_expired_session_is_signed_out(client):

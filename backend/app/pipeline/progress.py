@@ -20,7 +20,7 @@ NOT_ENOUGH_VERIFIED = "Too few figures could be verified in the sources, so noth
 NO_READABLE_SOURCE = "No candidate page could be read."
 CHART_NOT_DRAWN = "The claim's own words did not fit what this chart needs, so it was not drawn."
 CHART_INCOMPLETE = "The sources did not cover the whole chart, so it is not shown."
-ONLY_OLDER_PAGES = "Only pages from before this election were found."
+ONLY_OLDER_PAGES = "Only reports published before the claimed event were found."
 
 Save = Callable[[dict], None]
 

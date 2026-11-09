@@ -12,6 +12,7 @@ import { useMediaQuery } from '../../lib/useMediaQuery';
 import { RelationChip } from '../../components/Badges';
 import { SourceLogo } from '../../components/SourceLogo';
 import { getLanguage, t, translated } from '../../lib/i18n';
+import { useAccount } from '../../services/account';
 
 /**
  * The article's lead image behind a card's content. The image comes from the publisher, so it can
@@ -265,11 +266,12 @@ interface Props {
  * strips. Phones: strips can't hold their text, so every source is shown open, stacked.
  */
 export function SourceDeck({ claim, items: allItems, citedIds, freshness }: Props) {
-  // In Vietnamese, Vietnamese newspapers come first.
-  const items =
-    getLanguage() === 'vi'
-      ? [...allItems].sort((a, b) => Number(isVietnameseSource(b.url)) - Number(isVietnameseSource(a.url)))
-      : allItems;
+  const preference = useAccount()?.preferredSourceLanguage;
+  const vietnameseFirst = (preference ?? getLanguage()) === 'vi';
+  const items = preference || vietnameseFirst
+    ? [...allItems].sort((a, b) =>
+      (Number(isVietnameseSource(b.url)) - Number(isVietnameseSource(a.url))) * (vietnameseFirst ? 1 : -1))
+    : allItems;
   const wide = useMediaQuery('(min-width: 1024px)');
   const [openId, setOpenId] = useState<string | null>(null);
   const hoverTimer = useRef<ReturnType<typeof setTimeout>>();

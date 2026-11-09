@@ -80,8 +80,8 @@ export default function PricePlot({ chart }: { chart: PriceChartData }) {
         y: 4,
         style: { color: inkSoft, fontSize: '12px' },
         formatter() {
-          // Dong figures run to nine digits, too wide for a phone unless shortened.
-          const compact = chart.currency === 'VND' ? ({ notation: 'compact' } as const) : {};
+          // SJC figures run to nine digits, too wide for a phone unless shortened. Shortening the exchange rate would make its ticks identical.
+          const compact = chart.asset === 'sjc_gold' ? ({ notation: 'compact' } as const) : {};
           return new Intl.NumberFormat(locale(), {
             style: 'currency',
             currency: chart.currency,

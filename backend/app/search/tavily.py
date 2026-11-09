@@ -21,6 +21,31 @@ logger = logging.getLogger(__name__)
 SOURCE_RATINGS: dict[str, str] = load_data("source_ratings.json")
 # Only the project's green allowlist is searched and accepted as evidence.
 SEARCH_DOMAINS = sorted(domain for domain, rating in SOURCE_RATINGS.items() if rating == "green")
+TAVILY_DOMAIN_LIMIT = 300
+
+
+def _result_score(result: dict) -> float:
+    score = result.get("score")
+    return score if isinstance(score, (int, float)) else 0.0
+
+
+def _vietnamese_domain(host: str) -> bool:
+    return host == "vnexpress.net" or (
+        host.endswith(".vn") and not host.startswith(("en.", "english.")) and host != "vietnamnews.vn"
+    )
+
+
+VIETNAMESE_SEARCH_DOMAINS = [domain for domain in SEARCH_DOMAINS if _vietnamese_domain(domain)]
+
+
+def is_vietnamese_source(url: str) -> bool:
+    try:
+        host = (urlsplit(url).hostname or "").lower().removeprefix("www.").rstrip(".")
+    except ValueError:
+        return False
+    return _vietnamese_domain(host)
+
+
 # What a chart read from sources searches instead of the whole list: official results, then outlets with results desks.
 CHART_SOURCES = load_data("chart_sources.json")
 CHART_DOMAINS: dict[str, list[str]] = {"elections": CHART_SOURCES["elections"]}
@@ -146,48 +171,52 @@ class TavilySearch:
         include_images: bool = True,
     ) -> list[SearchHit]:
         """Keep images attributed to a specific result; query-wide images aren't article previews."""
-        if len(SEARCH_DOMAINS) > 300:
-            raise SearchError("The source list exceeds Tavily's 300-domain search limit.")
+        excluded = exclude_domains or []
+        included = [
+            domain for domain in (domains or SEARCH_DOMAINS)
+            if not any(domain == host or domain.endswith(f".{host}") for host in excluded)
+        ]
+        limit = min(20, max(1, max_results)) if max_results is not None else min(20, max(
+            self.settings.tavily_candidates_per_search, self.settings.target_publishers_per_claim,
+        ))
+        payload = {
+            "query": query[:400],
+            "max_results": limit,
+            "include_domains_mode": "restrict",
+            "exclude_domains": excluded,
+            "search_depth": "basic",
+            "auto_parameters": False,
+            "include_answer": False,
+            "include_raw_content": "text",
+            "include_images": include_images,
+            "include_published_date": True,
+            # Tavily keeps undated results by default, which is what we want: they may still be current.
+            **({"start_date": start_date} if start_date else {}),
+            **({"end_date": end_date} if end_date else {}),
+        }
+        results: list[dict] = []
         try:
-            response = httpx.post(
-                "https://api.tavily.com/search",
-                headers={"Authorization": f"Bearer {self.settings.tavily_api_key}"},
-                json={
-                    "query": query[:400],
-                    "max_results": min(20, max(1, max_results)) if max_results is not None else min(20, max(
-                        self.settings.tavily_candidates_per_search, self.settings.target_publishers_per_claim,
-                    )),
-                    "include_domains": [domain for domain in (domains or SEARCH_DOMAINS) if not any(
-                        domain == excluded or domain.endswith(f".{excluded}") for excluded in exclude_domains or []
-                    )],
-                    "include_domains_mode": "restrict",
-                    "exclude_domains": exclude_domains or [],
-                    "search_depth": "basic",
-                    "auto_parameters": False,
-                    "include_answer": False,
-                    "include_raw_content": "text",
-                    "include_images": include_images,
-                    "include_published_date": True,
-                    # Tavily keeps undated results by default, which is what we want: they may still be current.
-                    **({"start_date": start_date} if start_date else {}),
-                    **({"end_date": end_date} if end_date else {}),
-                },
-                timeout=self.settings.tavily_timeout_seconds,
-            )
-            response.raise_for_status()
-            body = response.json()
-            if not isinstance(body, dict) or not isinstance(body.get("results"), list):
-                raise ValueError("Invalid search response")
-            results = body["results"]
+            for offset in range(0, len(included), TAVILY_DOMAIN_LIMIT):
+                response = httpx.post(
+                    "https://api.tavily.com/search",
+                    headers={"Authorization": f"Bearer {self.settings.tavily_api_key}"},
+                    json={**payload, "include_domains": included[offset:offset + TAVILY_DOMAIN_LIMIT]},
+                    timeout=self.settings.tavily_timeout_seconds,
+                )
+                response.raise_for_status()
+                body = response.json()
+                if not isinstance(body, dict) or not isinstance(body.get("results"), list):
+                    raise ValueError("Invalid search response")
+                results.extend(result for result in body["results"] if isinstance(result, dict))
         except (httpx.HTTPError, ValueError) as error:
             raise SearchError(service_failure(error)) from error
+        if len(included) > TAVILY_DOMAIN_LIMIT:
+            results.sort(key=_result_score, reverse=True)
         hits: dict[str, SearchHit] = {}
         seen_content: set[str] = set()
         for result in results:
-            if not isinstance(result, dict):
-                continue
             url = result.get("url")
-            if not isinstance(url, str) or not is_allowed_source(url) or source_domain(url) in (exclude_domains or []):
+            if not isinstance(url, str) or not is_allowed_source(url) or source_domain(url) in excluded:
                 continue
             key = source_url_key(url)
             raw = result.get("raw_content")
@@ -221,7 +250,7 @@ class TavilySearch:
             )
             if content_key:
                 seen_content.add(content_key)
-            if len(hits) >= self.settings.tavily_candidates_per_search:
+            if len(hits) >= min(limit, self.settings.tavily_candidates_per_search):
                 break
         found = list(hits.values())
         if not newest_first:
@@ -242,6 +271,15 @@ def _words(text: str) -> str:
 
 def _mentions(text: str, name: str) -> bool:
     return f" {_words(name)} " in f" {_words(text)} "
+
+
+def sport_organizers(text: str) -> list[str]:
+    """Use explicit competition names to scope an initial search to eligible organizers."""
+    words = f" {_words(text)} "
+    return [
+        domain for domain, aliases in CHART_SOURCES["sport_organizers"].items()
+        if SOURCE_RATINGS.get(domain) == "green" and any(f" {_words(alias)} " in words for alias in aliases)
+    ]
 
 
 def within_domains(url: str, domains: list[str] | tuple[str, ...]) -> bool:

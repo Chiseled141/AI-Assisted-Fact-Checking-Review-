@@ -1,4 +1,5 @@
 import os
+import re
 
 # SQLite in memory by default. TEST_DATABASE_URL runs the same tests on an empty PostgreSQL database, which they wipe.
 os.environ.update(DATABASE_URL=os.environ.get("TEST_DATABASE_URL", "sqlite:///:memory:"), OPENROUTER_API_KEY="", TAVILY_API_KEY="", ELECTION_MAP_MIN_STATES="3", SEAT_CHART_REQUIRE_ALL_SEATS="false", DATA_SERVICE_RETRY_SECONDS="0")
@@ -23,6 +24,7 @@ from app.pipeline.prompts import (
     MapDetails,
     PriceEvent,
     ReportedElection,
+    ReportedMatchResult,
     ReportedPrices,
     ReportedSeats,
     ReportedStates,
@@ -50,6 +52,8 @@ class FakeLLM:
         self.election_map = None
         self.reported_states = None
         self.reported_election = None
+        self.match_result = None
+        self.reported_match = None
         self.map_details = []
         self.incident_locations = []
         self.verdicts: dict[str, str] = {}
@@ -81,6 +85,7 @@ class FakeLLM:
                         country_stat=self.country_stat,
                         seat_chart=self.seat_chart,
                         election_map=self.election_map,
+                        match_result=self.match_result,
                         price_events=[PriceEvent(date="2024-12-05", title="Passed $100,000", text="It passed $100,000.")]
                         if self.price_asset
                         else [],
@@ -96,6 +101,8 @@ class FakeLLM:
             answer = self.reported_election or ReportedElection()
         elif schema is ReportedStates:
             answer = self.reported_states or ReportedStates()
+        elif schema is ReportedMatchResult:
+            answer = self.reported_match or ReportedMatchResult()
         elif schema is MapDetails:
             answer = MapDetails(details=self.map_details)
         elif schema is IncidentLocations:
@@ -106,11 +113,19 @@ class FakeLLM:
             answer = FollowUpAnswer(answer=f"Answered by {model} from the saved sources.")
         elif schema is JudgeAnswer:
             verdict = self.verdicts.get(model, "supported")
-            citations = (
-                []
-                if verdict == "insufficient_evidence"
-                else [Citation(evidence_id="E1", relation="supporting", quote="opened to passengers", freshness="current")]
-            )
+            passages = re.findall(r'<passage evidence_id="(E\d+)"[^>]*>\n(.*?)\n</passage>', user, re.S)
+            citations = [
+                Citation(
+                    evidence_id=key,
+                    relation={"supported": "supporting", "contradicted": "contradicting", "outdated": "supporting"}
+                    .get(verdict, "contextual") if index == 0 else "contextual",
+                    quote="opened to passengers" if "opened to passengers" in passage else " ".join(passage.split()[:8]),
+                    freshness="current",
+                )
+                for index, (key, passage) in enumerate(passages)
+            ]
+            if not citations and (data := re.search(r'<data evidence_id="D1"[^>]*>\n(.*?)\n</data>', user, re.S)):
+                citations.append(Citation(evidence_id="D1", relation="supporting", quote=data[1].splitlines()[-1]))
             answer = JudgeAnswer(verdict=verdict, confidence=0.8, review=f"Review by {model}.", citations=citations)
         else:
             raise AssertionError(f"Unexpected model task: {schema.__name__}")

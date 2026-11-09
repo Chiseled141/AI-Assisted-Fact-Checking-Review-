@@ -5,8 +5,15 @@ The chart's own checks and sources still decide what gets drawn. This only makes
 
 import re
 
-from ..pipeline.prompts import CountryStatRequest, ElectionMapRequest, ExtractedClaim, MapPlace, SeatChartRequest
-from .country_map import STAT_WORDS, is_stat_claim
+from ..pipeline.prompts import (
+    CountryStatRequest,
+    ElectionMapRequest,
+    ExtractedClaim,
+    MapPlace,
+    PopulationPyramidRequest,
+    SeatChartRequest,
+)
+from .country_map import STAT_WORDS, is_age_claim, is_stat_claim
 from .election_map import is_us_election_claim
 from .location_map import PLACES
 from .price_chart import ASSET_WORDS, is_price_claim
@@ -62,7 +69,12 @@ def add_chart_requests(item: ExtractedClaim) -> ExtractedClaim:
         )
         if office:
             item.election_map = ElectionMapRequest(office=office, year=year)
-    if item.country_stat is None and item.heat_map is None:
+    if item.population_pyramid is None and item.heat_map is None and is_age_claim(text):
+        # The chart shows one country, so a comparison gets none.
+        countries = _named_countries(text)
+        if len(countries) == 1:
+            item.population_pyramid = PopulationPyramidRequest(name=countries[0].name, country=countries[0].country, year=year)
+    if item.country_stat is None and item.heat_map is None and item.population_pyramid is None:
         indicator = next((name for name in STAT_WORDS if is_stat_claim(text, name)), None)
         countries = _named_countries(text) if indicator else []
         if countries:

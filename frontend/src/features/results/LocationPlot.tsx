@@ -96,12 +96,10 @@ function labelOffsets(centers: Map<string, [number, number]>): Map<string, numbe
 }
 
 /** The map, with the claim's places highlighted. Loaded on demand, because it and its shapes are large. */
-export default function LocationPlot({ map, height }: { map: LocationMapData; height: number }) {
+export default function LocationPlot({ map }: { map: LocationMapData }) {
   const [topo, setTopo] = useState<TopoMap | null>(null);
   const [islands, setIslands] = useState<unknown>(null);
-  // With figures beside it the map is narrow on a wide screen too, so its labels wrap the same way.
-  const phone = useMediaQuery('(max-width: 639px)');
-  const narrow = phone || Boolean(map.details?.length);
+  const narrow = useMediaQuery('(max-width: 639px)');
 
   useEffect(() => {
     let current = true;
@@ -176,7 +174,6 @@ export default function LocationPlot({ map, height }: { map: LocationMapData; he
   const options: Highcharts.Options = {
     accessibility: { enabled: false }, // LocationMap hides this from screen readers and lists the places as text.
     chart: {
-      height,
       backgroundColor: 'transparent',
       style: { fontFamily: 'inherit' },
       events: {
@@ -426,10 +423,10 @@ export default function LocationPlot({ map, height }: { map: LocationMapData; he
   };
 
   return (
-    <div className="relative">
-      <HighchartsReact highcharts={Highcharts} constructorType="mapChart" options={options} />
+    <div className="relative h-full">
+      <HighchartsReact highcharts={Highcharts} constructorType="mapChart" options={options} containerProps={{ className: 'h-full' }} />
       {zoomedInVietnam && (
-        <div className="pointer-events-none absolute right-0 top-0 rounded-lg border border-line bg-white p-1">
+        <div className="pointer-events-none absolute right-2 top-2 rounded-lg border border-line bg-white p-1 sm:right-3 sm:top-3">
           <HighchartsReact highcharts={Highcharts} constructorType="mapChart" options={overview} />
         </div>
       )}

@@ -28,6 +28,9 @@ class User(Base):
     # Saved in lower case, so "Lan" and "lan" are the same account.
     username: Mapped[str] = mapped_column(String(64), unique=True)
     password_hash: Mapped[str] = mapped_column(Text)  # Argon2id, with its salt and settings.
+    avatar: Mapped[str | None] = mapped_column(Text)
+    preferred_source_language: Mapped[str | None] = mapped_column(String(2))
+    preferred_search_model_id: Mapped[str | None] = mapped_column(String(64))
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
 
 
@@ -59,7 +62,9 @@ class Check(Base):
     status: Mapped[str] = mapped_column(String(16), default="queued", index=True)
     error_message: Mapped[str | None] = mapped_column(Text)
     judge_ids: Mapped[list] = mapped_column(JSON)
+    search_model: Mapped[str | None] = mapped_column(Text)  # Model resolved when this check was started.
     progress: Mapped[list | None] = mapped_column(JSON)
+    input_suggestions: Mapped[list[str] | None] = mapped_column(JSON(none_as_null=True))
     review: Mapped[dict | None] = mapped_column(JSON)  # What the reader was asked before the search. See pipeline/review.py.
     cleared_followups: Mapped[int] = mapped_column(Integer, server_default="0")
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow, index=True)
@@ -99,11 +104,17 @@ class Claim(Base):
     status: Mapped[str] = mapped_column(String(16), default="assessed")
     unavailable_reason: Mapped[str | None] = mapped_column(Text)
     price_chart: Mapped[dict | None] = mapped_column(JSON)
+    stock_heatmap_markets: Mapped[list[str] | None] = mapped_column(JSON)
     location_map: Mapped[dict | None] = mapped_column(JSON)
     incident_map: Mapped[dict | None] = mapped_column(JSON)
     heat_map: Mapped[dict | None] = mapped_column(JSON)
     country_map: Mapped[dict | None] = mapped_column(JSON)
+    population_pyramid: Mapped[dict | None] = mapped_column(JSON)
     seat_chart: Mapped[dict | None] = mapped_column(JSON)
+    pie_chart: Mapped[dict | None] = mapped_column(JSON)
+    bar_chart: Mapped[dict | None] = mapped_column(JSON)
+    route_map: Mapped[dict | None] = mapped_column(JSON)
+    match_result: Mapped[dict | None] = mapped_column(JSON)
     election_map: Mapped[dict | None] = mapped_column(JSON)
     rephrased_from: Mapped[str | None] = mapped_column(Text)
 

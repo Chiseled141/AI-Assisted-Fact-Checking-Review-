@@ -9,6 +9,8 @@ import logging
 import re
 import unicodedata
 
+import httpx
+
 from ..core.config import Settings, load_data
 from ..db.models import Evidence
 from ..pipeline.passages import quote_in_text, top_passages
@@ -28,6 +30,17 @@ def _folded(name: str) -> str:
     plain = unicodedata.normalize("NFD", name.lower().replace("đ", "d").replace(".", " "))
     plain = " ".join("".join(char for char in plain if not unicodedata.combining(char)).split())
     return PROVINCE_PREFIX.sub("", plain).replace(" ", "").replace("-", "")
+
+
+def photon_features(query: str, settings: Settings, **filters: str | int) -> list[dict]:
+    if not settings.incident_map_photon_url:
+        return []
+    response = httpx.get(
+        settings.incident_map_photon_url, params={"q": query, **filters},
+        headers={"User-Agent": "ClaimTrace/0.1"}, timeout=settings.incident_map_timeout_seconds,
+    )
+    response.raise_for_status()
+    return response.json()["features"]
 
 
 PROVINCE_BY_NAME = {_folded(name): code for code, name in PLACES["provinces"].items()} | {

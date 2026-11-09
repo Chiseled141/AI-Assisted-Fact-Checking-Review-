@@ -18,6 +18,7 @@ def make_chart_finder(
     search_hits, research, fetch: Callable[[str], Page], settings: Settings, pool: ThreadPoolExecutor,
     window: TimeWindow | None, skip_url: str | None, claim_text: str, known_pages: tuple[str, ...] | list[str] = (),
     domains: tuple[str, ...] | list[str] | None = None,
+    *, search_model: str | None = None,
 ) -> Finder | None:
     if not search_hits or not research:
         return None
@@ -44,7 +45,7 @@ def make_chart_finder(
             if pages:
                 tried.update(source_url_key(page.url) for page in pages)
                 return pages
-        model_task = tasks.model(f"chart-research-{number}", "researching_chart", settings.research_model, settings)
+        model_task = tasks.model(f"chart-research-{number}", "researching_chart", search_model or settings.research_model, settings)
         search_task = tasks.search(f"chart-search-{number}", "chart_sources", chart="election")
         found = research_sources(
             claim_text, needs, search_hits, research, settings, window, False,
@@ -52,6 +53,7 @@ def make_chart_finder(
             max_searches=settings.chart_research_searches_per_round,
             max_picks=settings.chart_research_pages_per_round,
             domains=domains,
+            search_model=search_model,
         )
         if found.llm_error:
             model_task.fail(found.llm_error)

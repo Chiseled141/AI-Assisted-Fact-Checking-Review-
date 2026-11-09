@@ -42,19 +42,22 @@ def research_sources(
     max_picks: int | None = None,
     domains: list[str] | None = None,
     first_query: str | None = None,
+    first_domains: list[str] | None = None,
+    first_scope: str = "English",
+    search_model: str | None = None,
 ) -> Research:
     """Runs on a pool worker, so it saves nothing itself."""
     seen: dict[str, SearchHit] = {}
     result = Research(hits=None)
 
-    def run_search(query: str, election_results_only: bool = False) -> str:
+    def search_with_domains(query: str, scoped_domains: list[str] | None) -> str:
         options: dict = {} if newest_first else {"newest_first": False}
         if window:
             options["start_date"] = window.start
             if window.end:
                 options["end_date"] = window.end
-        if domains or election_results_only:
-            options["domains"] = domains or CHART_DOMAINS["elections"]
+        if scoped_domains:
+            options["domains"] = scoped_domains
         result.searches += 1
         try:
             hits = search_hits(query, **options)
@@ -72,12 +75,17 @@ def research_sources(
             ensure_ascii=False,
         )
 
-    # Most sources are in English, so that search always happens, whatever the model would have chosen to do.
-    first = f"Results of the English query \"{first_query}\":\n{run_search(first_query)}" if first_query else None
+    def run_search(query: str, election_results_only: bool = False) -> str:
+        return search_with_domains(query, domains or (CHART_DOMAINS["elections"] if election_results_only else None))
+
+    first = (
+        f"Results of the {first_scope} query \"{first_query}\":\n{search_with_domains(first_query, first_domains or domains)}"
+        if first_query else None
+    )
     prompt = "\n\n".join([tagged("input", claim_text, type="claim"), brief, *([first] if first else [])])
     try:
         answer, result.reported_model = research(
-            settings.research_model, system, prompt, ResearchPicks, run_search,
+            search_model or settings.research_model, system, prompt, ResearchPicks, run_search,
             (max_searches or settings.research_max_searches_per_claim) - result.searches,
         )
     except LLMError as error:

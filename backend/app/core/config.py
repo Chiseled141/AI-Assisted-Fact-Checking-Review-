@@ -58,7 +58,7 @@ class Settings(BaseSettings):
     followup_model: str = MODELS["roles"]["followup"]
     judges: dict[str, JudgeOption] = DEFAULT_JUDGES
     default_judge_ids: list[str] = MODELS["roles"]["default_judges"]
-    prompt_version: str = "v40"  # Bump when any file in `config/prompts/` changes. Each verdict records it.
+    prompt_version: str = "v47"  # Bump when any file in `config/prompts/` changes. Each verdict records it.
     llm_timeout_seconds: float = MODELS["openrouter"]["timeout_seconds"]
 
     # --- 2. Keys and storage ------------------------------------------------------------------------------------------
@@ -157,6 +157,7 @@ class Settings(BaseSettings):
     price_chart_timeout_seconds: float = 10
     price_chart_days_before: int = 730
     price_chart_max_events: int = 3
+    price_chart_rate_tolerance: float = 0.015  # How far an exchange rate may sit from the days around it.
 
     # Price chart, SJC gold. Prices read from news. One Tavily search per month, so these two set what a chart costs.
     sjc_chart_search_months: int = 6
@@ -186,12 +187,14 @@ class Settings(BaseSettings):
     heat_map_points_per_request: int = 50
     heat_map_max_days: int = 31
     heat_map_delay_days: int = 7  # Climate data arrives about a week late.
+    heat_map_air_delay_days: int = 1  # Air quality is ready the next day.
     heat_map_min_coverage: float = 0.6
 
     # Country map. Values from the World Bank (`charts/data_sources.py`).
     country_map_timeout_seconds: float = 40
     country_map_years: int = 20
     country_map_min_countries: int = 20
+    population_pyramid_years_back: int = 3  # How far back to look when the latest figures are missing.
 
     # US state map. Population from Data USA (`charts/data_sources.py`).
     state_map_timeout_seconds: float = 30

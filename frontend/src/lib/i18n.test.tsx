@@ -52,18 +52,18 @@ describe('language', () => {
   it('switches the interface from the header, keeps form text, and remembers the choice', async () => {
     const user = userEvent.setup();
     renderApp('/');
-    expect(screen.getByRole('link', { name: 'History' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'History' })).toBeInTheDocument();
     await user.type(screen.getByRole('textbox', { name: 'Text to check' }), 'My draft claim');
 
     await chooseLanguage(user, 'Tiếng Việt');
 
-    expect(screen.getByRole('link', { name: 'Lịch sử' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Lịch sử' })).toBeInTheDocument();
     expect(screen.getByRole('textbox', { name: 'Văn bản cần kiểm tra' })).toHaveValue('My draft claim');
     expect(document.documentElement.lang).toBe('vi');
     expect(window.localStorage.getItem('claimtrace.language')).toBe('vi');
 
     await chooseLanguage(user, 'English');
-    expect(screen.getByRole('link', { name: 'History' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'History' })).toBeInTheDocument();
     expect(getLanguage()).toBe('en');
   });
 

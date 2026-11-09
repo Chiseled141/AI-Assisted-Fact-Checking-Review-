@@ -116,7 +116,13 @@ export interface JudgeVerdict {
   /** The review in each language, written by the judge itself. */
   translations?: ModelTranslations | null;
   primary: boolean;
-  citations?: { evidenceId: string; quote?: string | null; translations?: ModelTranslations | null }[] | null;
+  citations?: {
+    evidenceId: string;
+    quote?: string | null;
+    translations?: ModelTranslations | null;
+    relation?: EvidenceRelation | null;
+    freshness?: 'current' | 'outdated' | 'unknown' | null;
+  }[] | null;
   model?: string | null;
 }
 
@@ -132,7 +138,7 @@ export interface Attachment {
 }
 
 /** Assets a price chart can show. Must match `MarketAsset` in the backend. */
-export type MarketAsset = 'bitcoin' | 'ethereum' | 'gold' | 'silver' | 'oil' | 'sjc_gold';
+export type MarketAsset = 'bitcoin' | 'ethereum' | 'gold' | 'silver' | 'oil' | 'usd_vnd' | 'sjc_gold';
 
 /** A date worth marking on a price chart, taken from the checked text. */
 export interface PriceEvent {
@@ -172,7 +178,7 @@ export interface PriceChartData {
 
 /** Weather over an area on certain days, from a weather model, saved when the claim was checked. */
 export interface HeatMapData {
-  metric: 'temperature' | 'rainfall';
+  metric: 'temperature' | 'rainfall' | 'pm25';
   /** `world`, or a country's two-letter code. */
   area: string;
   /** How the claim writes the area. */
@@ -317,7 +323,60 @@ export interface IncidentMapArea {
   road?: string;
 }
 
-export type ChartKey = 'priceChart' | 'locationMap' | 'incidentMap' | 'heatMap' | 'countryMap' | 'seatChart' | 'electionMap';
+export interface PieChartData {
+  title: string;
+  unit: 'count' | 'percent';
+  parts: { name: string; value: number }[];
+  publisher: string;
+  url: string;
+}
+
+export interface BarChartData {
+  title: string;
+  unit: string;
+  points: { name: string; value: number }[];
+  publisher: string;
+  url: string;
+}
+
+export interface RouteMapData {
+  title: string;
+  stops: { name: string; position: [number, number]; schedule?: string }[];
+  straightLineKm: number;
+  publisher: string;
+  url: string;
+}
+
+/** One country's people by age and sex, from a data service, saved when the claim was checked. */
+export interface PopulationPyramidData {
+  /** Two-letter code. */
+  country: string;
+  /** How the claim writes the country. */
+  named: string;
+  year: number;
+  source: string;
+  retrievedAt: string;
+  /** Number of people in each five-year band, youngest first, ending with 80 and over. */
+  men: number[];
+  women: number[];
+}
+
+export interface MatchResultData {
+  kind: 'sport' | 'esport';
+  teams: [string, string];
+  scores: [number, number];
+  competition?: string | null;
+  stage?: string | null;
+  dateLabel?: string | null;
+  shootout?: [number, number];
+  maps?: { name: string; scores: [number, number] }[];
+  moments?: { minute: string; label: string }[];
+  publisher: string;
+  url: string;
+}
+
+export type ChartKey = 'priceChart' | 'locationMap' | 'incidentMap' | 'heatMap' | 'countryMap' | 'populationPyramid' | 'seatChart' | 'electionMap' | 'pieChart' | 'barChart' | 'routeMap' | 'matchResult';
+export type StockMarket = 'us' | 'cn' | 'jp' | 'hk' | 'in' | 'vn';
 
 export type FollowUpTarget = { claimId: string } & (
   | { kind: 'source' | 'judge'; key: string }
@@ -342,11 +401,17 @@ export interface Claim {
   /** Provider error shown when `status === 'unavailable'`. */
   unavailableReason?: string;
   priceChart?: PriceChartData;
+  stockHeatmapMarkets?: StockMarket[] | null;
   locationMap?: LocationMapData;
   incidentMap?: IncidentMapData;
   heatMap?: HeatMapData;
   countryMap?: CountryMapData;
+  populationPyramid?: PopulationPyramidData;
   seatChart?: SeatChartData;
+  pieChart?: PieChartData;
+  barChart?: BarChartData;
+  routeMap?: RouteMapData;
+  matchResult?: MatchResultData;
   electionMap?: ElectionMapData;
   /** The question this claim was written from by the research model. The reader never stated the claim. */
   rephrasedFrom?: string | null;
@@ -363,8 +428,8 @@ export interface TaskProgress {
   /** Who is doing the work: an AI model, Tavily, or a chart data service. */
   kind: 'ai' | 'search' | 'data';
   task:
-    | 'extracting' | 'judging' | 'reading_seats' | 'reading_prices' | 'reading_figures' | 'reading_states' | 'reading_election' | 'rephrasing' | 'researching' | 'researching_chart'
-    | 'reading_incident_location' | 'searching' | 'chart_sources' | 'chart_data' | 'reviewing' | 'clarifying';
+    | 'extracting' | 'judging' | 'reading_seats' | 'reading_prices' | 'reading_figures' | 'reading_pie' | 'reading_states' | 'reading_election' | 'rephrasing' | 'researching' | 'researching_chart'
+    | 'reading_bar' | 'reading_route' | 'reading_incident_location' | 'reading_match' | 'searching' | 'chart_sources' | 'chart_data' | 'reviewing' | 'clarifying';
   status: 'running' | 'completed' | 'failed';
   /** AI tasks. `modelName` and `requestedModel` are what was asked for; `actualModel` is what the provider says answered. */
   modelName?: string | null;
@@ -459,6 +524,7 @@ export interface CheckReview {
 }
 
 export interface CheckDetail extends Check {
+  inputSuggestions?: string[] | null;
   claims: Claim[];
   progress?: TaskProgress[];
   messages?: ChatMessage[];
@@ -513,4 +579,7 @@ export function isTerminal(status: CheckStatus): boolean {
 export interface Account {
   id: string;
   username: string;
+  avatar?: string | null;
+  preferredSourceLanguage?: 'vi' | 'en' | null;
+  preferredSearchModelId?: string | null;
 }

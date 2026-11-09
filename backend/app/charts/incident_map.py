@@ -15,7 +15,7 @@ from ..pipeline.passages import quote_in_text, top_passages
 from ..pipeline.progress import NO_TASKS, NOT_ENOUGH_DATA, TaskLog
 from ..pipeline.prompts import INCIDENT_MAP_SYSTEM, IncidentLocations, ReportedIncidentArea, tagged
 from ..providers.llm import LLM, LLMError
-from .location_map import _folded
+from .location_map import _folded, photon_features
 
 logger = logging.getLogger(__name__)
 
@@ -108,15 +108,7 @@ def _intersection(roads: list[str], city_code: str, settings: Settings) -> Posit
 
 
 def _photon(query: str, settings: Settings, **filters: str) -> list[dict]:
-    if not settings.incident_map_photon_url:
-        return []
-    response = httpx.get(
-        settings.incident_map_photon_url,
-        params={"q": query, "countrycode": "VN", "limit": 15, **filters},
-        headers=HTTP_HEADERS, timeout=settings.incident_map_timeout_seconds,
-    )
-    response.raise_for_status()
-    return response.json()["features"]
+    return photon_features(query, settings, countrycode="VN", limit=15, **filters)
 
 
 def _in_city(props: dict, city: tuple[str, str]) -> bool:

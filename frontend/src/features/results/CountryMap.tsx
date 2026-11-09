@@ -1,5 +1,6 @@
 import { ChartReply } from './ChartReply';
 import { lazy, Suspense, useEffect, useRef, useState } from 'react';
+import { Globe2, LocateFixed, Map as MapIcon } from 'lucide-react';
 import type { CountryMapData } from '../../types/models';
 import { formatCalendarDate, safeHref } from '../../lib/format';
 import { locale, t, translated } from '../../lib/i18n';
@@ -8,6 +9,7 @@ import { countryMap } from './chartSettings';
 
 const CountryPlot = lazy(() => import('./CountryPlot'));
 const CountryHistory = lazy(() => import('./CountryHistory'));
+const CountryComparison = lazy(() => import('./CountryComparison'));
 
 const mapHeight = 460;
 const licenceUrl = 'https://creativecommons.org/licenses/by/4.0/';
@@ -92,9 +94,14 @@ export function CountryMap({ map, onReply }: { map: CountryMapData; onReply?: (t
   const worldOnly: ChosenCountry[] = states ? [] : [{ code: 'world', label: t('World') }];
   const fromClaim = map.selected.map(({ code, named }) => ({ code, label: named }));
   const [chosen, setChosen] = useState<ChosenCountry[]>(fromClaim.length ? fromClaim : worldOnly);
+  const [globe, setGlobe] = useState(!states && fromClaim.length > 1);
+  const [focus, setFocus] = useState<ChosenCountry | null>(null);
+  const focusCountry = (country: ChosenCountry) => setFocus({ ...country });
   const column = useRef<HTMLDivElement>(null);
   const wide = useMediaQuery('(min-width: 1024px)');
   const [height, setHeight] = useState(mapHeight);
+  const globeHeight = wide ? 420 : 360;
+  const plotHeight = globe ? globeHeight : height;
 
   // On a wide screen the map stands beside the figures, so it takes the height of their column to line up with it.
   useEffect(() => {
@@ -116,73 +123,128 @@ export function CountryMap({ map, onReply }: { map: CountryMapData; onReply?: (t
     <section aria-labelledby="country-map-heading" className="mt-8">
       {/* A white panel, the same as the other charts'. */}
       <div className="rounded-2xl border border-ink bg-white p-4 sm:p-6">
-        <div className="flex items-start justify-between gap-3">
-          <h2 id="country-map-heading" className="text-[24px] font-medium leading-[1.2] tracking-[-0.02em] text-ink">
-            {title}
-          </h2>
-          <ChartReply title={title} onReply={onReply} />
+        <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3 sm:grid-cols-[minmax(0,1fr)_auto_auto]">
+          <div>
+            <h2 id="country-map-heading" className="text-[24px] font-medium leading-[1.2] tracking-[-0.02em] text-ink">
+              {title}
+            </h2>
+            <p className="mt-1 text-sm text-ink-muted">
+              {[...map.selected.map(({ named }) => named), String(map.year)].join(' · ')}
+            </p>
+          </div>
+          {!states && (
+            <div
+              role="group"
+              aria-label={t('Map view')}
+              className="col-span-2 col-start-1 row-start-2 flex justify-self-start rounded-lg border border-line bg-page p-0.5 sm:col-span-1 sm:col-start-2 sm:row-start-1"
+            >
+              {[
+                { isGlobe: false, label: 'Flat map', Icon: MapIcon },
+                { isGlobe: true, label: 'Globe', Icon: Globe2 },
+              ].map(({ isGlobe, label, Icon }) => (
+                <button
+                  key={label}
+                  type="button"
+                  aria-pressed={globe === isGlobe}
+                  onClick={() => setGlobe(isGlobe)}
+                  className="relative inline-flex min-h-8 items-center gap-1 rounded-md border border-transparent px-2 text-xs font-medium text-ink-muted after:absolute after:inset-x-0 after:-inset-y-1.5 hover:text-ink aria-pressed:border-line-strong aria-pressed:bg-white aria-pressed:text-ink"
+                >
+                  <Icon size={14} aria-hidden="true" />
+                  {t(label)}
+                </button>
+              ))}
+            </div>
+          )}
+          {onReply && (
+            <div className="col-start-2 row-start-1 sm:col-start-3">
+              <ChartReply title={title} onReply={onReply} />
+            </div>
+          )}
         </div>
-        <p className="mt-1.5 text-sm text-ink-soft">
-          {[...map.selected.map(({ named }) => named), String(map.year)].join(' · ')}
-        </p>
-        <div className="mt-4 grid gap-6 lg:grid-cols-[minmax(0,7fr)_minmax(0,5fr)] lg:gap-8">
-          {/* The height matches the map's, so nothing jumps when it loads. */}
-          <div className="min-w-0" style={{ height }} aria-hidden="true">
-            <Suspense fallback={null}>
-              <CountryPlot
-                map={map}
-                height={height}
-                onChoose={(countries) => setChosen(countries.length ? countries : worldOnly)}
-              />
-            </Suspense>
+        <div className="mt-4 grid gap-6 lg:grid-cols-[minmax(0,5fr)_minmax(300px,3fr)]">
+          <div className="min-w-0">
+            {/* Reserve space while Highcharts and the map shapes load. */}
+            <div style={{ height: plotHeight }} aria-hidden="true">
+              <Suspense fallback={null}>
+                <CountryPlot
+                  map={map}
+                  height={plotHeight}
+                  globe={globe}
+                  focus={focus}
+                  onChoose={(countries) => setChosen(countries.length ? countries : worldOnly)}
+                />
+              </Suspense>
+            </div>
+            {globe && (
+              <Suspense fallback={null}>
+                <CountryComparison map={map} chosen={chosen} onFocus={focusCountry} />
+              </Suspense>
+            )}
           </div>
           <div ref={column} className="min-w-0 self-start">
-            <h3 className="text-[15px] font-medium leading-[1.3] text-ink">
+            <h3 className="text-sm font-medium text-ink-muted">
               {t('Figures from {source}', { source: map.source })}
             </h3>
-            <div className="mt-3 space-y-3">
+            <div className="mt-2 divide-y divide-line rounded-xl border border-line bg-page empty:hidden">
               {chosen.map(({ code, label }, index) => {
                 const own = valueAt(map, code, map.year);
                 const rank = rankOf(map, code);
+                const flag = flagUrl(code);
+                const identity = (
+                  <span className="flex min-w-0 items-center gap-2">
+                    {flag && (
+                      <img
+                        src={flag}
+                        alt=""
+                        width={20}
+                        height={15}
+                        loading="lazy"
+                        referrerPolicy="no-referrer"
+                        className="h-[15px] w-5 shrink-0 rounded-[2px] object-cover ring-1 ring-line-strong"
+                        onError={(event) => {
+                          event.currentTarget.style.display = 'none';
+                        }}
+                      />
+                    )}
+                    <span className="min-w-0 break-words">{label}</span>
+                    <span
+                      className="size-2 shrink-0 rounded-full"
+                      style={{ backgroundColor: countryMap.compareColors[index % countryMap.compareColors.length] }}
+                      aria-hidden="true"
+                    />
+                  </span>
+                );
                 return (
-                  <div key={code} className="overflow-hidden rounded-xl border border-line-strong bg-white">
-                    {/* The underline is this country's color on the map and in the history chart. */}
-                    <h4
-                      className="flex items-center gap-2 border-b-2 bg-page px-4 py-2.5 text-[13px] font-medium text-ink"
-                      style={{ borderBottomColor: countryMap.compareColors[index % countryMap.compareColors.length] }}
-                    >
-                      {flagUrl(code) && (
-                        // The name is right beside it, so screen readers skip it. If it fails to load, it just disappears.
-                        <img
-                          src={flagUrl(code)!}
-                          alt=""
-                          width={20}
-                          height={15}
-                          loading="lazy"
-                          referrerPolicy="no-referrer"
-                          className="h-[15px] w-5 rounded-[2px] object-cover ring-1 ring-line-strong"
-                          onError={(event) => {
-                            event.currentTarget.style.display = 'none';
-                          }}
-                        />
-                      )}
-                      {label}
+                  <div key={code} className="px-4 py-3">
+                    <h4 className="text-[15px] font-medium leading-snug text-ink">
+                      {globe && code !== 'world' ? (
+                        <button
+                          type="button"
+                          className="-my-2 flex min-h-11 w-full items-center justify-between gap-2 rounded-md text-left hover:text-primary-hover"
+                          onClick={() => focusCountry({ code, label })}
+                          aria-label={t('Show {country} on the globe', { country: label })}
+                        >
+                          {identity}
+                          <LocateFixed size={16} className="shrink-0 text-ink-muted" aria-hidden="true" />
+                        </button>
+                      ) : identity}
                     </h4>
-                    <dl className="divide-y divide-line">
-                      <div className="grid grid-cols-[minmax(0,1fr)_auto] items-baseline gap-x-5 px-4 py-2.5">
-                        <dt className="text-[13px] leading-[1.4] text-ink-soft">
+                    <dl className="mt-3 grid grid-cols-[minmax(0,1fr)_minmax(0,36%)] items-end gap-3">
+                      <div className="col-span-2 flex min-w-0 flex-col-reverse gap-1 data-[ranked=true]:col-span-1" data-ranked={Boolean(rank)}>
+                        <dt className="text-xs leading-snug text-ink-muted">
                           {t('Figures for {year}', { year: own?.year ?? map.year })}
                         </dt>
-                        <dd className="text-right text-[15px] font-medium leading-[1.3] text-ink">
+                        <dd className="break-words text-xl font-strong leading-none tracking-[-0.03em] text-ink tabular-nums min-[360px]:text-2xl sm:text-[28px]">
                           {own ? formatExactStat(own.value, map.indicator) : '–'}
                         </dd>
                       </div>
                       {rank && (
-                        <div className="grid grid-cols-[minmax(0,1fr)_auto] items-baseline gap-x-5 px-4 py-2.5">
-                          <dt className="text-[13px] leading-[1.4] text-ink-soft">
-                            {t(states ? 'Rank among states' : 'Rank among countries')}
+                        <div className="flex min-w-0 flex-col-reverse gap-1 text-right">
+                          <dt className="text-xs leading-snug text-ink-muted">
+                            <span className="sr-only sm:not-sr-only">{t(states ? 'Rank among states' : 'Rank among countries')}</span>
+                            <span className="sm:hidden" aria-hidden="true">{t('Rank')}</span>
                           </dt>
-                          <dd className="text-right text-[15px] font-medium leading-[1.3] text-ink">
+                          <dd className="text-base font-medium leading-none text-ink tabular-nums">
                             {t('{rank} of {count}', { rank: rank.rank, count: rank.count })}
                           </dd>
                         </div>
@@ -192,7 +254,12 @@ export function CountryMap({ map, onReply }: { map: CountryMapData; onReply?: (t
                 );
               })}
             </div>
-            <h3 className="mt-5 text-[15px] font-medium leading-[1.3] text-ink">{t('Over time')}</h3>
+            <h3 className="mt-6 text-base font-medium leading-snug text-ink">
+              {t(map.indicator === 'population' ? 'Population over time' : 'Over time')}
+            </h3>
+            {!states && (
+              <p className="mt-1 text-sm text-ink-soft">{t('Select countries on the map to compare their trends.')}</p>
+            )}
             <div className="mt-2" style={{ height: 250 }} aria-hidden="true">
               <Suspense fallback={null}>
                 <CountryHistory map={map} chosen={chosen} />
@@ -220,7 +287,7 @@ export function CountryMap({ map, onReply }: { map: CountryMapData; onReply?: (t
         {t(
           states
             ? 'Click a state to add it to the comparison. These are 5-year estimates, so they lag the latest yearly figures. This map is context and did not decide the verdict.'
-            : 'Click a country to add it to the comparison. National estimates can be revised. This map is context and did not decide the verdict.',
+            : 'National estimates can be revised. This map is context and did not decide the verdict.',
         )}
       </p>
     </section>

@@ -33,6 +33,12 @@ const colorStops: Record<HeatMapData['metric'], [number, string][]> = {
     [0.4, '#7fb6dc'],
     [1, '#0b3a78'],
   ],
+  pm25: [
+    [0, '#f6f4d2'],
+    [0.3, '#f2c14e'],
+    [0.6, '#d9482b'],
+    [1, '#5e1a6b'],
+  ],
 };
 
 interface Shapes {
@@ -72,7 +78,8 @@ export default function HeatPlot({ map }: { map: HeatMapData }) {
   const lats = map.points.map(([, lat]) => lat);
   const values = map.points.map(([, , value]) => value);
   // Round outward, so the legend reads in clean steps.
-  const lowest = map.metric === 'rainfall' ? 0 : Math.floor(Math.min(...values) / 5) * 5;
+  const air = map.metric === 'pm25';
+  const lowest = map.metric === 'temperature' ? Math.floor(Math.min(...values) / 5) * 5 : 0;
   const highest = Math.ceil(Math.max(...values) / 5) * 5 || 5;
   // Above and below freezing, the scale centers on 0°C, so warm places read warm and cold ones cold.
   const reach = Math.max(Math.abs(lowest), highest);
@@ -133,14 +140,19 @@ export default function HeatPlot({ map }: { map: HeatMapData }) {
           padding: 4,
         },
     mapNavigation: { enabled: true, enableMouseWheelZoom: false, buttonOptions: { verticalAlign: 'bottom' } },
-    legend: { symbolWidth: phone ? 240 : 320, itemStyle: { color: inkSoft, fontWeight: 'normal' } },
+    legend: {
+      symbolWidth: phone ? 240 : 320,
+      itemStyle: { color: inkSoft, fontWeight: 'normal' },
+      // This unit is too wide to repeat on every tick.
+      ...(air ? { title: { text: metricUnit.pm25.trim(), style: { color: inkSoft, fontSize: '12px', fontWeight: 'normal' } } } : {}),
+    },
     colorAxis: {
       min: low,
       max: high,
       stops: colorStops[map.metric],
       gridLineColor: '#fff',
       tickPositions: [0, 1, 2, 3, 4].map((index) => low + (index * (high - low)) / 4),
-      labels: { format: `{value}${metricUnit[map.metric]}`, overflow: 'allow', style: { color: inkSoft, fontSize: '12px' } },
+      labels: { format: air ? '{value}' : `{value}${metricUnit[map.metric]}`, overflow: 'allow', style: { color: inkSoft, fontSize: '12px' } },
     },
     tooltip: {
       backgroundColor: 'rgb(var(--surface))',

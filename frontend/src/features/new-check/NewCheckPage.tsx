@@ -1,5 +1,6 @@
-import { useRef } from 'react';
+import { useEffect, useRef } from 'react';
 import { ArrowUpRight, ChevronDown, Info } from 'lucide-react';
+import { useLocation } from 'react-router-dom';
 import { exampleInputs } from '../../data/examples';
 import { WorldEvidenceMap } from '../../components/WorldEvidenceMap';
 import { HowItWorks } from '../../components/HowItWorks';
@@ -8,38 +9,43 @@ import { getLanguage, t } from '../../lib/i18n';
 
 export function NewCheckPage() {
   const composerRef = useRef<ComposerHandle>(null);
+  const { state } = useLocation();
 
-  function applyExample(id: string) {
-    const example = exampleInputs.find((item) => item.id === id);
-    if (example) composerRef.current?.fill(getLanguage() === 'vi' ? example.valueVi : example.value);
-  }
+  useEffect(() => {
+    if (typeof state?.suggestedClaim === 'string') {
+      composerRef.current?.fill(state.suggestedClaim, { submitOnEnter: true });
+    }
+  }, [state]);
+
+  const language = getLanguage();
 
   return (
     <div>
       <section className="relative isolate overflow-hidden">
         <WorldEvidenceMap />
-        <div className="relative mx-auto flex min-h-[calc(100svh-3.5rem)] max-w-5xl flex-col items-center justify-center px-4 py-12 sm:px-8">
-          <p className="flex flex-wrap items-center justify-center gap-1.5 text-center text-[13px] text-ink-muted sm:text-sm">
-            <Info className="h-4 w-4" aria-hidden="true" />
-            {t('AI can be wrong. Review the evidence.')}
-          </p>
-
-          <h1 className="mt-6 max-w-3xl text-center text-[30px] font-normal leading-[1.08] tracking-[-0.04em] text-ink sm:text-[42px] lg:text-[48px]">
-            <span className="font-bold text-primary">{t('Trace claims.')}</span>
+        <div className="relative mx-auto flex min-h-[calc(100svh-68px)] max-w-5xl flex-col items-center justify-center px-4 py-10 sm:px-8 sm:py-12 md:min-h-[calc(100svh-72px)]">
+          <h1 className="max-w-3xl text-center text-[30px] font-normal leading-[1.08] tracking-[-0.04em] sm:text-[42px] lg:text-[48px]">
+            <span className="block font-bold text-primary">{t('Trace claims.')}</span>
             <span className="block text-ink-muted">{t('Examine evidence.')}</span>
           </h1>
 
-          <div className="mt-8 w-full max-w-5xl sm:mt-10">
+          <div className="mt-6 w-full min-w-0 sm:mt-8">
+            <p className="mb-2.5 flex items-start justify-center gap-1.5 px-2 text-center text-[13px] leading-5 text-ink-muted sm:mb-3 sm:text-sm">
+              <Info className="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" />
+              <span>{t('AI can be wrong. Review the evidence.')}</span>
+            </p>
             <CheckComposer ref={composerRef} variant="home" />
 
-            <section aria-labelledby="examples-heading" className="mt-5 flex flex-col items-center sm:mt-6">
-              <h2 id="examples-heading" className="sr-only">
-                {t('Examples')}
-              </h2>
+            <section aria-labelledby="examples-heading" className="mt-5 sm:mt-6">
+              <h2 id="examples-heading" className="sr-only">{t('Examples')}</h2>
               <ul className="flex flex-wrap justify-center gap-2.5">
                 {exampleInputs.map((example) => (
                   <li key={example.id}>
-                    <button type="button" className="home-pill" onClick={() => applyExample(example.id)}>
+                    <button
+                      type="button"
+                      className="home-pill"
+                      onClick={() => composerRef.current?.fill(language === 'vi' ? example.valueVi : example.value)}
+                    >
                       <example.icon className="h-4 w-4 text-brand-600" aria-hidden="true" />
                       {t(example.label)}
                     </button>

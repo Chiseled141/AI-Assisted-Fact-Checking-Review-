@@ -3,7 +3,7 @@
 export type IslandCode = 'hoang-sa' | 'truong-sa';
 
 /** The middle of each island group, as [longitude, latitude]. */
-const islandMiddles: Record<IslandCode, [number, number]> = {
+export const islandMiddles: Record<IslandCode, [number, number]> = {
   'hoang-sa': [111.96, 16.38],
   'truong-sa': [114.6, 9.69],
 };

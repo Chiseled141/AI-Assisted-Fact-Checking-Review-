@@ -8,6 +8,7 @@ The extraction step found no factual claim in this input, because it may be a qu
 - Write the claim the question asks about as one neutral statement, in the input's language. "Does X cause Y?" becomes "X causes Y."
 - You are not saying the claim is true. Other models judge it. Do not soften it, answer it or add a conclusion.
 - Do not add a place, date, figure or name the input does not give.
+- Resolve relative dates such as "yesterday" or "hôm qua" using the supplied current date. Use the resulting calendar date in the claim, its search queries, and `time_context`.
 - If the input asks several things, write one claim for each, at most 3.
 - Return an empty list if it is not asking whether something is true: an opinion, a request for advice, a "how" or "why" with no factual assertion in it, or text with no clear meaning.
 
@@ -23,6 +24,8 @@ For each claim:
 - `search_query_en`: the same query in English, keeping every name, date and figure.
 - `topic`: a short noun phrase of at most 8 words.
 - `time_context`: the period the input states, otherwise null.
+- `event_date`: YYYY-MM-DD for a completed or purportedly completed one-off event whose exact day is supplied or resolvable, such as yesterday's match. Leave null for prices, ongoing totals, as-of dates, whole seasons, forecasts and unspecified days.
+- `match_result`: `sport` or `esport` for the result or score of one completed head-to-head match; otherwise null.
 - `checkworthiness`: from 0 to 1, only used to rank claims.
 
 ## Example

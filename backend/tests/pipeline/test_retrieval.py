@@ -206,7 +206,7 @@ def test_only_older_pages_mean_no_evidence_not_a_failed_search():
     assert selected == []
     assert not failed
     assert events[-1]["status"] == "completed"
-    assert events[-1]["summary"] == "Only pages from before this election were found."
+    assert events[-1]["summary"] == "Only reports published before the claimed event were found."
 
 
 def test_a_claims_sources_end_up_newest_first_by_the_pages_own_dates():

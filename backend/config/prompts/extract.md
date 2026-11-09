@@ -34,17 +34,29 @@ Return `input_category` only when `claims` is empty: `subjective` for preference
   - For broad political affiliation, search for party control and election results rather than just the named party.
   - For an election seat claim, include the named party, chamber, election year and stated figures, and search for final election results rather than campaign coverage or projections.
 - `search_query_en`: the same query in English, keeping every name, date and figure, with dates written out, such as "gold price above $2,000 ounce 4 August 2020". Most sources are in English, so give this even for a local claim. If `search_query` is already in English, repeat it.
+- `search_query_vi`: the same query in Vietnamese if the claim is written in Vietnamese (including unaccented Vietnamese) or concerns Vietnam, such as its people, institutions, laws or events. Keep the same names, dates and figures. For other claims, return null.
 - `topic`: a short noun phrase of at most 8 words.
 - `time_context`: the period the claim refers to if the text states one, otherwise null.
+- `event_date`: YYYY-MM-DD only for a completed or purportedly completed one-off event whose exact calendar day is supplied or resolvable from context, such as yesterday's match. Leave null for ongoing totals, price observations, as-of dates, whole seasons, forecasts or an unknown day. This is the earliest day a report could confirm that the event happened.
 - `checkworthiness`: from 0 to 1, used only to rank factual claims when the input contains more than the check limit. Specific facts, figures, dates and events score high. Vague or trivial statements score low, but still belong in the list when they make a factual assertion. This is not a confidence score or a verdict.
 
 ## Fields for charts and maps
 
 Most claims get null or an empty list for all of these. Whether enough verified data exists to draw a chart is the server's decision, never a reason to invent prices or dates.
 
+### Match result: `match_result`
+
+- Use `sport` for a factual claim about the result or a specific event in one completed head-to-head sports match. Use `esport` for the equivalent in an esports match or series. Include both opponents if named, the competition, edition and date in the search query when given.
+- Use null for schedules, predictions, standings, tournament-wide statistics, and claims that do not identify one match. Leave out the match card for an ambiguous matchup with no event or time that distinguishes it.
+
+### Pie chart: `pie_chart`
+
+- Set true when the claim states or compares shares within one total broken into exclusive categories, such as registered vehicles by fuel type, votes by party or electricity generation by source. Include the population, period and breakdown in the neutral search query so it can find the whole distribution.
+- Set false for overlapping groups, changes over time, rates with different denominators, unrelated counts and parliament seat charts.
+
 ### Price chart: `price_asset`, `price_events`
 
-- `price_asset`: one of `bitcoin`, `ethereum`, `gold`, `silver`, `oil` or `sjc_gold`, only when the claim itself states the price of that asset. Use `gold` for the world price and `sjc_gold` for the price of SJC gold in Vietnam. Otherwise null.
+- `price_asset`: one of `bitcoin`, `ethereum`, `gold`, `silver`, `oil`, `usd_vnd` or `sjc_gold`, only when the claim itself states the price of that asset. Use `gold` for the world price and `sjc_gold` for the price of SJC gold in Vietnam. Use `usd_vnd` when the claim states the market exchange rate between the US dollar and the dong, but not a bank's buying or selling rate, the State Bank's central rate or a free-market rate. Otherwise null.
 - `price_events`: at most 3 dated events for the chart, only when `price_asset` is set. Otherwise an empty list. Each has `date` (YYYY-MM-DD, a full date the text gives or that you can work out from the article's date), `title` (at most 3 words) and `text` (one short sentence). Use only events in the text. Leave out an event with no full date. Never include a price the text doesn't state.
 - For every factual claim that states the price of a supported asset, set `price_asset` and include its dated price events when the input gives full dates. Do not leave these fields empty merely because the evidence search or price history has not run yet: the server retrieves the chart data afterwards.
 - Leave `price_asset` null for news that only mentions the asset without stating its price (mining, regulation, a company buying it), a gold medal, or any other local retail price, such as DOJI or PNJ gold, ring gold or petrol at the pump.
@@ -64,8 +76,8 @@ Most claims get null or an empty list for all of these. Whether enough verified 
 
 ### Heatmap: `heat_map`
 
-- Only when the claim states the temperature or rainfall over an area on certain days, such as a record heat wave or a flood-causing downpour. Otherwise null.
-- It has `metric` (`temperature` or `rainfall`), `area` (`WORLD`, or a two-letter ISO code such as `VN`), `area_name` (the area, copied exactly as the claim writes it), `start` and `end` (YYYY-MM-DD, at most 31 days apart, from dates the text gives or you can work out from the article's date).
+- Only when the claim states the temperature, rainfall or fine dust (PM2.5) over an area on certain days, such as a record heat wave, a flood-causing downpour or a day of heavy air pollution. Otherwise null.
+- It has `metric` (`temperature`, `rainfall` or `pm25`), `area` (`WORLD`, or a two-letter ISO code such as `VN`), `area_name` (the area, copied exactly as the claim writes it), `start` and `end` (YYYY-MM-DD, at most 31 days apart, from dates the text gives or you can work out from the article's date).
 - Leave it null when the text gives no such dates, or for a whole year, a forecast or a long-term trend.
 - When `heat_map` is set, also list the area in `map_places`, because recent days have no climate data yet and the map is shown instead.
 
@@ -76,6 +88,13 @@ Most claims get null or an empty list for all of these. Whether enough verified 
 - `countries` is a list of places, each with `name` copied exactly as the claim writes it and `country`, its two-letter ISO code. It is empty when the claim is about the whole world. For the population of a US state, use country `US` and copy the state into `region`.
 - When `country_stat` is set, leave `map_places` empty. The interface still fits the complete shapes of its countries.
 - Leave it null for any other statistic, a province or city, or a forecast.
+
+### Population pyramid: `population_pyramid`
+
+- Only when the claim is about how one country's population divides by age or sex, such as an ageing population, the share of people over 65 or under 15, the working-age population, the median age or the sex ratio. Otherwise null.
+- It has `name` (the country, copied exactly as the claim writes it), `country` (its two-letter ISO code) and `year` (the year the claim refers to, otherwise null).
+- When `population_pyramid` is set, leave `country_stat` null and `map_places` empty.
+- Leave it null for a province or city, a claim comparing countries, a forecast, or a law or event that only applies to people of a certain age.
 
 ### Parliament chart: `seat_chart`
 
@@ -127,6 +146,11 @@ Text: "Giá vàng nhẫn DOJI vượt 80 triệu đồng/lượng ngày 18/3/202
 
 - "Giá vàng nhẫn DOJI vượt 80 triệu đồng/lượng ngày 18/3/2024." Price asset: null. We only chart SJC among local prices.
 
+Text: "Tỷ giá USD/VND vượt 26.000 đồng ngày 2/4/2025. Vietcombank bán ra 26.300 đồng/USD."
+
+- "Tỷ giá USD/VND vượt 26.000 đồng ngày 2/4/2025." Price asset: `usd_vnd`. Price events: 2025-04-02, "Vượt 26.000", "Tỷ giá USD/VND vượt 26.000 đồng.".
+- "Vietcombank bán ra 26.300 đồng/USD." Price asset: null. It states one bank's rate.
+
 ### Places
 
 Text: "Bão Yagi đổ bộ vào Quảng Ninh và Hải Phòng ngày 7/9/2024. Hà Nội đã khai trương tuyến metro Cát Linh - Hà Đông năm 2021."
@@ -143,6 +167,7 @@ Text: "Trạm Tương Dương (Nghệ An) đo được 44,2 độ C ngày 7/5/20
 - "Trạm Tương Dương (Nghệ An) đo được 44,2 độ C ngày 7/5/2023." Heat map: `temperature`, `VN`, "Nghệ An", 2023-05-07 to 2023-05-07.
 - "July 2023 was the hottest month on record for the world." Heat map: `temperature`, `WORLD`, "world", 2023-07-01 to 2023-07-31.
 - "Hanoi's temperature will rise by 2°C by 2050." is a prediction, so leave it out.
+- If the claim were "Nồng độ bụi mịn PM2.5 ở Hà Nội vượt 100 µg/m³ ngày 15/1/2025.", heat map would be `pm25`, `VN`, "Hà Nội", 2025-01-15 to 2025-01-15.
 
 ### Country statistics
 
@@ -153,6 +178,13 @@ Text: "Dân số Việt Nam đạt 100 triệu người năm 2023. India overtoo
 - "Vietnam's inflation was 3,5% in 2023." Country stat: null. Inflation is not one of the four.
 - "Dân số Hà Nội đạt 8 triệu người." Country stat: null. Hà Nội is a city, not a country.
 - If the claim were "California is the most populous US state.", country stat would be `population`, "US" `US` with region "California", year null.
+
+### Population pyramids
+
+Text: "Người từ 65 tuổi trở lên chiếm 9% dân số Việt Nam năm 2023. Người dưới 18 tuổi ở Việt Nam không được mua rượu."
+
+- "Người từ 65 tuổi trở lên chiếm 9% dân số Việt Nam năm 2023." Population pyramid: "Việt Nam", `VN`, year 2023. Country stat: null.
+- "Người dưới 18 tuổi ở Việt Nam không được mua rượu." Population pyramid: null. It states a rule, not the size of an age group.
 
 ### Elections
 

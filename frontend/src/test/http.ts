@@ -12,7 +12,7 @@ export function interceptRequests(handler: (url: URL, init?: RequestInit) => Res
   );
   vi.stubGlobal('fetch', async (input: string | URL | Request, init?: RequestInit) => {
     const url = new URL(String(input), 'http://localhost');
-    if (url.pathname !== '/api/auth/me') return fetchMock(input, init);
+    if (url.pathname !== '/api/auth/me' || init?.method === 'PATCH') return fetchMock(input, init);
     try {
       const response = await handler(url, init);
       const body = response.ok ? await response.clone().json() : undefined;

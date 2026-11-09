@@ -10,6 +10,7 @@ import re
 from collections.abc import Callable
 from concurrent.futures import ThreadPoolExecutor
 from datetime import UTC, date, datetime, timedelta
+from statistics import median
 
 from ..core.config import Settings
 from ..db.models import utcnow
@@ -30,6 +31,7 @@ ASSET_WORDS = {
     "silver": r"silver|bạc",
     "oil": r"oil|brent|dầu",
     "sjc_gold": r"sjc",
+    "usd_vnd": r"usd|đô(?!\s*thị)|đô-la|dollars?",
 }
 PRICE_WORDS = re.compile(
     r"(?<!\w)(prices?|priced|worth|valued?|traded?|trading|usd|all-time high|record high|hit a record|at a record|record price"
@@ -42,16 +44,44 @@ SJC_PRICE_WORDS = re.compile(r"(?<!\w)(sjc|vàng miếng|triệu đồng|lượn
 UNTRACKED_PRICE_WORDS = re.compile(r"(?<!\w)(doji|pnj|vàng nhẫn|xăng|e5|ron ?95)(?!\w)", re.IGNORECASE)
 # These dealers sell SJC bars too, at prices of their own.
 OTHER_SELLERS = re.compile(r"(?<!\w)(mi hồng|bảo tín|phú quý|nhẫn)(?!\w)", re.IGNORECASE)
+DONG_WORDS = re.compile(r"(?<!\w)(vnd|vnđ|đồng|dong)(?!\w)", re.IGNORECASE)
+# A price in dollars and dong together isn't an exchange rate, so the claim must say it is one.
+RATE_WORDS = re.compile(
+    r"(?<!\w)(tỷ giá|tỉ giá|exchange rate|quy đổi|usd\s*[/-]\s*vnd|(?:1|một)\s+(?:usd|đô|dollar)"
+    r"|(?:per|to the|against the|so với)\s+(?:us\s+)?(?:usd|đô|dollar))(?!\w)",
+    re.IGNORECASE,
+)
+# These rates have figures of their own, which the market rate would misrepresent.
+OTHER_RATE_WORDS = re.compile(
+    r"(?<!\w)(chợ đen|thị trường tự do|trung tâm|black market|central rate|ngân hàng|banks?|mua vào|bán ra"
+    r"|vietcombank|bidv|vietinbank|agribank|techcombank)(?!\w)",
+    re.IGNORECASE,
+)
 
 
 def is_price_claim(text: str, asset: str) -> bool:
     """The model's choice must hold up in the claim's own words, so a stray guess draws no chart."""
     if asset not in ASSET_WORDS or UNTRACKED_PRICE_WORDS.search(text):
         return False
+    named = re.search(rf"(?<!\w)({ASSET_WORDS[asset]})(?!\w)", text, re.IGNORECASE)
+    if asset == "usd_vnd":
+        return bool(named and DONG_WORDS.search(text) and RATE_WORDS.search(text) and not OTHER_RATE_WORDS.search(text))
     if asset != "sjc_gold" and SJC_PRICE_WORDS.search(text):
         return False
-    named = re.search(rf"(?<!\w)({ASSET_WORDS[asset]})(?!\w)", text, re.IGNORECASE)
     return bool(named and PRICE_WORDS.search(text))
+
+
+def drop_bad_rates(prices: list[list[float]], tolerance: float) -> list[list[float]]:
+    """Yahoo's dong history has lone wrong days, such as 189 dong to the dollar. Judges read these, so they go.
+
+    Each day is compared with the median of the week around it, which leaves a real devaluation in place.
+    """
+    closes = [close for _, close in prices]
+    return [
+        point
+        for index, point in enumerate(prices)
+        if abs(point[1] / median(closes[max(index - 3, 0) : index + 4]) - 1) <= tolerance
+    ]
 
 
 def _event_day(value: str, today: date) -> date | None:
@@ -93,13 +123,16 @@ def build_price_chart(
         logger.warning("%s: %s", market.name, error)
         task.fail(str(error))
         return None
+    is_rate = item.price_asset == "usd_vnd"
+    if is_rate:
+        prices = drop_bad_rates(prices, settings.price_chart_rate_tolerance)
     if len(prices) < 2:
         task.finish(summary=NOT_ENOUGH_DATA)
         return None
     task.finish()
     return {
         "asset": item.price_asset,
-        "currency": "USD",
+        "currency": "VND" if is_rate else "USD",
         "source": market.name,
         "retrievedAt": now.isoformat(),
         "prices": prices,
@@ -279,23 +312,25 @@ ASSET_NAMES = {
     "silver": "World silver price",
     "oil": "Brent crude oil",
     "sjc_gold": "SJC gold bar selling price in Vietnam",
+    "usd_vnd": "US dollar in Vietnamese dong, market exchange rate (not a bank's or the State Bank's rate)",
 }
 
 
 def price_table(chart: dict | None, recent_days: int = 60) -> str | None:
     """The chart's prices as dated lines for the judges.
 
-    Every day of the last `recent_days` is kept, and only the first day of each month before them.
+    Keep daily prices near the claim's events and in the recent window, plus monthly context elsewhere.
     """
     if not chart or len(chart.get("prices") or []) < 2:
         return None
     days = [(datetime.fromtimestamp(stamp / 1000, UTC).date(), price) for stamp, price in chart["prices"]]
     cutoff = days[-1][0] - timedelta(days=recent_days)
+    event_days = [_event_day(event["date"], days[-1][0]) for event in chart.get("events", [])]
     seen_months: set[tuple[int, int]] = set()
     lines = []
     for day, price in days:
         month = (day.year, day.month)
-        if day >= cutoff or month not in seen_months:
+        if day >= cutoff or month not in seen_months or any(event and abs((day - event).days) <= 7 for event in event_days):
             figure = f"{price:,.2f}"
             lines.append(f"{day.isoformat()}: {figure.removesuffix('.00')}")
         seen_months.add(month)

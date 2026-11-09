@@ -1,4 +1,4 @@
-"""Builds a claim's heatmap, only for a claim about the temperature or rainfall over an area on certain days.
+"""Builds a claim's heatmap, only for a claim about the temperature, rainfall or PM2.5 over an area on certain days.
 
 A model names the metric, the area and the dates. The values come from climate data, and are saved with the claim.
 A heatmap is context from a weather model, not measurements at stations, so judges never see it.
@@ -14,7 +14,7 @@ from ..core.config import Settings
 from ..db.models import utcnow
 from ..pipeline.progress import NO_TASKS, NOT_ENOUGH_DATA, TaskLog
 from ..pipeline.prompts import ExtractedClaim
-from .data_sources import ClimateData, ClimateError
+from .data_sources import AIR_FIRST_DAY, AIR_METRIC, AIR_SOURCE, ClimateData, ClimateError
 from .location_map import PLACES, VIETNAM
 
 logger = logging.getLogger(__name__)
@@ -27,6 +27,11 @@ METRIC_WORDS = {
         re.IGNORECASE,
     ),
     "rainfall": re.compile(r"(?<!\w)(rain|rains|rainfall|downpours?|mưa|lượng mưa)(?!\w)", re.IGNORECASE),
+    AIR_METRIC: re.compile(
+        r"(?<!\w)(pm ?2[.,]5|fine (?:dust|particles?)|air quality|air pollution|smog|aqi"
+        r"|bụi mịn|chất lượng không khí|ô nhiễm không khí)(?!\w)",
+        re.IGNORECASE,
+    ),
 }
 WORLD_WORDS = re.compile(r"(?<!\w)(world|global|globally|earth|planet|thế giới|toàn cầu|trái đất|địa cầu)(?!\w)", re.IGNORECASE)
 # Vietnam's view takes in the sea as far as Trường Sa, as the location map's does.
@@ -79,13 +84,16 @@ def sample_days(start: date, end: date, count: int) -> list[date]:
     return [start + timedelta(days=round(index * length / (count - 1))) for index in range(count)]
 
 
-def _period(start: str, end: str, today: date, settings: Settings) -> tuple[date, date] | None:
+def _period(metric: str, start: str, end: str, today: date, settings: Settings) -> tuple[date, date] | None:
     try:
         first, last = date.fromisoformat(start), date.fromisoformat(end)
     except ValueError:
         return None
-    # The reanalysis arrives some days late, so a very recent day has no data yet.
-    if first > last or last > today - timedelta(days=settings.heat_map_delay_days) or first.year < 1950:
+    # The reanalysis arrives some days late, so a very recent day has no data yet. Air quality is ready the next day.
+    air = metric == AIR_METRIC
+    delay = settings.heat_map_air_delay_days if air else settings.heat_map_delay_days
+    earliest = AIR_FIRST_DAY if air else date(1950, 1, 1)
+    if first > last or last > today - timedelta(days=delay) or first < earliest:
         return None
     return (first, last) if (last - first).days < settings.heat_map_max_days else None
 
@@ -102,7 +110,7 @@ def build_heat_map(
         tasks.chart_skipped("heat")
         return None
     now = utcnow()
-    period = _period(request.start, request.end, now.date(), settings)
+    period = _period(request.metric, request.start, request.end, now.date(), settings)
     if period is None:
         tasks.chart_skipped("heat", HEAT_PERIOD_UNUSABLE)
         return None
@@ -115,11 +123,12 @@ def build_heat_map(
         day, start = part
         return climate.day_values(request.metric, day, lats[start : start + size], lons[start : start + size])
 
-    task = tasks.chart_data("heat", climate.name)
+    source = AIR_SOURCE if request.metric == AIR_METRIC else climate.name
+    task = tasks.chart_data("heat", source)
     try:
         answers = list(pool.map(fetch, parts))
     except ClimateError as error:
-        logger.warning("%s: %s", climate.name, error)
+        logger.warning("%s: %s", source, error)
         task.fail(str(error))
         return None
     per_day = len(answers) // len(days)
@@ -144,7 +153,7 @@ def build_heat_map(
         "end": period[1].isoformat(),
         "days": [day.isoformat() for day in days],
         "step": step,
-        "source": climate.name,
+        "source": source,
         "retrievedAt": now.isoformat(),
         "points": points,
     }

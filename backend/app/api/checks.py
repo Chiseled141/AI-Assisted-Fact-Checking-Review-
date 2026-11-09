@@ -15,6 +15,7 @@ from ..db.session import get_session
 from ..pipeline.followup import answer_followup, result_context
 from ..pipeline.memory import earlier_link, similar_claims
 from ..pipeline.progress import closed_tasks
+from ..pipeline.prompts import INPUT_SUGGESTIONS_SYSTEM, InputSuggestions, tagged
 from ..pipeline.run import FINISHED, STOPPED, stop_requests
 from ..providers.llm import LLMError
 from ..search.fetcher import FetchError, check_url_allowed
@@ -24,8 +25,11 @@ from .serializers import check_out, claim_out, message_out
 
 router = APIRouter()
 
+STILL_RUNNING = "Stop this check before deleting it."
 _recent_checks: dict[str, deque[float]] = defaultdict(deque)
 _recent_checks_lock = Lock()
+_suggestions_in_flight: set[str] = set()
+_suggestions_lock = Lock()
 
 
 def enforce_rate_limit(key: str, settings: Settings, now: float | None = None) -> None:
@@ -88,6 +92,7 @@ def create_check(
     if start is None:
         raise HTTPException(503, "The server is missing its API keys, so it can’t run checks yet.")
     enforce_rate_limit(user.id, settings)
+    search_option = settings.judges.get(user.preferred_search_model_id or "")
     check = models.Check(
         user_id=user.id,
         title=title_for(body),
@@ -96,6 +101,7 @@ def create_check(
         input_url=(body.url or "").strip() if body.input_type == "url" else None,
         files=[file.model_dump() for file in body.files] or None,
         judge_ids=judge_ids,
+        search_model=search_option.model if search_option else settings.research_model,
     )
     session.add(check)
     session.commit()
@@ -114,10 +120,77 @@ def get_check(
     return schemas.CheckDetailOut(
         **check_out(check, session).model_dump(),
         claims=[claim_out(claim) for claim in check.claims],
+        input_suggestions=check.input_suggestions,
         progress=check.progress or [],
         messages=_chat_messages(check, settings),
         review=schemas.ReviewOut(**check.review) if check.review else None,
     )
+
+
+@router.post("/check/{check_id}/input-suggestions", response_model=schemas.InputSuggestionsOut)
+def suggest_check_inputs(
+    check_id: str,
+    request: Request,
+    session: Session = Depends(get_session),
+    settings: Settings = Depends(get_settings),
+    user: models.User = Depends(current_user),
+):
+    check = owned_check(session, check_id, user)
+    if check.status != "completed" or check.claims:
+        raise HTTPException(422, "Suggestions are available for completed inputs without claims.")
+    if check.input_suggestions is not None:
+        return schemas.InputSuggestionsOut(suggestions=check.input_suggestions)
+
+    llm = request.app.state.llm
+    if llm is None:
+        raise HTTPException(503, "Suggestions are temporarily unavailable.")
+
+    parts = [check.title] if check.input_type == "url" else [
+        check.input_text or "", *(file["text"] for file in check.files or []),
+    ]
+    text = "\n\n".join(part for part in parts if part.strip())[:settings.max_text_length]
+    rate_key = f"{user.id}:input-suggestions"
+    session.rollback()  # Release the read transaction while the model runs.
+    with _suggestions_lock:
+        if check_id in _suggestions_in_flight:
+            raise HTTPException(409, "Suggestions are already being generated.")
+        _suggestions_in_flight.add(check_id)
+
+    try:
+        saved = session.scalar(select(models.Check.input_suggestions).where(models.Check.id == check_id))
+        if saved is not None:
+            return schemas.InputSuggestionsOut(suggestions=saved)
+        session.rollback()
+        enforce_rate_limit(rate_key, settings)
+        suggestions: list[str] = []
+        if text:
+            answer, _ = llm.complete(
+                settings.extraction_model, INPUT_SUGGESTIONS_SYSTEM, tagged("input", text), InputSuggestions,
+            )
+            seen = {" ".join(text.split()).casefold()}
+            for item in answer.suggestions:
+                suggestion = " ".join(item.split())
+                key = suggestion.casefold()
+                if len(suggestion) >= 20 and suggestion.endswith("?") and key not in seen:
+                    suggestions.append(suggestion)
+                    seen.add(key)
+
+        # Keep the first saved answer if another process filled this while the model was running.
+        session.execute(
+            update(models.Check)
+            .where(models.Check.id == check_id, models.Check.input_suggestions.is_(None))
+            .values(input_suggestions=suggestions, updated_at=models.Check.updated_at)
+        )
+        saved = session.scalar(select(models.Check.input_suggestions).where(models.Check.id == check_id))
+        if saved is None:
+            raise HTTPException(404, "Not found.")
+        session.commit()
+        return schemas.InputSuggestionsOut(suggestions=saved)
+    except LLMError as error:
+        raise HTTPException(503, error.public_message) from error
+    finally:
+        with _suggestions_lock:
+            _suggestions_in_flight.discard(check_id)
 
 
 @router.post("/check/{check_id}/stop", status_code=202)
@@ -137,6 +210,48 @@ def stop_check(check_id: str, session: Session = Depends(get_session), user: mod
         stop_requests.discard(check_id)  # It finished first, so nothing is left to end the request.
     session.commit()
     return {"ok": True}
+
+
+def _deletable_checks(user: models.User):
+    """A running pipeline would write into a deleted check. A stopped one still runs until its next step, so it waits too."""
+    return (
+        select(models.Check.id)
+        .where(
+            models.Check.user_id == user.id,
+            models.Check.status.in_((*FINISHED, "awaiting_input")),
+            models.Check.id.not_in(stop_requests),
+        )
+        .with_for_update()
+    )
+
+
+def _delete_checks(session: Session, check_ids: list[str]) -> None:
+    """Removes the checks and everything saved under them, children first."""
+    claims = select(models.Claim.id).where(models.Claim.check_id.in_(check_ids))
+    session.execute(delete(models.Evidence).where(models.Evidence.claim_id.in_(claims)))
+    session.execute(delete(models.Verdict).where(models.Verdict.claim_id.in_(claims)))
+    for table in (models.Claim, models.Source, models.Feedback, models.CheckMessage):
+        session.execute(delete(table).where(table.check_id.in_(check_ids)))
+    session.execute(delete(models.Check).where(models.Check.id.in_(check_ids)))
+    session.commit()
+
+
+@router.delete("/check/{check_id}")
+def delete_check(check_id: str, session: Session = Depends(get_session), user: models.User = Depends(current_user)):
+    owned_check(session, check_id, user)
+    if session.scalar(_deletable_checks(user).where(models.Check.id == check_id)) is None:
+        raise HTTPException(422, STILL_RUNNING)
+    _delete_checks(session, [check_id])
+    return {"ok": True}
+
+
+@router.delete("/checks")
+def delete_all_checks(session: Session = Depends(get_session), user: models.User = Depends(current_user)):
+    """Deletes the whole history, except checks still running, which are counted in `kept`."""
+    check_ids = list(session.scalars(_deletable_checks(user)))
+    _delete_checks(session, check_ids)
+    kept = session.scalar(select(func.count()).select_from(models.Check).where(models.Check.user_id == user.id))
+    return {"deleted": len(check_ids), "kept": kept}
 
 
 @router.post("/check/{check_id}/review", status_code=202)

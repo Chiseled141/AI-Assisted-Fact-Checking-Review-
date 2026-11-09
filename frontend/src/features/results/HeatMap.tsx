@@ -10,9 +10,10 @@ const HeatPlot = lazy(() => import('./HeatPlot'));
 export const metricTitle = translated<HeatMapData['metric']>({
   temperature: 'Daily high temperature',
   rainfall: 'Daily rainfall',
+  pm25: 'Daily average PM2.5',
 });
 
-export const metricUnit: Record<HeatMapData['metric'], string> = { temperature: '°C', rainfall: ' mm' };
+export const metricUnit: Record<HeatMapData['metric'], string> = { temperature: '°C', rainfall: ' mm', pm25: ' µg/m³' };
 
 export const formatValue = (value: number, metric: HeatMapData['metric']) =>
   `${new Intl.NumberFormat(locale(), { maximumFractionDigits: 1 }).format(value)}${metricUnit[metric]}`;
@@ -26,6 +27,7 @@ const degrees = (value: number, positive: string, negative: string) =>
 
 export function HeatMap({ map, onReply }: { map: HeatMapData; onReply?: (title: string) => void }) {
   const title = metricTitle[map.metric];
+  const air = map.metric === 'pm25';
   const highest = map.points.reduce((best, point) => (point[2] > best[2] ? point : best));
   const lowest = map.points.reduce((best, point) => (point[2] < best[2] ? point : best));
   const average = map.points.reduce((sum, [, , value]) => sum + value, 0) / map.points.length;
@@ -60,7 +62,7 @@ export function HeatMap({ map, onReply }: { map: HeatMapData; onReply?: (title: 
             </Suspense>
           </div>
           <div className="min-w-0">
-            <h3 className="text-[15px] font-medium leading-[1.3] text-ink">{t('Figures from the weather model')}</h3>
+            <h3 className="text-[15px] font-medium leading-[1.3] text-ink">{t(air ? 'Figures from the air quality model' : 'Figures from the weather model')}</h3>
             <div className="mt-3 overflow-hidden rounded-xl border border-line-strong bg-white">
               <h4 className="flex items-center gap-2 border-b border-orange-100 bg-orange-50 px-4 py-2.5 text-[13px] font-medium text-orange-900">
                 <span className="h-2.5 w-2.5 rounded-[3px] bg-orange-700" aria-hidden="true" />
@@ -89,11 +91,16 @@ export function HeatMap({ map, onReply }: { map: HeatMapData; onReply?: (title: 
         </p>
       </div>
       <p className="mt-3 text-[13px] leading-[1.5] text-ink-muted">
-        {t('Weather model data from {source}, retrieved {date}, with points {step}° apart and colors blended between them.', {
-          source: map.source,
-          date: formatCalendarDate(map.retrievedAt.slice(0, 10)),
-          step: map.step,
-        })}{' '}
+        {t(
+          air
+            ? 'Air quality model data from {source}, retrieved {date}, with points {step}° apart and colors blended between them.'
+            : 'Weather model data from {source}, retrieved {date}, with points {step}° apart and colors blended between them.',
+          {
+            source: map.source,
+            date: formatCalendarDate(map.retrievedAt.slice(0, 10)),
+            step: map.step,
+          },
+        )}{' '}
         <a
           href="https://creativecommons.org/licenses/by/4.0/"
           target="_blank"
@@ -108,7 +115,11 @@ export function HeatMap({ map, onReply }: { map: HeatMapData; onReply?: (title: 
             count: map.days.length,
             days: map.days.map(formatCalendarDate).join(', '),
           })}`}
-        {` ${t('A model grid reads lower than a single weather station at a hot spot. This map is context and did not decide the verdict.')}`}
+        {` ${t(
+          air
+            ? 'A model grid can differ widely from a single monitor in a city. This map is context and did not decide the verdict.'
+            : 'A model grid reads lower than a single weather station at a hot spot. This map is context and did not decide the verdict.',
+        )}`}
       </p>
     </section>
   );
