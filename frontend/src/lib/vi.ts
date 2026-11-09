@@ -127,7 +127,6 @@ const interfaceText: Record<string, string> = {
   'Written by AI from your question: “{question}”. You did not state this claim.': 'AI viết từ câu hỏi của bạn: “{question}”. Bạn không khẳng định điều này.',
   'Finding sources for the chart': 'Tìm nguồn riêng cho biểu đồ',
   "The claim's own words did not fit what this chart needs, so it was not drawn.": 'Nội dung nhận định không khớp với điều kiện của biểu đồ nên không vẽ.',
-  "Climate data doesn't cover these dates yet, or the period is too long to draw.": 'Dữ liệu khí hậu chưa có cho những ngày này, hoặc khoảng thời gian quá dài để vẽ.',
   'The sources did not cover the whole chart, so it is not shown.': 'Các nguồn không đủ cho toàn bộ biểu đồ nên không hiển thị.',
   'Searching for the chart': 'Tìm cho biểu đồ',
   'Election chart data': 'Dữ liệu biểu đồ bầu cử',

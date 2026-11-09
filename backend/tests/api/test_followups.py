@@ -276,3 +276,28 @@ def test_quick_followup_reuses_tavily_text_without_refetching_all_results(client
     assert calls == [('one necessary fact', {'newest_first': False, 'max_results': 2, 'include_images': False})]
     assert fakes.fetch.fetched == initial_fetches
     assert len(response.json()['sources']) == 1
+
+
+def test_followup_election_search_uses_only_election_sources(client, fakes):
+    import json
+
+    from app.search.tavily import CHART_DOMAINS, SearchHit
+
+    check = run(client)
+    official = 'https://elections.ca/results'
+    outside_scope = 'https://worldbank.org/elections'
+
+    def search_hits(query, **options):
+        assert options['domains'] == CHART_DOMAINS['elections']
+        return [SearchHit(url, raw_content='Results') for url in (outside_scope, official)]
+
+    def followup(model, system, user, schema, run_search):
+        results = json.loads(run_search('Canadian election results', election_results_only=True))
+        assert [result['url'] for result in results] == [official]
+        return schema(answer='The published results.', source_urls=[outside_scope, official]), model, []
+
+    fakes.search.search_hits = search_hits
+    fakes.llm.followup = followup
+    response = ask(client, check['id'], 'What were the election results?')
+    assert response.status_code == 201, response.text
+    assert [source['url'] for source in response.json()['sources']] == [official]

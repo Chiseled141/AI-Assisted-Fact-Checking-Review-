@@ -475,19 +475,6 @@
   }
 }
 
-/* Scroll reveal: elements rise and fade in once they enter the viewport (see useReveal). */
-.reveal {
-  opacity: 0;
-  transform: translateY(12px);
-  transition:
-    opacity 500ms ease-out,
-    transform 500ms cubic-bezier(0.22, 1, 0.36, 1);
-}
-.reveal.is-visible {
-  opacity: 1;
-  transform: none;
-}
-
 /* Check result pages: slow fades, and photos that drift in on hover. */
 @keyframes press-rise {
   from {
@@ -502,11 +489,6 @@
 .press-rise {
   animation: press-rise 800ms cubic-bezier(0.16, 1, 0.3, 1) both;
   animation-delay: var(--press-delay, 0ms);
-}
-.press .reveal {
-  transition:
-    opacity 800ms cubic-bezier(0.16, 1, 0.3, 1),
-    transform 800ms cubic-bezier(0.16, 1, 0.3, 1);
 }
 .press-lift {
   transition:
@@ -584,10 +566,6 @@ html {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .reveal {
-    opacity: 1;
-    transform: none;
-  }
   .press-rise {
     animation: none;
   }

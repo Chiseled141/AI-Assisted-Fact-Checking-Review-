@@ -1,4 +1,4 @@
-import type { CheckStatus, EvidenceRelation, InputType, Verdict } from '../types/models';
+import type { CheckStatus, EvidenceRelation, Verdict } from '../types/models';
 import { getLanguage, locale, t, translated } from './i18n';
 
 const dateTime = () => new Intl.DateTimeFormat(locale(), { dateStyle: 'medium', timeStyle: 'short' });
@@ -68,8 +68,6 @@ export const statusLabel = translated<CheckStatus>({
   failed: 'Failed',
   stopped: 'Stopped',
 });
-
-export const inputTypeLabel = translated<InputType>({ text: 'Text', url: 'URL' });
 
 /** Only allow http(s) links to be rendered as anchors. */
 export function safeHref(url: string): string | null {

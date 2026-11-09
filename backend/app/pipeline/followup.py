@@ -13,7 +13,7 @@ from ..core.config import Settings
 from ..db import models
 from ..providers.llm import LLM, LLMError
 from ..search.fetcher import Page
-from ..search.tavily import Search, SearchError, SearchHit, is_allowed_source, read_hit
+from ..search.tavily import CHART_DOMAINS, Search, SearchError, SearchHit, is_allowed_source, read_hit, within_domains
 from .prompts import FOLLOWUP_SYSTEM, FollowUpAnswer, tagged
 
 
@@ -187,13 +187,17 @@ def answer_followup(
         # Nothing searches before the selected model explicitly calls this tool.
         if search is None or fetch is None:
             raise LLMError("Follow-up search is unavailable.")
+        election_domains = CHART_DOMAINS["elections"] if election_results_only else None
         try:
             search_hits = getattr(search, "search_hits", None)
-            hits = search_hits(query, newest_first=False, max_results=2, include_images=False) if search_hits else [
+            scope = {"domains": election_domains} if election_domains else {}
+            hits = search_hits(query, newest_first=False, max_results=2, include_images=False, **scope) if search_hits else [
                 SearchHit(url) for url in search.search(query)
             ]
         except SearchError as error:
             raise LLMError(f"Follow-up search failed: {error}", "Web search failed. Please try again later.") from error
+        if election_domains:
+            hits = [hit for hit in hits if within_domains(hit.url, election_domains)]
         results = []
         fetched = False
         for hit in hits[:2]:

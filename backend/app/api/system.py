@@ -4,7 +4,6 @@ from fastapi import APIRouter, Depends, Request
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
-from ..core.config import Settings, get_settings
 from ..db import models
 from ..db.session import get_session
 from . import schemas
@@ -35,7 +34,7 @@ def stats(session: Session = Depends(get_session), user: models.User = Depends(c
 
 
 @router.get("/health")
-def health(request: Request, settings: Settings = Depends(get_settings)):
+def health(request: Request):
     return {
         "ok": True,
         "canRunChecks": request.app.state.start_check is not None,

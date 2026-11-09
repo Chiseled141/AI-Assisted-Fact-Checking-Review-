@@ -23,8 +23,7 @@ export function Layout() {
   const { pathname, hash, key } = useLocation();
   const navigationType = useNavigationType();
   const home = pathname === '/';
-  const press = pathname.startsWith('/checks/');
-  const atmosphere = home || press;
+  const atmosphere = home || pathname.startsWith('/checks/');
   const [pastComposer, setPastComposer] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const [panel, setPanel] = useState<Panel | null>(null);
@@ -158,7 +157,7 @@ export function Layout() {
   }
 
   return (
-    <div className={`flex min-h-screen flex-col ${atmosphere ? 'home-atmosphere' : ''} ${press ? 'press' : ''}`}>
+    <div className={`flex min-h-screen flex-col ${atmosphere ? 'home-atmosphere' : ''}`}>
       <a
         href="#main"
         className="sr-only z-50 rounded-md bg-ink px-4 py-2 text-sm text-white focus:not-sr-only focus:fixed focus:left-4 focus:top-4"
