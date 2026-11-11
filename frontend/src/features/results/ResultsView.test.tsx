@@ -191,11 +191,32 @@ describe('Saved results from the backend', () => {
     serve();
     renderApp('/checks/chk_test');
     await screen.findByRole('heading', { level: 1 });
-    for (const name of ['Bitcoin price', 'Stock heatmap', 'Population', 'Daily high temperature', 'Places in this claim', 'Incident location']) {
+    for (const name of ['Bitcoin price', 'Stock heatmap', 'Population', 'Population heatmap by year', 'Places in this claim', 'Incident location']) {
       expect(screen.queryByRole('heading', { name })).not.toBeInTheDocument();
     }
     expect(screen.queryByTitle(/stock heatmap/i)).not.toBeInTheDocument();
     expect(screen.queryByRole('link', { name: 'Markets' })).not.toBeInTheDocument();
+  });
+
+  it('compares saved country figures by year without filling gaps or using later years', async () => {
+    serve(makeCheck({ claims: [makeClaim({ countryMap: {
+      indicator: 'population', source: 'World Bank', retrievedAt: checkedAt, year: 2023,
+      years: [2021, 2022, 2023, 2024],
+      values: { vn: [97_000_000, null, 100_000_000, 101_000_000], th: [71_000_000, 71_500_000, 72_000_000, 72_500_000] },
+      selected: [
+        { code: 'vn', name: 'Vietnam', named: 'Vietnam' },
+        { code: 'th', name: 'Thailand', named: 'Thailand' },
+      ],
+    } })] }));
+    renderApp('/checks/chk_test');
+    const heatmap = await screen.findByRole('region', { name: 'Population heatmap by year' });
+    expect(within(heatmap).getByText('Figures from World Bank')).toBeVisible();
+    await userEvent.setup().click(within(heatmap).getByText('View heatmap figures'));
+    const table = within(heatmap).getByRole('table');
+    expect(within(table).getAllByRole('columnheader').map((cell) => cell.textContent)).toEqual(['2021', '2022', '2023']);
+    const vietnam = within(table).getByRole('row', { name: /Vietnam/ });
+    expect(within(vietnam).getByTitle('No figure for this year')).toHaveTextContent('–');
+    expect(within(vietnam).getByRole('cell', { name: '100,000,000' })).toBeVisible();
   });
 
   it('loads a widget only for the selected market from a stock claim', async () => {
@@ -226,7 +247,7 @@ describe('Saved results from the backend', () => {
     expect(within(panel).getByText('1,200')).toBeInTheDocument();
   });
 
-  it('lists the source figures and route stops alongside their charts', async () => {
+  it('links the comparison source and lists the route stops alongside their charts', async () => {
     serve(makeCheck({ claims: [makeClaim({
       barChart: { title: 'Passenger totals', unit: 'passengers', publisher: 'Transport Report', url: 'https://example.org/passengers',
         points: [{ name: 'Rail', value: 1250 }, { name: 'Coach', value: 850 }] },
@@ -235,8 +256,10 @@ describe('Saved results from the backend', () => {
     })] }));
     renderApp('/checks/chk_test');
     const comparison = await screen.findByRole('region', { name: 'Passenger totals' });
-    await userEvent.setup().click(within(comparison).getByText('View comparison data'));
-    expect(within(comparison).getByText('1,250 passengers')).toBeVisible();
+    expect(within(comparison).getByRole('link', { name: 'Figures from Transport Report' })).toHaveAttribute(
+      'href', 'https://example.org/passengers',
+    );
+    expect(within(comparison).queryByText('View comparison data')).not.toBeInTheDocument();
     const route = screen.getByRole('region', { name: 'Hanoi to Da Nang' });
     expect(within(route).getAllByRole('listitem')).toHaveLength(2);
     expect(within(route).getByText('08:30')).toBeVisible();
@@ -247,7 +270,6 @@ describe('Saved results from the backend', () => {
     ['price', { priceChart: { asset: 'bitcoin', currency: 'USD', source: 'Yahoo Finance', retrievedAt: checkedAt, prices: [[1, 100], [2, 101]], events: [] } }, 'Bitcoin price'],
     ['location', { locationMap: { map: 'us', places: [{ code: 'us-nj', name: 'New Jersey', named: 'New Jersey' }] } }, 'Places in this claim'],
     ['incident', { incidentMap: { city: 'Hà Nội', roads: ['Nguyễn Trãi'], position: null, bounds: [105.79, 20.98, 105.81, 21], quote: 'Vụ việc xảy ra trên đường Nguyễn Trãi.', publisher: 'Test News', url: 'https://example.org/incident' } }, 'Incident location'],
-    ['heat', { heatMap: { metric: 'temperature', area: 'world', areaName: 'World', start: '2024-01-01', end: '2024-01-01', days: ['2024-01-01'], step: 18, source: 'Unit-test climate', retrievedAt: checkedAt, points: [[0, 0, 20]] } }, 'Daily high temperature'],
     ['country', { countryMap: { indicator: 'population', source: 'Unit-test statistics', retrievedAt: checkedAt, year: 2023, years: [2023], values: { vn: [100], th: [70] }, selected: [{ code: 'vn', name: 'Vietnam', named: 'Vietnam' }] } }, 'Population'],
     ['election', { electionMap: { office: 'house', year: 2024, retrievedAt: checkedAt, states: [{ code: 'us-oh', name: 'Ohio', winner: 'Republicans', publisher: 'Test News', url: 'https://example.org/oh', others: [] }] } }, 'US election results by state'],
     ['seats', { seatChart: { body: 'Test chamber', year: 2024, total: 10, totalSource: { publisher: 'Test News', url: 'https://example.org/seats' }, retrievedAt: checkedAt, parties: [{ name: 'Party A', seats: 5, publisher: 'Test News', url: 'https://example.org/seats', others: [] }, { name: 'Party B', seats: 3, publisher: 'Test News', url: 'https://example.org/seats', others: [] }] } }, 'Seats in Test chamber'],
@@ -339,5 +361,48 @@ describe('A claim written from a question', () => {
     renderApp('/checks/chk_test');
     await screen.findByRole('heading', { level: 1 });
     expect(screen.queryByText(/You did not state this claim/)).not.toBeInTheDocument();
+  });
+});
+
+describe('Evidence at a glance', () => {
+  it('summarises the check, the sources and both judges without a chart', async () => {
+    const claims = [
+      makeClaim({ text: 'Inflation was 4% last year.' }),
+      makeClaim({ id: 'clm_two', position: 2, text: 'The bridge closed.', current: makeRevision({ id: 'rev_two', claimId: 'clm_two', verdict: 'contradicted', judges: [] }) }),
+    ];
+    serve(makeCheck({ claims, claimCount: 2 }), [
+      makeEvidence({ excerpt: 'Inflation reached 3.2% in 2024.' }),
+      makeEvidence({ id: 'evd_two', relation: 'contradicting', publishedAt: '2025-06-01', publisher: 'Other News', excerpt: 'Prices rose 4%.' }),
+      makeEvidence({ id: 'evd_three', relation: 'contextual', publishedAt: undefined }),
+    ]);
+    renderApp('/checks/chk_test');
+
+    const summary = await screen.findByRole('region', { name: 'Summary of this check' });
+    expect(summary).toHaveTextContent('1Supported');
+    expect(summary).toHaveTextContent('1Contradicted');
+
+    const glance = await screen.findByRole('region', { name: 'Evidence at a glance' });
+    expect(await within(glance).findByText('Sources are split between supporting and contradicting')).toBeInTheDocument();
+    expect(within(glance).getByLabelText('Source ratings')).toHaveTextContent('3 unrated');
+    expect(within(glance).getByText('Both models reached this verdict')).toBeInTheDocument();
+    // Models: (95 + 90) / 2 = 92.5. Sources: one each way, equally rated, so 50. 0.6 × 92.5 + 0.4 × 50 = 75.5.
+    expect(within(glance).getByRole('meter', { name: 'Accuracy score' })).toHaveAttribute('aria-valuenow', '76');
+  });
+});
+
+describe('Claim translation', () => {
+  it('shows the claim in the reader’s language under the original, and only then', async () => {
+    serve(makeCheck({ claims: [makeClaim({ text: 'Aston Hall lived in Miami.', translations: { vi: 'Aston Hall từng sống ở Miami.' } })] }));
+    renderApp('/checks/chk_test');
+    expect(await screen.findByRole('heading', { level: 1 })).toHaveTextContent('Aston Hall lived in Miami.');
+    expect(screen.queryByText('Aston Hall từng sống ở Miami.')).not.toBeInTheDocument();
+
+    act(() => setLanguage('vi'));
+    try {
+      expect(await screen.findByText('Aston Hall từng sống ở Miami.')).toBeInTheDocument();
+      expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('Aston Hall lived in Miami.');
+    } finally {
+      act(() => setLanguage('en'));
+    }
   });
 });

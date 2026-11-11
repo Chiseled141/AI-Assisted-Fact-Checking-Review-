@@ -42,9 +42,9 @@ export function EvidenceSourceLinks({
                   {formatCalendarDate(item.publishedAt)}
                 </time>
               ) : (
-                <span className="text-ink-muted">{t('Unknown date')}</span>
+                <span className="rounded bg-slate-100 px-1.5 py-0.5 font-medium text-slate-700">{t('Unknown date')}</span>
               )}
-              {outdated && <span className="text-ink-muted">{t('Outdated')}</span>}
+              {outdated && <span className="rounded bg-candy/10 px-1.5 py-0.5 font-medium text-candy">{t('Outdated')}</span>}
             </>
           );
           const className = 'inline-flex min-h-9 flex-wrap items-center gap-x-2 bg-transparent px-3 py-1.5 text-xs [overflow-wrap:anywhere]';

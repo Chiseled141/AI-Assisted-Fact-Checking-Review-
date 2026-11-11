@@ -21,9 +21,10 @@ from sqlalchemy import delete, select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
-from ..core.config import Settings, get_settings
-from ..db import models
-from ..db.session import get_session
+from config.settings import Settings, get_settings
+from database import models
+from database.session import get_session
+
 from . import schemas
 from .deps import current_user, token_hash
 

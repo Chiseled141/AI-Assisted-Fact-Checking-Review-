@@ -1,4 +1,4 @@
-import { type CSSProperties, type ReactNode, useEffect, useRef, useState } from 'react';
+import { type CSSProperties, lazy, type ReactNode, Suspense, useEffect, useRef, useState } from 'react';
 import { ExternalLink, TriangleAlert } from 'lucide-react';
 import type {
   Claim,
@@ -11,8 +11,13 @@ import { findSource, isVietnameseSource } from '../../lib/sources';
 import { useMediaQuery } from '../../lib/useMediaQuery';
 import { RelationChip } from '../../components/Badges';
 import { SourceLogo } from '../../components/SourceLogo';
+import { ReplyButton } from '../../components/ReplyButton';
 import { getLanguage, t, translated } from '../../lib/i18n';
 import { useAccount } from '../../services/account';
+import { type GridQuote, parseGridQuote, parseTableQuote, type TableQuote } from './figures';
+import { quoteChart } from './charts/chartSettings';
+
+const BarPlot = lazy(() => import('./charts/BarPlot'));
 
 /**
  * The article's lead image behind a card's content. The image comes from the publisher, so it can
@@ -130,15 +135,249 @@ const relationTone: Record<EvidenceRelation, string> = {
   contextual: 'text-ink-muted',
 };
 
+// Statistical tables mark a year that is not final with a letter: 2025e is an estimate, 2026f a forecast.
+const yearNote: Record<string, string> = { e: 'estimate', f: 'forecast' };
+
+function yearHeading(column: string): { year: string; note?: string } {
+  const match = /^(.*\d)([a-z])$/i.exec(column);
+  const note = match && yearNote[match[2].toLowerCase()];
+  return note ? { year: match[1], note } : { year: column };
+}
+
+/** The words of a translated table quote, without the years and figures the table already shows. */
+function translatedLabels(translation: string): string {
+  return translation.split(/\s+/).filter((word) => /\p{L}{2}/u.test(word) && !/^\d{4}[a-z]$/i.test(word)).join(' ');
+}
+
+/**
+ * A quote that was copied from a table, drawn as that table again: each value under its year.
+ * The years the claim names stand out, so the figure that settles it is easy to find.
+ */
+export function QuoteTable({ table, claimText = '', translation, compact = false }: {
+  table: TableQuote;
+  claimText?: string;
+  translation?: string;
+  /** Smaller type, for a quote inside a model's review. */
+  compact?: boolean;
+}) {
+  const named = table.columns.map((column) => claimText.includes(column.match(/\d{4}/)![0]));
+  const tone = (index: number) => (named.some(Boolean) && !named[index] ? 'text-ink-muted' : 'text-ink');
+  const caption = translation && translatedLabels(translation);
+  const cell = compact ? 'px-2.5 text-[15px] font-semibold' : 'px-4 text-[22px] font-semibold tracking-[-0.025em] sm:text-[26px]';
+  return (
+    <figure className={compact ? '' : 'mt-2'}>
+      {(table.lead || caption) && (
+        <figcaption className={`leading-[1.5] text-ink-soft ${compact ? 'text-[13px]' : 'text-[15px]'}`}>
+          {table.lead}
+          {caption && <span className="block text-[13px] text-ink-muted">{caption}</span>}
+        </figcaption>
+      )}
+      <div className={`overflow-x-auto ${compact ? 'mt-1.5' : 'mt-3'}`}>
+        <table className="border-collapse text-left">
+          <thead>
+            <tr className="border-b border-line-strong">
+              <td />
+              {table.columns.map((column, index) => {
+                const { year, note } = yearHeading(column);
+                return (
+                  <th key={column} scope="col" className={`pb-2 text-right align-bottom text-[13px] font-medium ${compact ? 'px-2.5' : 'px-4'} ${named[index] ? 'text-ink' : 'text-ink-muted'}`}>
+                    {note && <span className="block whitespace-nowrap text-[11px] font-normal">{t(note)}</span>}
+                    {year}
+                  </th>
+                );
+              })}
+            </tr>
+          </thead>
+          <tbody>
+            {table.rows.map((row) => (
+              <tr key={row.label} className="border-b border-line last:border-b-0">
+                <th scope="row" className={`max-w-[26ch] pr-4 align-baseline font-medium leading-snug text-ink ${compact ? 'py-2 text-[13px]' : 'py-3 text-[15px]'}`}>
+                  {row.label}
+                </th>
+                {row.values.map((value, index) => (
+                  <td key={index} className={`text-right align-baseline leading-none ${compact ? 'py-2' : 'py-3'} ${cell} ${tone(index)}`}>
+                    {value}
+                  </td>
+                ))}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </figure>
+  );
+}
+
+const NUMERIC_CELL = /^[^\p{L}]*\d[^\p{L}]*$/u;
+
+/**
+ * A quote that is rows of a Markdown table. One row, the usual case, reads as a record: what the row is
+ * about as a heading, then each figure under its column's name. Several rows stay a table.
+ */
+export function QuoteGrid({ grid, compact = false }: { grid: GridQuote; compact?: boolean }) {
+  const width = Math.max(...grid.rows.map((row) => row.length));
+  const numeric = Array.from({ length: width }, (_, index) => grid.rows.every((row) => NUMERIC_CELL.test(row[index] ?? '')));
+  // The longest wording is what the row is about, so it reads as the row's name.
+  const lengths = Array.from({ length: width }, (_, index) => (numeric[index] ? 0 : Math.max(...grid.rows.map((row) => (row[index] ?? '').length))));
+  const name = Math.max(...lengths) > 0 ? lengths.indexOf(Math.max(...lengths)) : -1;
+
+  if (grid.rows.length === 1) {
+    const [row] = grid.rows;
+    return (
+      <div className={compact ? '' : 'mt-2'}>
+        {name >= 0 && (
+          <p className={`font-semibold leading-[1.2] tracking-[-0.025em] text-ink ${compact ? 'text-[15px]' : 'text-[22px] sm:text-[28px]'}`}>
+            {row[name]}
+          </p>
+        )}
+        <dl className={`inline-flex max-w-full flex-wrap overflow-hidden rounded-xl border border-line-strong bg-transparent ${compact ? 'mt-2' : 'mt-5'}`}>
+          {row.map((value, index) => index !== name && value && (
+            <div
+              key={index}
+              // One box for the whole row. The hairline on each cell's left edge is pulled under the box's own border for the first cell of a line.
+              className={`-ml-px flex min-w-0 grow flex-col-reverse border-l border-line ${compact ? 'px-2.5 py-1.5' : 'px-6 py-4'}`}
+            >
+              <dt className={`text-ink-muted ${compact ? 'text-xs' : 'mt-1.5 text-[13px]'}`}>
+                {grid.columns?.[index] || <span className="sr-only">{t('Column {number}', { number: index + 1 })}</span>}
+              </dt>
+              <dd className={`font-medium leading-none tracking-[-0.02em] text-ink ${compact ? 'text-[13px]' : 'text-[20px] sm:text-[22px]'}`}>
+                {value}
+              </dd>
+            </div>
+          ))}
+        </dl>
+      </div>
+    );
+  }
+
+  const pad = compact ? 'px-2.5' : 'px-4';
+  const align = (index: number) => `${numeric[index] ? 'text-right' : 'text-left'} ${pad} first:pl-0 last:pr-0`;
+  return (
+    <div className={`overflow-x-auto ${compact ? '' : 'mt-3'}`}>
+      <table className="border-collapse">
+        {grid.columns && (
+          <thead>
+            <tr className="border-b border-line-strong">
+              {grid.columns.map((column, index) => (
+                <th key={index} scope="col" className={`max-w-[18ch] pb-2 align-bottom text-[13px] font-medium leading-snug text-ink-muted ${align(index)}`}>
+                  {column}
+                </th>
+              ))}
+            </tr>
+          </thead>
+        )}
+        <tbody>
+          {grid.rows.map((row, rowIndex) => (
+            <tr key={rowIndex} className="border-b border-line last:border-b-0">
+              {row.map((value, index) => (
+                <td
+                  key={index}
+                  className={`align-baseline leading-snug ${align(index)} ${compact ? 'py-2 text-[13px]' : 'py-3 text-[17px] tracking-[-0.015em]'} ${
+                    index === name ? 'font-semibold text-ink' : numeric[index] ? 'font-medium text-ink whitespace-nowrap' : 'text-ink-soft'
+                  }`}
+                >
+                  {value}
+                </td>
+              ))}
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
+/** "$2,521,214,671", "38.0%" or "1.234,5" as a number. Null for a cell that is not a figure. */
+function cellNumber(cell: string): number | null {
+  if (!NUMERIC_CELL.test(cell)) return null;
+  const digits = cell.replace(/[^\d.,-]/g, '');
+  const separators = digits.match(/[.,]/g) ?? [];
+  const last = separators[separators.length - 1];
+  const grouped = separators.length > 1 && separators.every((separator) => separator === last);
+  const decimal = last && !grouped && !/[.,]\d{3}$/.test(digits) ? last : null;
+  const value = Number(decimal
+    ? digits.slice(0, digits.lastIndexOf(decimal)).replace(/[.,]/g, '') + '.' + digits.slice(digits.lastIndexOf(decimal) + 1)
+    : digits.replace(/[.,]/g, ''));
+  return Number.isFinite(value) && digits !== '' ? value : null;
+}
+
+/**
+ * The table a quoted row came from, as the same bar chart the results use elsewhere: the quoted row in
+ * color, its neighbours in grey, one column at a time. The figures are the saved page's, read by code.
+ */
+function QuoteChart({ table, publisher, onReply }: {
+  table: NonNullable<EvidenceSnapshot['table']>;
+  publisher: string;
+  /** Starts a follow-up question about this source, as the arrows on the other charts do. */
+  onReply?: () => void;
+}) {
+  const width = table.columns.length;
+  const values = table.rows.map((row) => row.map(cellNumber));
+  const figures = Array.from({ length: width }, (_, index) => values.every((row) => row[index] !== null));
+  // A column that only counts 1, 2, 3 is the ranking, not a figure worth charting.
+  const ranking = (index: number) => values.every((row, position) => row[index] === position + 1);
+  const charted = table.columns.map((_, index) => index).filter((index) => figures[index] && !ranking(index));
+  const lengths = table.columns.map((_, index) => (figures[index] ? 0 : Math.max(...table.rows.map((row) => row[index].length))));
+  const name = lengths.indexOf(Math.max(...lengths));
+  const [picked, setPicked] = useState(charted[0]);
+  const column = charted.includes(picked) ? picked : charted[0];
+  if (column === undefined || Math.max(...lengths) === 0 || table.rows.length < 2) return null;
+
+  const points = table.rows.map((row, index) => ({
+    name: row[name],
+    value: values[index][column] as number,
+    color: table.quoted.includes(index) ? quoteChart.quotedColor : quoteChart.otherColor,
+  }));
+  const height = points.length * 36 + 72;
+  return (
+    <div className="mt-8">
+      <div className="flex items-end gap-3 border-b border-line">
+        <div role="group" aria-label={t('Column to chart')} className="flex min-w-0 flex-wrap gap-x-5 gap-y-1">
+          {charted.map((index) => (
+            <button
+              key={index}
+              type="button"
+              aria-pressed={index === column}
+              onClick={() => setPicked(index)}
+              className={`-mb-px border-b-2 py-2 text-[13px] font-medium transition-colors ${
+                index === column ? 'border-ink text-ink' : 'border-transparent text-ink-muted hover:text-ink'
+              }`}
+            >
+              {table.columns[index]}
+            </button>
+          ))}
+        </div>
+        {onReply && (
+          <div className="mb-0.5 ml-auto shrink-0">
+            <ReplyButton label={t('Ask about {item}', { item: `${publisher} · ${table.columns[column]}` })} onClick={onReply} />
+          </div>
+        )}
+      </div>
+      <div className="mt-3 min-w-0" style={{ minHeight: height }}>
+        <Suspense fallback={null}>
+          <BarPlot points={points} unit={table.columns[column]} height={height} title={table.columns[column]} source={publisher} />
+        </Suspense>
+      </div>
+      <p className="mt-1 text-xs text-ink-muted">
+        {t('The quoted row is in color. The other rows are from the same table on the saved page.')}
+      </p>
+    </div>
+  );
+}
+
 /** The saved passage and its relation to the claim, without a second AI assessment. */
-function SourceDetail({ item, judgment, className = '' }: {
+function SourceDetail({ item, claimText, judgment, onReply, className = '' }: {
   item: EvidenceSnapshot;
+  onReply?: (item: EvidenceSnapshot) => void;
+  claimText: string;
   judgment?: FreshnessJudgment;
   className?: string;
 }) {
   const source = findSource(item.url);
   // The quote always stays as the source wrote it. A translation only ever appears beside it.
   const translation = item.translations?.[getLanguage()];
+  const table = parseTableQuote(item.excerpt);
+  const grid = table ? null : parseGridQuote(item.excerpt);
   return (
     <div className={className}>
       {source?.trust === 'red' && (
@@ -148,13 +387,35 @@ function SourceDetail({ item, judgment, className = '' }: {
         </p>
       )}
       <p className="text-[13px] font-medium text-ink-muted">{t('What this source says')}</p>
-      <blockquote className="mt-2 break-words text-[22px] font-semibold leading-[1.2] tracking-[-0.025em] text-ink sm:text-[28px]">
-        <span className="sr-only">{t('Saved excerpt:')} </span>“{item.excerpt}”
-      </blockquote>
-      {translation && (
-        <p className="mt-2 break-words text-[15px] leading-[1.5] text-ink-soft">
-          <span className="font-medium text-ink-muted">{t('Translation:')} </span>{translation}
-        </p>
+      {table ? (
+        <>
+          <p className="sr-only">{t('Saved excerpt:')} {item.excerpt}</p>
+          <QuoteTable table={table} claimText={claimText} translation={translation} />
+        </>
+      ) : grid ? (
+        <>
+          <p className="sr-only">{t('Saved excerpt:')} {item.excerpt}</p>
+          <QuoteGrid grid={grid} />
+          {item.table && (
+            <QuoteChart
+              key={item.id}
+              table={item.table}
+              publisher={item.publisher ?? item.sourceTitle}
+              onReply={onReply && (() => onReply(item))}
+            />
+          )}
+        </>
+      ) : (
+        <>
+          <blockquote className="mt-2 break-words text-[22px] font-semibold leading-[1.2] tracking-[-0.025em] text-ink sm:text-[28px]">
+            <span className="sr-only">{t('Saved excerpt:')} </span>“{item.excerpt}”
+          </blockquote>
+          {translation && (
+            <p className="mt-2 break-words text-[15px] leading-[1.5] text-ink-soft">
+              <span className="font-medium text-ink-muted">{t('Translation:')} </span>{translation}
+            </p>
+          )}
+        </>
       )}
       <p className={`mt-2 text-[18px] italic leading-snug tracking-[-0.01em] sm:text-[22px] ${relationTone[item.relation]}`}>
         {relationSentence[item.relation]}
@@ -259,13 +520,15 @@ interface Props {
   items: EvidenceSnapshot[];
   citedIds: Set<string>;
   freshness: Record<string, FreshnessJudgment>;
+  /** Starts a follow-up question about one source. */
+  onReply?: (item: EvidenceSnapshot) => void;
 }
 
 /**
  * The sources behind a claim. Wide screens: a row of cards where one is open and the rest are narrow
  * strips. Phones: strips can't hold their text, so every source is shown open, stacked.
  */
-export function SourceDeck({ claim, items: allItems, citedIds, freshness }: Props) {
+export function SourceDeck({ claim, items: allItems, citedIds, freshness, onReply }: Props) {
   const preference = useAccount()?.preferredSourceLanguage;
   const vietnameseFirst = (preference ?? getLanguage()) === 'vi';
   const items = preference || vietnameseFirst
@@ -297,7 +560,7 @@ export function SourceDeck({ claim, items: allItems, citedIds, freshness }: Prop
                 <OpenCardContent item={item} judgment={judgmentFor(item.id)} />
               </div>
             </div>
-            <SourceDetail item={item} judgment={judgmentFor(item.id)} className="px-4 pb-4 pt-4 sm:px-5" />
+            <SourceDetail item={item} claimText={claim.text} onReply={onReply} judgment={judgmentFor(item.id)} className="px-4 pb-4 pt-4 sm:px-5" />
           </CardShell>
         ))}
       </ol>
@@ -333,7 +596,7 @@ export function SourceDeck({ claim, items: allItems, citedIds, freshness }: Prop
           );
         })}
       </ol>
-      <SourceDetail item={open} judgment={judgmentFor(open.id)} className="mt-5" />
+      <SourceDetail item={open} claimText={claim.text} onReply={onReply} judgment={judgmentFor(open.id)} className="mt-5" />
     </>
   );
 }

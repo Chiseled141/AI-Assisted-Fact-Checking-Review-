@@ -25,7 +25,7 @@ describe('Backend check lifecycle', () => {
     const settings = nav.getByRole('button', { name: 'Settings' });
     await user.click(settings);
     const settingsPanel = await screen.findByRole('dialog', { name: 'Settings' });
-    expect(within(settingsPanel).getByRole('radiogroup', { name: 'Language' })).toBeInTheDocument();
+    expect(within(settingsPanel).getByRole('group', { name: 'Appearance' })).toBeInTheDocument();
     expect(screen.getByRole('heading', { name: 'Checking claims' })).toBeInTheDocument();
     await user.keyboard('{Escape}');
     expect(settings).toHaveFocus();

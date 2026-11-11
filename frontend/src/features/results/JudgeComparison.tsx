@@ -1,9 +1,12 @@
+import type { CSSProperties } from 'react';
 import type { EvidenceSnapshot, JudgeVerdict } from '../../types/models';
 import { ReplyButton } from '../../components/ReplyButton';
 import { config } from '../../config';
 import { VerdictMark } from '../../components/Badges';
 import { HighlightedText } from '../../components/HighlightedText';
-import { inLanguage, t } from '../../lib/i18n';
+import { getLanguage, inLanguage, t } from '../../lib/i18n';
+import { parseGridQuote, parseTableQuote } from './figures';
+import { QuoteGrid, QuoteTable } from './SourceDeck';
 
 const relationLabels = { supporting: 'Supporting', contradicting: 'Contradicting', contextual: 'Context only' } as const;
 
@@ -24,7 +27,7 @@ export function JudgeReviews({
   return (
     <div>
       <ul aria-label={t('AI model reviews')} className={disagree ? 'grid divide-y divide-line-strong md:grid-cols-2 md:divide-x md:divide-y-0' : 'space-y-4'}>
-        {judges.map(({ judge, verdict, confidence, review, translations, citations }, index) => {
+        {judges.map(({ judge, verdict, review, translations, citations }, index) => {
           const model = config.judges.options.find(({ name }) => name === judge);
           const citationsById = new Map(citations?.map((citation) => [citation.evidenceId, citation]));
           const sourceIds = new Set([
@@ -37,15 +40,12 @@ export function JudgeReviews({
               <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
                 <span className="inline-flex min-w-0 items-center gap-2">
                   {model?.logo && <img src={model.logo} alt="" className="h-4 w-4 shrink-0 object-contain" draggable={false} />}
-                  <strong className="text-[15px] font-semibold text-ink" style={model ? { color: model.nameColor } : undefined}>
+                  <strong className="model-name text-[15px] font-semibold" style={model ? { '--model-color': model.nameColor } as CSSProperties : undefined}>
                     {judge}
                   </strong>
                 </span>
-                <span className={`text-xs tabular-nums text-ink-muted ${disagree ? 'ml-auto' : ''}`}>
-                  {t('{percent}% confidence', { percent: Math.round(confidence * 100) })}
-                </span>
                 {model && (
-                  <span className={disagree ? 'shrink-0' : 'ml-auto shrink-0'}>
+                  <span className="ml-auto shrink-0">
                     <ReplyButton
                       label={t('Reply to {model}', { model: judge })}
                       onClick={() => onReply(judge, model.id)}
@@ -80,7 +80,16 @@ export function JudgeReviews({
                             {freshness === 'outdated' && <> · {t('Outdated')}</>}
                           </p>
                         )}
-                        {quote && <blockquote className="text-ink-soft">{inLanguage(quote, translations)}</blockquote>}
+                        {quote && (() => {
+                          // A table row keeps its original cells. The saved excerpt may carry the headings the model left out.
+                          const full = source && source.excerpt.endsWith(quote) ? source.excerpt : quote;
+                          const table = parseTableQuote(full);
+                          if (table) return <QuoteTable table={table} translation={translations?.[getLanguage()] ?? undefined} compact />;
+                          const grid = parseGridQuote(full);
+                          return grid
+                            ? <QuoteGrid grid={grid} compact />
+                            : <blockquote className="text-ink-soft">{inLanguage(quote, translations)}</blockquote>;
+                        })()}
                         {source && (
                           <a href={source.url} target="_blank" rel="noreferrer" className="text-indigo-700 underline underline-offset-4">
                             {source.sourceTitle}

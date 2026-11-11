@@ -5,21 +5,21 @@ import { RevisionKindBadge, VerdictHeadline } from '../../components/Badges';
 import { JudgeReviews, judgesDisagree } from './JudgeComparison';
 import { HighlightedText } from '../../components/HighlightedText';
 import { SourceDeck } from './SourceDeck';
+import { EvidenceGlance } from './EvidenceGlance';
 import { EvidenceSourceLinks } from './EvidenceSourceLinks';
-import { PriceChart } from './PriceChart';
-import { StockHeatmap } from './StockHeatmap';
-import { LocationMap } from './LocationMap';
-import { PieChart } from './PieChart';
-import { BarChart } from './BarChart';
-import { RouteMap } from './RouteMap';
-import { MatchResult } from './MatchResult';
-import { IncidentMap } from './IncidentMap';
-import { HeatMap } from './HeatMap';
-import { CountryMap } from './CountryMap';
-import { PopulationPyramid } from './PopulationPyramid';
-import { ElectionMap } from './ElectionMap';
-import { SeatChart } from './SeatChart';
-import { inLanguage, t } from '../../lib/i18n';
+import { PriceChart } from './charts/PriceChart';
+import { StockHeatmap } from './charts/StockHeatmap';
+import { LocationMap } from './charts/LocationMap';
+import { PieChart } from './charts/PieChart';
+import { BarChart } from './charts/BarChart';
+import { RouteMap } from './charts/RouteMap';
+import { MatchResult } from './charts/MatchResult';
+import { IncidentMap } from './charts/IncidentMap';
+import { CountryMap } from './charts/CountryMap';
+import { PopulationPyramid } from './charts/PopulationPyramid';
+import { ElectionMap } from './charts/ElectionMap';
+import { SeatChart } from './charts/SeatChart';
+import { getLanguage, inLanguage, t } from '../../lib/i18n';
 
 export type EvidenceState =
   { kind: 'loading' } | { kind: 'error'; message: string } | { kind: 'ready'; items: EvidenceSnapshot[] };
@@ -45,8 +45,13 @@ export function EvidencePanel({ claim, claimCount, evidence, onRetry, onReview, 
   const outdatedCount = [...cited].filter((id) => freshness[id]?.status === 'outdated').length;
   const items = evidence.kind === 'ready' ? evidence.items : [];
   const sourcesProvided = evidence.kind === 'ready' && current?.version === 1 ? items.length : undefined;
+  const translation = claim.translations?.[getLanguage()];
   function replyToJudge(judge: string, modelId: string) {
     onReplyToResult({ claimId: claim.id, kind: 'judge', key: judge }, { title: judge }, modelId);
+  }
+
+  function replyToSource(item: EvidenceSnapshot) {
+    onReplyToResult({ claimId: claim.id, kind: 'source', key: item.id }, { title: item.sourceTitle, url: item.url });
   }
 
   function replyToChart(key: ChartKey, title: string) {
@@ -62,6 +67,12 @@ export function EvidencePanel({ claim, claimCount, evidence, onRetry, onReview, 
           <h1 id="evidence-heading" className={`text-[24px] font-medium leading-[1.25] tracking-[-0.025em] text-ink sm:text-[30px] ${disagree ? 'max-w-[72ch]' : ''}`}>
             {claim.text}
           </h1>
+          {/* The claim stays as it was checked. Its translation only ever appears under it. */}
+          {translation && translation !== claim.text && (
+            <p className="mt-3 text-[15px] leading-[1.5] text-ink-soft">
+              <span className="font-medium text-ink-muted">{t('Translation:')} </span>{translation}
+            </p>
+          )}
           {claim.rephrasedFrom && (
             <p className="mt-2 text-[13px] leading-[1.5] text-ink-muted">
               {t('Written by AI from your question: “{question}”. You did not state this claim.', { question: claim.rephrasedFrom })}
@@ -116,12 +127,13 @@ export function EvidencePanel({ claim, claimCount, evidence, onRetry, onReview, 
         </div>
       </div>
 
+      <EvidenceGlance revision={assessed ? current : null} sourcesReady={evidence.kind === 'ready'} items={items} judges={disagree ? null : reviews} />
+
       {claim.matchResult && <MatchResult match={claim.matchResult} onReply={(title) => replyToChart('matchResult', title)} />}
       {claim.priceChart && <PriceChart chart={claim.priceChart} onReply={(title) => replyToChart('priceChart', title)} />}
       {!!claim.stockHeatmapMarkets?.length && <StockHeatmap key={claim.id} marketIds={claim.stockHeatmapMarkets} />}
       {claim.locationMap && <LocationMap map={claim.locationMap} onReply={(title) => replyToChart('locationMap', title)} />}
       {claim.incidentMap && <IncidentMap map={claim.incidentMap} onReply={(title) => replyToChart('incidentMap', title)} />}
-      {claim.heatMap && <HeatMap map={claim.heatMap} onReply={(title) => replyToChart('heatMap', title)} />}
       {claim.countryMap && <CountryMap map={claim.countryMap} onReply={(title) => replyToChart('countryMap', title)} />}
       {claim.populationPyramid && <PopulationPyramid chart={claim.populationPyramid} onReply={(title) => replyToChart('populationPyramid', title)} />}
       {claim.seatChart && <SeatChart chart={claim.seatChart} onReply={(title) => replyToChart('seatChart', title)} />}
@@ -161,13 +173,9 @@ export function EvidencePanel({ claim, claimCount, evidence, onRetry, onReview, 
           <p className="text-sm text-ink-muted">{t('No evidence snapshots are attached to this claim.')}</p>
         ) : (
           <>
-            <EvidenceSourceLinks
-              items={items}
-              freshness={freshness}
-              onReply={(item) => onReplyToResult({ claimId: claim.id, kind: 'source', key: item.id }, { title: item.sourceTitle, url: item.url })}
-            />
+            <EvidenceSourceLinks items={items} freshness={freshness} onReply={replyToSource} />
             <div className="mt-5">
-              <SourceDeck claim={claim} items={items} citedIds={cited} freshness={freshness} />
+              <SourceDeck claim={claim} items={items} citedIds={cited} freshness={freshness} onReply={replyToSource} />
             </div>
           </>
         )}

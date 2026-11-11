@@ -9,5 +9,18 @@
 !.env.*.example
 .claude/
 
+# Backend: Python environment, caches and local databases
+.venv/
+__pycache__/
+.pytest_cache/
+.ruff_cache/
+*.db
+
+# Frontend: packages, build output and caches
+node_modules/
+dist/
+*.tsbuildinfo
+.vite/
+
 # Cached metadata for the party-logo maintenance script
 frontend/scripts/.party-logo-cache/

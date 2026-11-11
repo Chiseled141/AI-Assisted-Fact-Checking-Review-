@@ -1,4 +1,4 @@
-import { type ReactNode, useLayoutEffect, useRef, useState } from 'react';
+import { type CSSProperties, type ReactNode, useLayoutEffect, useRef, useState } from 'react';
 import { ArrowUpRight, Bot, ChartNoAxesCombined, ChevronDown, FileText, Link2, Loader2, Reply } from 'lucide-react';
 import { config } from '../../config';
 import type { ChatMessage, ChatReference, CheckDetail, SubmittedFile } from '../../types/models';
@@ -115,10 +115,10 @@ export function AssistantMessage({ children, modelName }: { children: ReactNode;
   return (
     <div className="min-w-0">
       <p
-        className={`flex min-h-7 items-center gap-2 text-sm leading-tight text-ink ${
+        className={`model-name flex min-h-7 items-center gap-2 text-sm leading-tight ${
           modelName ? 'font-logo font-medium' : 'font-wordmark font-bold tracking-[-0.035em]'
         }`}
-        style={model ? { color: model.nameColor } : undefined}
+        style={model ? { '--model-color': model.nameColor } as CSSProperties : undefined}
       >
         {model?.logo ? (
           <img src={model.logo} alt="" className="h-4 w-4 shrink-0 object-contain" />

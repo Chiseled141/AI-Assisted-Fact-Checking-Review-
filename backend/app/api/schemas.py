@@ -3,10 +3,10 @@
 from datetime import UTC, datetime
 from typing import Annotated, Literal
 
-from pydantic import BaseModel, ConfigDict, Field, PlainSerializer
+from pydantic import BaseModel, ConfigDict, Field, PlainSerializer, StrictInt
 from pydantic.alias_generators import to_camel
 
-from ..core.labels import Freshness, InputCategory, Relation, StockMarket, Verdict
+from config.labels import Freshness, InputCategory, Relation, StockMarket, Verdict
 
 
 def _utc(value: datetime) -> str:
@@ -91,6 +91,7 @@ class RevisionOut(ApiModel):
     kind: str
     verdict: Verdict
     rationale: str
+    translations: dict[str, str] | None = None  # The rationale in other languages, when the model wrote one.
     cited_evidence_ids: list[str]
     citation_freshness: dict[str, FreshnessJudgment] | None = None
     attachments: list[Attachment] | None = None
@@ -116,7 +117,6 @@ class ClaimOut(ApiModel):
     stock_heatmap_markets: list[StockMarket] | None = None
     location_map: dict | None = None
     incident_map: dict | None = None
-    heat_map: dict | None = None
     country_map: dict | None = None
     population_pyramid: dict | None = None
     seat_chart: dict | None = None
@@ -126,6 +126,7 @@ class ClaimOut(ApiModel):
     match_result: dict | None = None
     election_map: dict | None = None
     rephrased_from: str | None = None
+    translations: dict[str, str] | None = None  # The claim in other languages, written at extraction.
 
 
 class ReviewClaimOut(ApiModel):
@@ -145,7 +146,8 @@ class ReviewReply(ApiModel):
 
 
 class ReviewAnswer(ApiModel):
-    claim: int | None = None  # None is every claim.
+    claim: int | None = None  # The single-claim selection used by older clients.
+    selected_claims: list[StrictInt] | None = Field(default=None, min_length=1, exclude_if=lambda value: value is None)
     answers: list[ReviewReply] = Field(default_factory=list, max_length=5)
     typed_claim: str | None = Field(default=None, max_length=300)  # What to check instead, in the reader's own words.
 
@@ -268,6 +270,14 @@ class InputSuggestionsOut(ApiModel):
     suggestions: list[str]
 
 
+class QuotedTableOut(ApiModel):
+    """The table a quoted row came from, read from the saved page by code. `quoted` indexes into `rows`."""
+
+    columns: list[str]
+    rows: list[list[str]]
+    quoted: list[int]
+
+
 class EvidenceOut(ApiModel):
     id: str
     claim_id: str
@@ -275,6 +285,7 @@ class EvidenceOut(ApiModel):
     publisher: str | None = None
     url: str
     excerpt: str
+    table: QuotedTableOut | None = None
     translations: dict[str, str] | None = None
     published_at: str | None = None
     retrieved_at: UtcTime

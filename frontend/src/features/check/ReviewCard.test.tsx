@@ -4,7 +4,7 @@ import userEvent from '@testing-library/user-event';
 import { renderApp } from '../../test/renderApp';
 import { makeCheck } from '../../test/fixtures';
 import { interceptRequests, jsonResponse } from '../../test/http';
-import type { CheckReview } from '../../types/models';
+import type { CheckReview, ReviewAnswer } from '../../types/models';
 
 const review: CheckReview = {
   claims: [{ position: 1, text: 'The line has 12 stations.' }, { position: 2, text: 'It opened in 2021.' }],
@@ -13,11 +13,15 @@ const review: CheckReview = {
 };
 
 function waiting(answered: () => boolean, saved = review) {
+  let submission: ReviewAnswer | undefined;
   return interceptRequests((_, init) => {
-    if (init?.method === 'POST') return jsonResponse({ ok: true }, 202);
+    if (init?.method === 'POST') {
+      submission = JSON.parse(String(init.body));
+      return jsonResponse({ ok: true }, 202);
+    }
     return jsonResponse(
       answered()
-        ? makeCheck({ status: 'retrieving', claims: [], review: { ...saved, answer: { claim: null, answers: [{ claim: 2, answer: 'Nhổn' }] } } })
+        ? makeCheck({ status: 'retrieving', claims: [], review: { ...saved, answer: submission } })
         : makeCheck({ status: 'awaiting_input', claims: [], review: saved }),
     );
   });
@@ -36,7 +40,11 @@ describe('Questions before the search', () => {
     expect(await screen.findByText('Waiting for your answer')).toBeInTheDocument();
     const next = screen.getByRole('button', { name: 'Continue' });
     expect(next).toBeDisabled();
+    await user.click(screen.getByRole('checkbox', { name: 'Select all claims' }));
+    const firstOption = screen.getByRole('radio', { name: 'Cát Linh' });
+    await user.click(firstOption);
     await user.click(screen.getByRole('radio', { name: 'Nhổn' }));
+    expect(firstOption).not.toBeChecked();
     expect(next).toBeEnabled();
     answered = true;
     await user.click(next);
@@ -45,21 +53,32 @@ describe('Questions before the search', () => {
     expect(screen.queryByRole('button', { name: 'Continue' })).not.toBeInTheDocument();
   });
 
-  it('stops asking about the claims the reader left out', async () => {
-    const fetchMock = waiting(() => false);
+  it('sends the checked subset and skips questions about the claims the reader left out', async () => {
+    let answered = false;
+    const third = { position: 3, text: 'The line is 13 km long.' };
+    const fetchMock = waiting(() => answered, { ...review, claims: [...review.claims, third] });
     const user = userEvent.setup();
     renderApp('/checks/chk_test');
-    await user.click(await screen.findByRole('radio', { name: 'The line has 12 stations.' }));
+    const all = await screen.findByRole('checkbox', { name: 'Select all claims' });
+    await user.click(all);
+    expect(all).toBeChecked();
+    expect(screen.getByText('Which line?')).toBeInTheDocument();
+    await user.click(screen.getByRole('checkbox', { name: 'It opened in 2021.' }));
+    expect(all).toBePartiallyChecked();
     expect(screen.queryByText('Which line?')).not.toBeInTheDocument();
+    answered = true;
     await user.click(screen.getByRole('button', { name: 'Continue' }));
-    await waitFor(() => expect(sentAnswer(fetchMock)).toEqual({ claim: 1, answers: [] }));
+    await waitFor(() => expect(sentAnswer(fetchMock)).toEqual({ claim: null, selectedClaims: [1, 3], answers: [] }));
+    expect(await screen.findByText(third.text)).toBeVisible();
+    expect(screen.queryByText('It opened in 2021.')).not.toBeInTheDocument();
   });
 
   it('needs words for a typed answer, and sends null to check as written', async () => {
     const fetchMock = waiting(() => false);
     const user = userEvent.setup();
     renderApp('/checks/chk_test');
-    await user.click(await screen.findAllByRole('radio', { name: 'Other' }).then((rows) => rows[1]));
+    await user.click(await screen.findByRole('checkbox', { name: 'Select all claims' }));
+    await user.click(screen.getByRole('radio', { name: 'Other' }));
     const next = screen.getByRole('button', { name: 'Continue' });
     expect(next).toBeDisabled();
     await user.type(screen.getByRole('textbox', { name: 'Your answer' }), '   ');
@@ -108,6 +127,7 @@ describe('Questions before the search', () => {
     });
     const user = userEvent.setup();
     renderApp('/checks/chk_test');
+    await user.click(await screen.findByRole('checkbox', { name: 'Select all claims' }));
     await user.click(await screen.findByRole('button', { name: 'Continue' }));
     expect(await screen.findByRole('alert')).toHaveTextContent('This check is no longer waiting for an answer.');
     expect(screen.getByRole('button', { name: 'Continue' })).toBeEnabled();

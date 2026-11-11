@@ -171,7 +171,7 @@ function CheckView({ checkId }: { checkId: string }) {
           <AssistantMessage>
             <ProcessingView check={check} />
             {check.status === 'awaiting_input' && check.review && (
-              <ReviewCard checkId={check.id} review={check.review} onAnswered={() => setAttempt((current) => current + 1)} />
+              <ReviewCard key={check.id} checkId={check.id} review={check.review} onAnswered={() => setAttempt((current) => current + 1)} />
             )}
             {check.review?.answer && <ReviewSummary review={check.review} />}
             {(check.status === 'failed' || check.status === 'stopped') && (

@@ -33,6 +33,9 @@ export default {
         emerald: shades('emerald', [50, 200, 700, 800, 900]),
         rose: shades('rose', [50, 200, 400, 600, 700, 800, 900]),
         amber: shades('amber', [50, 200, 300, 400, 700, 800, 900, 950]),
+        slate: shades('slate', [50, 100, 300, 600, 700]),
+        indigo: shades('indigo', [50, 100, 200, 600, 700, 900]),
+        orange: shades('orange', [50, 200, 800]),
       },
       boxShadow: {
         dialog: '0 24px 80px -24px rgba(0,0,0,0.45)',

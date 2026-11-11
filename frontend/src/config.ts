@@ -1,4 +1,6 @@
 // Tunable interface limits. Adjust here rather than in components.
+import judges from '../../backend/config/data/judges.json';
+
 export const config = {
   text: { minLength: 20, maxLength: 5000 },
   url: { maxLength: 2048 },
@@ -12,24 +14,14 @@ export const config = {
   },
   history: { pageSize: 20 },
   /**
-   * LLM judges offered in the new-check picker. IDs and names must match `[judges]` in
-   * backend/config/models.toml, which holds the OpenRouter model IDs.
-   * `defaultIds` is the picker's starting pair; the
+   * LLM judges offered in the new-check picker, read from backend/config/data/judges.json, the one list
+   * the backend also uses. `defaultIds` is the picker's starting pair; the
    * evaluation pair is frozen separately after a test on about 30 claims.
    */
   judges: {
     count: 2,
-    options: [
-      { id: 'claude-haiku', name: 'Claude Haiku 5.5', lab: 'Anthropic', logo: '/logos/anthropic.svg', nameColor: '#A14B16' },
-      { id: 'gpt-luna', name: 'GPT Luna', lab: 'OpenAI', logo: '/logos/openai.svg', nameColor: '#172D61' },
-      { id: 'gemini-flash-lite', name: 'Gemini 3.5 Flash-Lite', lab: 'Google', logo: '/source-logos/google-com.png', nameColor: '#7D2A93' },
-      { id: 'deepseek-flash', name: 'DeepSeek Flash V4.1', lab: 'DeepSeek', logo: '/logos/deepseek.svg', nameColor: '#006C79' },
-      { id: 'glm-5-3-flash', name: 'GLM 5.3 Flash', lab: 'Z.ai', logo: '/logos/zai.svg', nameColor: '#3D6119' },
-      { id: 'qwen-flash', name: 'Qwen3.8 Flash', lab: 'Alibaba', logo: '/logos/qwen.svg', nameColor: '#3732B5' },
-      { id: 'minimax-flash', name: 'MiniMax M3.1 Flash', lab: 'MiniMax', logo: '/logos/minimax.svg', nameColor: '#A82467' },
-      { id: 'mimo-flash', name: 'MiMo v2.6 Flash', lab: 'Xiaomi', logo: '/logos/xiaomi.svg', nameColor: '#4F3700' },
-    ],
-    defaultIds: ['gpt-luna', 'claude-haiku'],
+    options: Object.entries(judges.options).map(([id, { name, lab, logo, nameColor }]) => ({ id, name, lab, logo, nameColor })),
+    defaultIds: judges.default,
     /** Answers follow-up questions unless the reader picks another. Matches `followup` in models.toml. */
     followUpDefaultId: 'claude-haiku',
   },

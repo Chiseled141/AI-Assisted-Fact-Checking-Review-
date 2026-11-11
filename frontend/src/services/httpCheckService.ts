@@ -1,7 +1,7 @@
 // CheckService over the FastAPI backend in ../backend. Routes are in backend/app/api/, and at /docs when it runs.
 
 import type { Check, CheckDetail, CreateCheckInput, ListChecksParams } from '../types/models';
-import { t } from '../lib/i18n';
+import { inLanguage, t } from '../lib/i18n';
 import type { CheckService } from './contract';
 import { NotFoundError, UnauthorizedError, ValidationError, VersionConflictError } from './errors';
 import { apiUrl } from './api';
@@ -45,8 +45,13 @@ function detailFromServer(check: CheckDetail): CheckDetail {
     claims: check.claims.map((claim) => ({
       ...claim,
       unavailableReason: claim.unavailableReason && t(claim.unavailableReason),
-      // A model's own text has no translation, so `t` leaves it unchanged.
-      current: claim.current && { ...claim.current, rationale: t(claim.current.rationale) },
+      // A model's own text has no translation, so `t` leaves it unchanged. A model note carries its own languages.
+      current: claim.current && {
+        ...claim.current,
+        rationale: claim.current.translations
+          ? inLanguage(claim.current.rationale, claim.current.translations)
+          : t(claim.current.rationale),
+      },
     })),
   };
 }

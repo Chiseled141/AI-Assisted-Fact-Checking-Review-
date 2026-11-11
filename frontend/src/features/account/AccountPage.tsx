@@ -168,7 +168,7 @@ export function AccountPage({ embedded = false }: { embedded?: boolean } = {}) {
           <h2 className="max-w-[9em] text-[38px] font-normal leading-[1.35] tracking-[-0.035em] xl:text-[48px]">
             {t('Trace the facts.')}<br />{t('Understand the story.')}
           </h2>
-          <p className="mt-7 max-w-sm text-[15px] leading-[1.8] text-white/65">
+          <p className="mt-7 max-w-sm text-[15px] leading-[1.8] text-on-brand/65">
             {t('Check claims against cited sources, with two AI models to help you examine the evidence.')}
           </p>
           <Link to="/#how-it-works" className="mt-10 inline-flex min-h-11 items-center gap-2 rounded-full bg-white px-5 py-2.5 text-sm font-medium text-ink transition-colors hover:bg-zinc-100">

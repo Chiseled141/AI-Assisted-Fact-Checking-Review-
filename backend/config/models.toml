@@ -1,6 +1,6 @@
 # OpenRouter models. IDs from https://openrouter.ai/models, checked on 2026-11-02.
 # Each call requests exactly the model named here; there is no fallback to another model.
-# Restart the backend after editing. Judge keys and names must match `frontend/src/config.ts`.
+# Restart the backend after editing. The judge models a reader can pick are in `data/judges.json`.
 
 [openrouter]
 base_url = "https://openrouter.ai/api/v1"
@@ -13,40 +13,3 @@ extraction = "anthropic/claude-haiku-5.5"
 research = "anthropic/claude-haiku-5.5"
 # Answers follow-up questions about a finished check, from its saved sources only.
 followup = "anthropic/claude-haiku-5.5"
-# Judges ticked by default in the new-check form.
-default_judges = ["gpt-luna", "claude-haiku"]
-
-# What the user can pick from in the new-check form.
-# Set `supports_json_mode = false` for a model that rejects OpenRouter's JSON mode.
-
-[judges.claude-haiku]
-name = "Claude Haiku 5.5"
-model = "anthropic/claude-haiku-5.5"
-
-[judges.gpt-luna]
-name = "GPT Luna"
-model = "openai/gpt-6-luna"
-
-[judges.gemini-flash-lite]
-name = "Gemini 3.5 Flash-Lite"
-model = "google/gemini-3.5-flash-lite"
-
-[judges.deepseek-flash]
-name = "DeepSeek Flash V4.1"
-model = "deepseek/deepseek-v4.1-flash"
-
-[judges.glm-5-3-flash]
-name = "GLM 5.3 Flash"
-model = "z-ai/glm-5.3-flash"
-
-[judges.qwen-flash]
-name = "Qwen3.8 Flash"
-model = "qwen/qwen3.8-flash"
-
-[judges.minimax-flash]
-name = "MiniMax M3.1 Flash"
-model = "minimax/minimax-m3.1-flash"
-
-[judges.mimo-flash]
-name = "MiMo v2.6 Flash"
-model = "xiaomi/mimo-v2.6-flash"

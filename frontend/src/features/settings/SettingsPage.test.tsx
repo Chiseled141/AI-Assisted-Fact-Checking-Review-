@@ -4,6 +4,27 @@ import userEvent from '@testing-library/user-event';
 import { renderApp } from '../../test/renderApp';
 import { interceptRequests, jsonResponse } from '../../test/http';
 
+it('changes the app theme from Settings and keeps the language switcher in the header', async () => {
+  const user = userEvent.setup();
+  renderApp('/settings');
+
+  const appearance = within(screen.getByRole('group', { name: 'Appearance' }));
+  expect(appearance.getByRole('radio', { name: 'Follow device' })).toBeChecked();
+  expect(within(screen.getByRole('banner')).getByRole('radiogroup', { name: 'Language' })).toBeInTheDocument();
+  expect(screen.getAllByRole('radiogroup', { name: 'Language' })).toHaveLength(1);
+
+  await user.click(appearance.getByRole('radio', { name: 'Dark' }));
+  expect(document.documentElement).toHaveAttribute('data-theme', 'dark');
+  expect(localStorage.getItem('claimtrace.theme')).toBe('dark');
+
+  await user.click(appearance.getByRole('radio', { name: 'Light' }));
+  expect(document.documentElement).toHaveAttribute('data-theme', 'light');
+  expect(localStorage.getItem('claimtrace.theme')).toBe('light');
+
+  await user.click(appearance.getByRole('radio', { name: 'Follow device' }));
+  expect(localStorage.getItem('claimtrace.theme')).toBe('system');
+});
+
 describe('Search preferences', () => {
   it('saves both preferences together and reopens the panel with the saved values', async () => {
     const user = userEvent.setup();

@@ -4,8 +4,9 @@ from fastapi import APIRouter, Depends, Request
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
-from ..db import models
-from ..db.session import get_session
+from database import models
+from database.session import get_session
+
 from . import schemas
 from .deps import current_user
 

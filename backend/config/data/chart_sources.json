@@ -1,5 +1,127 @@
 {
-  "_about": "Sources for elections, SJC prices and official sports results. Every domain must be green in source_ratings.json.",
+  "_about": "Source profiles for charts and table searches. Every domain must be green in source_ratings.json.",
+  "public_profiles": ["tubefilter.com", "people.com", "gq.com", "rollingstone.com", "complex.com", "variety.com", "hollywoodreporter.com", "miaminewtimes.com", "sportingnews.com", "scmp.com", "vnexpress.net", "tuoitre.vn", "thanhnien.vn"],
+  "apple_vietnam_store_pages": {"iphone 17": "https://www.apple.com/vn/shop/buy-iphone/iphone-17"},
+  "manufacturer_prices": [
+    {"terms": ["Toyota", "Corolla Cross", "Corolla Altis", "Toyota Vios"], "domains": ["toyota.com", "toyota.com.vn"], "vn": ["toyota.com.vn"]},
+    {"terms": ["Honda", "Civic", "Honda City", "Honda CR-V", "Honda HR-V"], "domains": ["honda.com", "honda.com.vn"], "vn": ["honda.com.vn"]},
+    {"terms": ["Ford", "Ford Ranger", "Ford Territory"], "domains": ["ford.com", "ford.com.vn"], "vn": ["ford.com.vn"]},
+    {"terms": ["VinFast"], "domains": ["vinfastauto.com"]},
+    {"terms": ["Tesla", "Cybertruck"], "domains": ["tesla.com"]},
+    {"terms": ["Hyundai", "Ioniq 5"], "domains": ["hyundai.com"]},
+    {"terms": ["Apple", "iPhone", "iPad", "MacBook", "AirPods"], "domains": ["apple.com"]},
+    {"terms": ["Samsung", "Galaxy"], "domains": ["samsung.com"]},
+    {"terms": ["Xiaomi", "Redmi", "Poco"], "domains": ["mi.com"]},
+    {"terms": ["Sony", "PlayStation", "PS5"], "domains": ["playstation.com", "sony.com"]},
+    {"terms": ["Nintendo", "Nintendo Switch"], "domains": ["nintendo.com"]}
+  ],
+  "data_profiles": {
+    "population": {
+      "terms": ["population", "census", "demographic", "life expectancy", "dân số", "dân cư", "tuổi thọ", "điều tra dân số"],
+      "domains": ["population.un.org", "data.un.org", "worldbank.org", "ec.europa.eu", "aseanstats.org", "nso.gov.vn", "gso.gov.vn", "census.gov", "ons.gov.uk", "ssb.no", "statcan.gc.ca", "abs.gov.au", "singstat.gov.sg", "stats.gov.cn"]
+    },
+    "economy": {
+      "terms": ["gdp", "grdp", "national accounts", "inflation", "consumer price index", "gross domestic product", "lạm phát", "tổng sản phẩm", "chỉ số giá tiêu dùng"],
+      "domains": ["data.imf.org", "imf.org", "worldbank.org", "oecd.org", "ec.europa.eu", "aseanstats.org", "nso.gov.vn", "gso.gov.vn", "bea.gov", "bls.gov", "fred.stlouisfed.org", "ecb.europa.eu", "ons.gov.uk", "stats.gov.cn"]
+    },
+    "trade": {
+      "terms": ["exports", "imports", "trade", "xuất khẩu", "nhập khẩu", "thương mại", "kim ngạch"],
+      "domains": ["comtradeplus.un.org", "wto.org", "unctad.org", "aseanstats.org", "worldbank.org", "ec.europa.eu", "nso.gov.vn", "gso.gov.vn", "census.gov"]
+    },
+    "energy": {
+      "terms": ["electricity", "power generation", "energy mix", "solar power", "renewable energy", "sản lượng điện", "nguồn điện", "năng lượng", "điện gió", "điện mặt trời"],
+      "domains": ["ember-energy.org", "eia.gov", "iea.org", "irena.org", "ec.europa.eu", "worldbank.org", "nso.gov.vn", "evn.com.vn"]
+    },
+    "transport": {
+      "terms": ["car registrations", "registered cars", "passenger car", "electric vehicles", "electric cars", "vehicle sales", "ô tô", "ôtô", "xe điện", "xe thuần điện", "xe đăng ký"],
+      "domains": ["acea.auto", "ofv.no", "ssb.no", "ec.europa.eu", "iea.org", "nso.gov.vn", "gso.gov.vn"],
+      "norway_registrations_page": "https://ofv.no/statistikk"
+    },
+    "health": {
+      "terms": ["mortality", "vaccination", "health expenditure", "prevalence", "life expectancy", "tử vong", "tiêm chủng", "chi y tế", "tuổi thọ"],
+      "domains": ["who.int", "cdc.gov", "ecdc.europa.eu", "worldbank.org", "oecd.org", "ec.europa.eu", "nso.gov.vn", "unicef.org"]
+    },
+    "labor": {
+      "terms": ["employment", "unemployment", "labour force", "labor force", "thất nghiệp", "việc làm", "lực lượng lao động"],
+      "domains": ["ilo.org", "bls.gov", "oecd.org", "ec.europa.eu", "aseanstats.org", "nso.gov.vn", "gso.gov.vn", "ons.gov.uk"]
+    },
+    "agriculture": {
+      "terms": ["agriculture", "crop production", "harvest", "nông nghiệp", "sản lượng lúa", "thu hoạch"],
+      "domains": ["fao.org", "worldbank.org", "aseanstats.org", "nso.gov.vn", "gso.gov.vn", "ec.europa.eu"]
+    },
+    "elections": {
+      "terms": ["election", "referendum", "bầu cử", "trưng cầu"],
+      "domains": ["electoralcommission.org.uk", "parliament.uk", "fec.gov", "eac.gov", "aec.gov.au", "elections.ca", "elections.nz", "eci.gov.in", "ipu.org"]
+    },
+    "box_office": {
+      "terms": ["box office", "highest grossing film", "highest grossing movie", "phòng vé", "phim có doanh thu", "doanh thu phim"],
+      "domains": ["boxofficemojo.com", "the-numbers.com"],
+      "worldwide_year_page": "https://www.boxofficemojo.com/year/world/{year}/"
+    },
+    "music_charts": {
+      "terms": ["ifpi", "official singles chart", "spotify charts", "music chart", "singles chart", "album chart", "most streamed song", "most streamed artist", "bảng xếp hạng âm nhạc", "bài hát được nghe nhiều nhất", "lượt stream spotify", "lượt nghe spotify"],
+      "domains": ["ifpi.org", "officialcharts.com", "charts.spotify.com", "newsroom.spotify.com"]
+    },
+    "tv_viewing": {
+      "terms": ["netflix top 10", "most watched netflix", "most watched series", "streaming viewership", "tv ratings", "lượt xem netflix", "giờ xem netflix", "phim được xem nhiều nhất trên netflix", "tỷ suất người xem"],
+      "domains": ["netflix.com", "nielsen.com"]
+    },
+    "game_player_counts": {
+      "terms": ["steam charts", "steam player count", "concurrent players", "most played game on steam", "người chơi đồng thời", "lượt chơi đồng thời", "người chơi trên steam"],
+      "domains": ["store.steampowered.com", "steamdb.info"]
+    },
+    "entertainment_awards": {
+      "terms": ["academy awards", "oscar nominations", "oscar wins", "grammy awards", "grammy nominations", "grammy wins", "giải oscar", "đề cử oscar", "giải grammy", "đề cử grammy"],
+      "domains": ["oscars.org", "grammy.com"]
+    },
+    "certified_records": {
+      "terms": ["guinness", "world record", "record holder", "kỷ lục thế giới", "người giữ kỷ lục"],
+      "domains": ["guinnessworldrecords.com", "worldathletics.org", "olympics.com"]
+    },
+    "finance": {
+      "terms": ["exchange rate", "policy rate", "property prices", "private sector credit", "tỷ giá", "lãi suất điều hành", "giá nhà", "tín dụng"],
+      "domains": ["data.bis.org", "data.imf.org", "ecb.europa.eu", "fred.stlouisfed.org", "sbv.gov.vn", "worldbank.org"]
+    },
+    "education": {
+      "terms": ["school enrollment", "school enrolment", "out of school", "literacy rate", "education expenditure", "tỷ lệ nhập học", "tỷ lệ biết chữ", "chi giáo dục"],
+      "domains": ["uis.unesco.org", "databrowser.uis.unesco.org", "worldbank.org", "oecd.org", "unicef.org", "nso.gov.vn"]
+    },
+    "displacement": {
+      "terms": ["refugees", "asylum seekers", "forced displacement", "người tị nạn", "người xin tị nạn", "di dời cưỡng bức"],
+      "domains": ["unhcr.org", "unicef.org", "worldbank.org"]
+    },
+    "climate": {
+      "terms": ["temperature anomaly", "global temperature", "greenhouse gas emissions", "carbon emissions", "nhiệt độ toàn cầu", "phát thải khí nhà kính", "phát thải carbon"],
+      "domains": ["noaa.gov", "copernicus.eu", "wmo.int", "iea.org", "ourworldindata.org"]
+    },
+    "military_spending": {
+      "terms": ["military expenditure", "military spending", "defense spending", "defence spending", "chi tiêu quân sự", "chi tiêu quốc phòng", "ngân sách quốc phòng"],
+      "domains": ["sipri.org", "worldbank.org"]
+    },
+    "connectivity": {
+      "terms": ["internet use", "internet users", "internet penetration", "broadband subscriptions", "mobile coverage", "người dùng internet", "sử dụng internet", "thuê bao băng rộng", "phủ sóng di động"],
+      "domains": ["itu.int", "worldbank.org", "oecd.org", "nso.gov.vn"]
+    },
+    "tourism": {
+      "terms": ["international tourist arrivals", "tourist arrivals", "tourism receipts", "khách du lịch quốc tế", "khách quốc tế", "doanh thu du lịch"],
+      "domains": ["untourism.int", "nso.gov.vn", "gso.gov.vn", "worldbank.org"]
+    },
+    "aviation": {
+      "terms": ["air passengers", "air passenger traffic", "passenger kilometres", "air cargo", "hành khách hàng không", "hành khách đi máy bay", "vận tải hàng không"],
+      "domains": ["icao.int", "caa.gov.vn", "worldbank.org", "ec.europa.eu", "nso.gov.vn"]
+    },
+    "earthquakes": {
+      "terms": ["earthquake magnitude", "earthquake epicenter", "earthquake epicentre", "độ lớn trận động đất", "tâm chấn", "động đất mạnh"],
+      "domains": ["usgs.gov", "jma.go.jp", "igp-vast.vn"]
+    },
+    "drinking_water": {
+      "terms": ["drinking water", "sanitation coverage", "access to sanitation", "nước uống an toàn", "nước sạch", "tiếp cận vệ sinh"],
+      "domains": ["washdata.org", "who.int", "unicef.org", "worldbank.org", "nso.gov.vn"]
+    },
+    "general": {
+      "domains": ["data.un.org", "worldbank.org", "oecd.org", "ec.europa.eu", "nso.gov.vn", "gso.gov.vn", "ourworldindata.org"]
+    }
+  },
   "sport_organizers": {
     "uefa.com": ["UEFA", "Champions League", "Europa League", "UEFA Euro", "Cúp C1"],
     "fifa.com": ["FIFA", "FIFA World Cup", "FIFA Club World Cup"],

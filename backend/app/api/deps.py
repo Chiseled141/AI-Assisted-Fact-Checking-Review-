@@ -11,9 +11,9 @@ from fastapi import Depends, HTTPException, Request
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from ..core.config import Settings, get_settings
-from ..db import models
-from ..db.session import get_session
+from config.settings import Settings, get_settings
+from database import models
+from database.session import get_session
 
 
 def token_hash(token: str) -> str:

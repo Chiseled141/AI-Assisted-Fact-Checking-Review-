@@ -25,7 +25,7 @@ export function NewCheckPage() {
         <WorldEvidenceMap />
         <div className="relative mx-auto flex min-h-[calc(100svh-68px)] max-w-5xl flex-col items-center justify-center px-4 py-10 sm:px-8 sm:py-12 md:min-h-[calc(100svh-72px)]">
           <h1 className="max-w-3xl text-center text-[30px] font-normal leading-[1.08] tracking-[-0.04em] sm:text-[42px] lg:text-[48px]">
-            <span className="block font-bold text-primary">{t('Trace claims.')}</span>
+            <span className="block font-bold text-pop">{t('Trace claims.')}</span>
             <span className="block text-ink-muted">{t('Examine evidence.')}</span>
           </h1>
 

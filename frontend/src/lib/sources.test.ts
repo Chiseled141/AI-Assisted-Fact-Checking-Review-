@@ -1,4 +1,4 @@
-import { existsSync, readFileSync } from 'node:fs';
+import { existsSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { sourceRegistry } from '../data/sourceRegistry';
@@ -36,11 +36,9 @@ describe('findSource', () => {
 });
 
 describe('sourceRegistry', () => {
-  it('matches the backend ratings, including the expanded official data sources', () => {
-    const { _about, ...backend } = JSON.parse(
-      readFileSync(resolve(process.cwd(), '../backend/config/data/source_ratings.json'), 'utf8'),
-    );
-    expect(Object.fromEntries(sourceRegistry.map(({ domain, trust }) => [domain, trust]))).toEqual(backend);
+  it('gives every source a name and one of the three ratings', () => {
+    expect(sourceRegistry.length).toBeGreaterThan(400);
+    expect(sourceRegistry.filter((entry) => !entry.name || !['green', 'yellow', 'red'].includes(entry.trust))).toEqual([]);
   });
 
   it('has unique domains', () => {

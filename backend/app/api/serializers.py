@@ -3,7 +3,8 @@
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
-from ..db import models
+from database import models
+
 from . import schemas
 
 
@@ -36,6 +37,7 @@ def revision_out(verdict: models.Verdict) -> schemas.RevisionOut:
         kind=verdict.kind,
         verdict=verdict.label,
         rationale=verdict.explanation,
+        translations=verdict.translations,
         cited_evidence_ids=verdict.evidence_ids or [],
         citation_freshness=verdict.citation_freshness,
         attachments=verdict.attachments,
@@ -64,7 +66,6 @@ def claim_out(claim: models.Claim) -> schemas.ClaimOut:
         stock_heatmap_markets=claim.stock_heatmap_markets,
         location_map=claim.location_map,
         incident_map=claim.incident_map,
-        heat_map=claim.heat_map,
         country_map=claim.country_map,
         population_pyramid=claim.population_pyramid,
         seat_chart=claim.seat_chart,
@@ -74,6 +75,7 @@ def claim_out(claim: models.Claim) -> schemas.ClaimOut:
         match_result=claim.match_result,
         election_map=claim.election_map,
         rephrased_from=claim.rephrased_from,
+        translations=claim.translations,
     )
 
 

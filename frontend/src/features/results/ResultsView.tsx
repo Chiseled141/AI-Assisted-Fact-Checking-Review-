@@ -1,6 +1,7 @@
 import { type CSSProperties, useCallback, useEffect, useRef, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { ArrowLeft, ArrowRight } from 'lucide-react';
+import { ArrowLeft, ArrowRight, TriangleAlert } from 'lucide-react';
+import { config } from '../../config';
 import type { AssessmentRevision, ChatReference, CheckDetail, Claim, FollowUpTarget } from '../../types/models';
 import { checkService } from '../../services';
 import { verdictLabel } from '../../lib/format';
@@ -10,6 +11,7 @@ import { CorrectionDialog } from './CorrectionDialog';
 import { RevisionDrawer } from './RevisionDrawer';
 import { t } from '../../lib/i18n';
 import { UncheckableResult } from './UncheckableResult';
+import { CheckSummary } from './CheckSummary';
 
 interface Props {
   /** Goes up by one each time the chat asks to edit the result on screen. */
@@ -117,6 +119,7 @@ export function ResultsView({ check, onReload, reviewRequest = 0, onReplyToResul
         <h2 id="claims-heading" className="sr-only">
           {t('Claims')}
         </h2>
+        <CheckSummary claims={check.claims} />
         <ul className="flex flex-col sm:flex-row sm:flex-wrap sm:gap-x-7 sm:border-b sm:border-line">
           {check.claims.map((claim, index) => (
             <li
@@ -132,13 +135,27 @@ export function ResultsView({ check, onReload, reviewRequest = 0, onReplyToResul
         {selected && (
           <div key={selected.id} className="press-rise mt-10">
             {failedJudges.length > 0 && (
-              <ul aria-label={t('Unavailable judges')} className="mb-4 space-y-1 rounded-xl border border-line bg-white p-4 text-sm text-ink-soft">
-                {failedJudges.map((event) => (
-                  <li key={event.id}>
-                    <strong className="font-semibold">{event.modelName}: </strong>
-                    {t(event.summary ?? 'This model could not return a valid assessment.')}
-                  </li>
-                ))}
+              <ul aria-label={t('Unavailable judges')} className="mb-8 space-y-2.5 border-b border-line pb-5 text-[16px] text-ink-soft">
+                {failedJudges.map((event) => {
+                  const model = config.judges.options.find(({ name }) => name === event.modelName);
+                  return (
+                    <li key={event.id} className="flex items-start gap-2.5">
+                      <TriangleAlert className="mt-[3px] h-[18px] w-[18px] shrink-0 text-candy" aria-hidden="true" />
+                      <p className="min-w-0 leading-[1.5]">
+                        <span className="mr-2 inline-flex items-center gap-1.5 align-baseline">
+                          {model?.logo && <img src={model.logo} alt="" className="h-4 w-4 shrink-0 self-center object-contain" draggable={false} />}
+                          <strong
+                            className="model-name font-semibold"
+                            style={model ? { '--model-color': model.nameColor } as CSSProperties : undefined}
+                          >
+                            {event.modelName}
+                          </strong>
+                        </span>
+                        {t(event.summary ?? 'This model could not return a valid assessment.')}
+                      </p>
+                    </li>
+                  );
+                })}
               </ul>
             )}
             <EvidencePanel

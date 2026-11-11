@@ -1,0 +1,14 @@
+{
+  "_about": "The judge models a reader can pick, read by the backend and the frontend. `model` is the OpenRouter ID (https://openrouter.ai/models, checked on 2026-11-02) and is requested exactly, with no fallback. Add `supports_json_mode: false` for a model that rejects OpenRouter's JSON mode. `lab`, `logo` and `nameColor` are how the picker shows it. `default` is the pair ticked in the new-check form. Restart the backend after editing.",
+  "default": ["gpt-luna", "claude-haiku"],
+  "options": {
+    "claude-haiku": {"name": "Claude Haiku 5.5", "model": "anthropic/claude-haiku-5.5", "lab": "Anthropic", "logo": "/logos/anthropic.svg", "nameColor": "#A14B16"},
+    "gpt-luna": {"name": "GPT Luna", "model": "openai/gpt-6-luna", "lab": "OpenAI", "logo": "/logos/openai.svg", "nameColor": "#172D61"},
+    "gemini-flash-lite": {"name": "Gemini 3.5 Flash-Lite", "model": "google/gemini-3.5-flash-lite", "lab": "Google", "logo": "/source-logos/google-com.png", "nameColor": "#7D2A93"},
+    "deepseek-flash": {"name": "DeepSeek Flash V4.1", "model": "deepseek/deepseek-v4.1-flash", "lab": "DeepSeek", "logo": "/logos/deepseek.svg", "nameColor": "#006C79"},
+    "glm-5-3-flash": {"name": "GLM 5.3 Flash", "model": "z-ai/glm-5.3-flash", "lab": "Z.ai", "logo": "/logos/zai.svg", "nameColor": "#3D6119"},
+    "qwen-flash": {"name": "Qwen3.8 Flash", "model": "qwen/qwen3.8-flash", "lab": "Alibaba", "logo": "/logos/qwen.svg", "nameColor": "#3732B5"},
+    "minimax-flash": {"name": "MiniMax M3.1 Flash", "model": "minimax/minimax-m3.1-flash", "lab": "MiniMax", "logo": "/logos/minimax.svg", "nameColor": "#A82467"},
+    "mimo-flash": {"name": "MiMo v2.6 Flash", "model": "xiaomi/mimo-v2.6-flash", "lab": "Xiaomi", "logo": "/logos/xiaomi.svg", "nameColor": "#4F3700"}
+  }
+}

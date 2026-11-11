@@ -3,10 +3,11 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
-from ..core.config import Settings, get_settings
-from ..db import models
-from ..db.session import get_session
-from ..pipeline.passages import saved_excerpt
+from config.settings import Settings, get_settings
+from database import models
+from database.session import get_session
+from harness.pipeline.passages import quoted_table, saved_excerpt
+
 from . import schemas
 from .deps import current_user, owned_claim
 from .serializers import claim_out, revision_out
@@ -26,6 +27,7 @@ def claim_evidence(claim_id: str, session: Session = Depends(get_session), user:
             publisher=item.source.publisher,
             url=item.source.url,
             excerpt=excerpts[item.id],
+            table=quoted_table(item.excerpt, item.source.text),
             # A translation belongs to one quote, so it goes when cleaning has changed the saved text.
             translations=item.translations if excerpts[item.id] == item.excerpt else None,
             published_at=item.source.published_at,

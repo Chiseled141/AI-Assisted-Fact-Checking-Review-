@@ -1,9 +1,9 @@
 import { type FormEvent, type KeyboardEvent, type ReactNode, useEffect, useId, useLayoutEffect, useRef, useState } from 'react';
-import { Check, ChevronDown, ChevronRight, Languages, Search, UserRound } from 'lucide-react';
+import { Check, ChevronDown, ChevronRight, Languages, Monitor, Moon, Search, Sun, UserRound } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import { LanguageSwitcher } from '../../components/LanguageSwitcher';
 import { config } from '../../config';
 import { t } from '../../lib/i18n';
+import { setTheme, type Theme, useTheme } from '../../lib/theme';
 import { updateProfile, useAccount } from '../../services/account';
 import { ValidationError } from '../../services/errors';
 import type { Account } from '../../types/models';
@@ -219,6 +219,43 @@ function SearchPreferences({ account }: { account: Account | null | undefined })
   );
 }
 
+const themeOptions = [
+  { value: 'light', label: 'Light', Icon: Sun },
+  { value: 'dark', label: 'Dark', Icon: Moon },
+  { value: 'system', label: 'Follow device', Icon: Monitor },
+] as const satisfies ReadonlyArray<{ value: Theme; label: string; Icon: typeof Sun }>;
+
+function AppearanceSettings() {
+  const theme = useTheme();
+  const groupName = useId();
+
+  return (
+    <div className="px-4 py-4 sm:px-5">
+      <fieldset>
+        <legend className="text-sm font-semibold text-ink">{t('Appearance')}</legend>
+        <div className="mt-2.5 grid grid-cols-3 gap-1 rounded-2xl border border-line bg-zinc-50 p-1">
+          {themeOptions.map(({ value, label, Icon }) => (
+            <label key={value} className="relative cursor-pointer">
+              <input
+                type="radio"
+                name={groupName}
+                value={value}
+                checked={theme === value}
+                onChange={() => setTheme(value)}
+                className="peer sr-only"
+              />
+              <span className="flex min-h-11 flex-col items-center justify-center gap-0.5 rounded-xl px-1.5 py-1.5 text-center text-xs font-medium text-ink-muted hover:bg-zinc-100 peer-checked:bg-white peer-checked:text-brand-700 peer-checked:ring-1 peer-checked:ring-inset peer-checked:ring-line-strong peer-focus-visible:outline peer-focus-visible:outline-2 peer-focus-visible:outline-brand-500">
+                <Icon className="h-4 w-4 shrink-0" aria-hidden="true" />
+                {t(label)}
+              </span>
+            </label>
+          ))}
+        </div>
+      </fieldset>
+    </div>
+  );
+}
+
 export function SettingsPage({ onManageAccount }: { onManageAccount?: () => void } = {}) {
   const account = useAccount();
   const accountClass = 'flex min-h-14 w-full items-center gap-3 rounded-b-2xl px-4 text-left text-sm font-medium text-ink transition-colors hover:bg-zinc-50 focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-brand-500/40 sm:px-5';
@@ -231,13 +268,7 @@ export function SettingsPage({ onManageAccount }: { onManageAccount?: () => void
     <div className={onManageAccount ? 'p-4 sm:p-5' : 'mx-auto w-full max-w-3xl px-4 pb-24 pt-12 sm:px-6 sm:pt-16'}>
       {!onManageAccount && <h1 className="mb-6 text-2xl font-medium tracking-tight text-ink">{t('Settings')}</h1>}
       <div className="divide-y divide-line rounded-2xl border border-line bg-white">
-        <div className="flex items-center justify-between gap-4 px-4 py-4 sm:px-5">
-          <span className="flex items-center gap-3 text-sm font-medium text-ink">
-            <Languages className="h-4 w-4 text-ink-muted" aria-hidden="true" />
-            {t('Language')}
-          </span>
-          <LanguageSwitcher />
-        </div>
+        <AppearanceSettings />
         <SearchPreferences key={account?.id} account={account} />
         {onManageAccount
           ? <button type="button" onClick={onManageAccount} className={accountClass}>{accountLabel}</button>

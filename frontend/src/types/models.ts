@@ -89,6 +89,8 @@ export interface EvidenceSnapshot {
   url: string;
   /** Saved text captured at retrieval time — not a live preview. */
   excerpt: string;
+  /** The table a quoted row came from, read from the saved page by code. `quoted` indexes into `rows`. */
+  table?: { columns: string[]; rows: string[][]; quoted: number[] } | null;
   /** The quote translated by the judge who chose it. Only the languages it isn't already in. */
   translations?: ModelTranslations | null;
   /** Publication date of the source, when known (YYYY-MM-DD). Unknown stays unknown. */
@@ -174,26 +176,6 @@ export interface PriceChartData {
   events: PriceEvent[];
   /** One for each price, in the same order, when `source` is `news`. */
   reports?: PriceReport[];
-}
-
-/** Weather over an area on certain days, from a weather model, saved when the claim was checked. */
-export interface HeatMapData {
-  metric: 'temperature' | 'rainfall' | 'pm25';
-  /** `world`, or a country's two-letter code. */
-  area: string;
-  /** How the claim writes the area. */
-  areaName: string;
-  /** YYYY-MM-DD */
-  start: string;
-  end: string;
-  /** The days averaged. A long period is sampled, so these can be fewer than the period has. */
-  days: string[];
-  /** Grid spacing in degrees. */
-  step: number;
-  source: string;
-  retrievedAt: string;
-  /** [longitude, latitude, value] */
-  points: [number, number, number][];
 }
 
 /** A national statistic for every country over the years, saved when the claim was checked. */
@@ -289,6 +271,8 @@ export interface AssessmentRevision {
   verdict: Verdict;
   /** AI explanation, or the reviewer's correction reason. */
   rationale: string;
+  /** The rationale in other languages, when the model wrote its own versions. */
+  translations?: ModelTranslations | null;
   citedEvidenceIds: string[];
   /** Freshness of each cited snapshot for this revision, keyed by evidence id. Missing = unknown. */
   citationFreshness?: Record<string, FreshnessJudgment>;
@@ -327,6 +311,7 @@ export interface PieChartData {
   title: string;
   unit: 'count' | 'percent';
   parts: { name: string; value: number }[];
+  derivedRemainder?: boolean;
   publisher: string;
   url: string;
 }
@@ -375,7 +360,7 @@ export interface MatchResultData {
   url: string;
 }
 
-export type ChartKey = 'priceChart' | 'locationMap' | 'incidentMap' | 'heatMap' | 'countryMap' | 'populationPyramid' | 'seatChart' | 'electionMap' | 'pieChart' | 'barChart' | 'routeMap' | 'matchResult';
+export type ChartKey = 'priceChart' | 'locationMap' | 'incidentMap' | 'countryMap' | 'populationPyramid' | 'seatChart' | 'electionMap' | 'pieChart' | 'barChart' | 'routeMap' | 'matchResult';
 export type StockMarket = 'us' | 'cn' | 'jp' | 'hk' | 'in' | 'vn';
 
 export type FollowUpTarget = { claimId: string } & (
@@ -404,7 +389,6 @@ export interface Claim {
   stockHeatmapMarkets?: StockMarket[] | null;
   locationMap?: LocationMapData;
   incidentMap?: IncidentMapData;
-  heatMap?: HeatMapData;
   countryMap?: CountryMapData;
   populationPyramid?: PopulationPyramidData;
   seatChart?: SeatChartData;
@@ -413,6 +397,8 @@ export interface Claim {
   routeMap?: RouteMapData;
   matchResult?: MatchResultData;
   electionMap?: ElectionMapData;
+  /** The claim in other languages, written by the extraction model. Only the languages it isn't already in. */
+  translations?: ModelTranslations | null;
   /** The question this claim was written from by the research model. The reader never stated the claim. */
   rephrasedFrom?: string | null;
 }
@@ -421,7 +407,7 @@ export type ModelTranslations = Partial<Record<'en' | 'vi', string>>;
 
 /**
  * One call the check has really made, with its status and finished public explanation.
- * Never contains a model's private thinking stream. Written in backend/app/pipeline/progress.py.
+ * Never contains a model's private thinking stream. Written in backend/harness/pipeline/progress.py.
  */
 export interface TaskProgress {
   id: string;
@@ -506,8 +492,10 @@ export interface ReviewQuestion {
 }
 
 export interface ReviewAnswer {
-  /** One claim's position, or null for every claim. */
+  /** A single selection from an older review, or null. */
   claim: number | null;
+  /** Positions to check. An omitted list with no other selection means every claim. */
+  selectedClaims?: number[] | null;
   /** A null answer checks that claim as written. */
   answers: { claim: number; answer: string | null }[];
   /** What to check instead of the listed claims, in the reader's own words. */
@@ -517,7 +505,7 @@ export interface ReviewAnswer {
 /** What a check asks the reader before it searches. */
 export interface CheckReview {
   claims: { position: number; text: string }[];
-  /** Whether the reader picks one claim or all of them. */
+  /** Whether the reader picks which claims to check. */
   choose: boolean;
   questions: ReviewQuestion[];
   answer?: ReviewAnswer | null;

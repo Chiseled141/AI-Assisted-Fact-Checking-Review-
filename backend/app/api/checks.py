@@ -9,16 +9,17 @@ from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Query, R
 from sqlalchemy import delete, func, or_, select, update
 from sqlalchemy.orm import Session
 
-from ..core.config import Settings, get_settings
-from ..db import models
-from ..db.session import get_session
-from ..pipeline.followup import answer_followup, result_context
-from ..pipeline.memory import earlier_link, similar_claims
-from ..pipeline.progress import closed_tasks
-from ..pipeline.prompts import INPUT_SUGGESTIONS_SYSTEM, InputSuggestions, tagged
-from ..pipeline.run import FINISHED, STOPPED, stop_requests
-from ..providers.llm import LLMError
-from ..search.fetcher import FetchError, check_url_allowed
+from config.settings import Settings, get_settings
+from database import models
+from database.session import get_session
+from harness.pipeline.followup import answer_followup, result_context
+from harness.pipeline.memory import earlier_link, similar_claims
+from harness.pipeline.progress import closed_tasks
+from harness.pipeline.prompts import INPUT_SUGGESTIONS_SYSTEM, InputSuggestions, tagged
+from harness.pipeline.run import FINISHED, STOPPED, stop_requests
+from harness.providers.llm import LLMError
+from harness.search.fetcher import FetchError, check_url_allowed
+
 from . import schemas
 from .deps import current_user, optional_user, owned_check
 from .serializers import check_out, claim_out, message_out
@@ -273,10 +274,20 @@ def answer_review(
         raise HTTPException(422, "This check is no longer waiting for an answer.")
     if body.claim is not None and not (review["choose"] and 1 <= body.claim <= len(review["claims"])):
         raise HTTPException(422, "That claim is no longer available.")
-    typed_claim = (body.typed_claim or "").strip() or None
-    if body.typed_claim is not None and not (typed_claim and review["choose"] and body.claim is None and not body.answers):
+    selected = set(body.selected_claims or ())
+    if body.selected_claims is not None and (
+        not review["choose"] or body.claim is not None or len(selected) != len(body.selected_claims)
+        or not selected <= {claim["position"] for claim in review["claims"]}
+    ):
         raise HTTPException(422, "That claim is no longer available.")
-    asked = {question["claim"] for question in review["questions"] if body.claim in (None, question["claim"])}
+    typed_claim = (body.typed_claim or "").strip() or None
+    if body.typed_claim is not None and not (
+        typed_claim and review["choose"] and body.claim is None and not selected and not body.answers
+    ):
+        raise HTTPException(422, "That claim is no longer available.")
+    if body.claim is not None:
+        selected = {body.claim}
+    asked = {question["claim"] for question in review["questions"] if not selected or question["claim"] in selected}
     replies = {reply.claim: (reply.answer or "").strip() or None for reply in body.answers}
     if len(replies) != len(body.answers) or not replies.keys() <= asked:
         raise HTTPException(422, "That question is no longer available.")
@@ -285,6 +296,8 @@ def answer_review(
         "answers": [{"claim": claim, "answer": text} for claim, text in replies.items()],
         "typed_claim": typed_claim,
     }
+    if body.selected_claims is not None:
+        answer["selected_claims"] = sorted(selected)
     # Only one answer can win, so a double click can't start the check twice.
     claimed = session.execute(
         update(models.Check)

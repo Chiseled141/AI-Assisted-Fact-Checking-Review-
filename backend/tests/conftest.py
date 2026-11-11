@@ -7,13 +7,14 @@ os.environ.update(DATABASE_URL=os.environ.get("TEST_DATABASE_URL", "sqlite:///:m
 import pytest
 from fastapi.testclient import TestClient
 from sqlalchemy import text
+from sqlalchemy.engine import make_url
 
-from app.charts.data_sources import MarketError
-from app.charts.location_map import PLACES
-from app.core.config import get_settings
-from app.db.session import Base, SessionLocal, engine
 from app.main import app
-from app.pipeline.prompts import (
+from config.settings import get_settings
+from database.session import Base, SessionLocal, engine
+from harness.charts.data_sources import MarketError
+from harness.charts.location_map import PLACES
+from harness.pipeline.prompts import (
     Citation,
     ClaimReview,
     ExtractedClaim,
@@ -29,9 +30,9 @@ from app.pipeline.prompts import (
     ReportedSeats,
     ReportedStates,
 )
-from app.pipeline.run import Providers, run_check
-from app.search.fetcher import FetchError, Page
-from app.search.tavily import SearchError
+from harness.pipeline.run import Providers, run_check
+from harness.search.fetcher import FetchError, Page
+from harness.search.tavily import SearchError
 
 ARTICLE = "The line opened to passengers on 6 November 2021 after a handover that morning. " * 8
 
@@ -45,7 +46,6 @@ class FakeLLM:
         self.price_asset = None
         self.reported_prices = []
         self.map_places = []
-        self.heat_map = None
         self.country_stat = None
         self.seat_chart = None
         self.reported_seats = None
@@ -66,7 +66,7 @@ class FakeLLM:
         return answer, reported, []
 
     def complete(self, model, system, user, schema, check=None):
-        from app.providers.llm import LLMError
+        from harness.providers.llm import LLMError
 
         self.calls.append((model, schema))
         self.prompts.append((schema, system, user))
@@ -81,7 +81,6 @@ class FakeLLM:
                         checkworthiness=0.9,
                         price_asset=self.price_asset,
                         map_places=self.map_places,
-                        heat_map=self.heat_map,
                         country_stat=self.country_stat,
                         seat_chart=self.seat_chart,
                         election_map=self.election_map,
@@ -172,17 +171,6 @@ class FakeMarket:
         return [[1733356800000, 98000.5], [1733443200000, 101000.25]]
 
 
-class FakeClimate:
-    name = "Test climate"
-
-    def __init__(self):
-        self.days = []
-
-    def day_values(self, metric, day, lats, lons):
-        self.days.append(day)
-        return [30.0 for _ in lats]
-
-
 def fake_country_rows():
     """Enough countries to draw a map, with two real-looking values for the tests to read."""
     rows = {iso3: {2022: 1_000_000.0, 2023: 1_100_000.0, 2024: 1_200_000.0} for iso3 in list(PLACES["iso3"].values())[:40]}
@@ -223,7 +211,6 @@ class Fakes:
     def __init__(self):
         self.state_data = FakeStateData()
         self.country_data = FakeCountryData()
-        self.climate = FakeClimate()
         self.market = FakeMarket()
         self.llm = FakeLLM()
         self.search = FakeSearch()
@@ -237,8 +224,12 @@ def fakes():
 
 @pytest.fixture
 def client(fakes, monkeypatch):
+    # An app import before pytest starts can leave the engine bound to the local app database.
+    if engine.url != make_url(os.environ["DATABASE_URL"]):
+        pytest.fail("Refusing to reset tables: the app engine was initialized before the test database was configured.")
+
     # Tests never touch the network, so every host counts as public unless a test says otherwise.
-    monkeypatch.setattr("app.search.fetcher._is_public", lambda host: True)
+    monkeypatch.setattr("harness.search.fetcher._is_public", lambda host: True)
     from app.api.auth import _failed
     from app.api.checks import _recent_checks
 
@@ -253,7 +244,6 @@ def client(fakes, monkeypatch):
         search=fakes.search,
         fetch=fakes.fetch,
         market=fakes.market,
-        climate=fakes.climate,
         country_data=fakes.country_data,
         state_data=fakes.state_data,
     )
