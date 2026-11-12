@@ -273,88 +273,94 @@ function SearchPreferences({ account }: { account: Account | null | undefined })
 
   return (
     <form onSubmit={save} className="space-y-4 px-4 py-4 sm:px-5">
-      <PreferenceSelect
-        label={t('Tavily search model')}
-        help={t('This model writes Tavily queries and selects sources for new checks.')}
-        icon={<Search className="h-4 w-4 shrink-0 text-brand-700" aria-hidden="true" />}
-        value={modelId}
-        disabled={disabled}
-        options={[
-          { value: '', label: t('Server default') },
-          ...config.judges.options.map(({ id, name, logo }) => ({ value: id, label: name, logo })),
-        ]}
-        onChange={(value) => {
-          setDraftModel(value);
-          setNotice(undefined);
-        }}
-      />
-      <PreferenceSelect
-        label={t('Preferred source language')}
-        help={t('This sets the default for new checks. Claims in Vietnamese or about Vietnam prioritize Vietnamese outlets.')}
-        icon={<Languages className="h-4 w-4 shrink-0 text-brand-700" aria-hidden="true" />}
-        value={sourceLanguage ?? ''}
-        disabled={disabled}
-        options={[
-          ...(savedLanguage === null ? [{ value: '', label: t('Server default') }] : []),
-          { value: 'vi', label: 'Tiếng Việt', lang: 'vi' },
-          { value: 'en', label: 'English', lang: 'en' },
-        ]}
-        onChange={(value) => {
-          setDraftLanguage(value === 'vi' || value === 'en' ? value : undefined);
-          setNotice(undefined);
-        }}
-      />
-      <div>
-        <label htmlFor={noteId} className="flex items-center gap-2.5 text-sm font-semibold text-ink">
-          <PenLine className="h-4 w-4 shrink-0 text-brand-700" aria-hidden="true" />
-          {t('Search prompt')}
-        </label>
-        <p id={`${noteId}-help`} className="mt-1.5 text-xs leading-relaxed text-ink-muted">
-          {t('Tell the search model where to look. Only it reads this note; the judges never see it, so it can’t change a verdict.')}
-        </p>
-        <div className="mt-2.5 rounded-2xl border border-line bg-zinc-50 px-3 pb-2 pt-2.5 transition-colors focus-within:border-brand-200 focus-within:bg-white focus-within:ring-2 focus-within:ring-brand-500/20">
-          <textarea
-            id={noteId}
-            value={note}
+      <div className="grid gap-x-8 gap-y-4 lg:grid-cols-2">
+        <div className="space-y-4">
+          <PreferenceSelect
+            label={t('Tavily search model')}
+            help={t('This model writes Tavily queries and selects sources for new checks.')}
+            icon={<Search className="h-4 w-4 shrink-0 text-brand-700" aria-hidden="true" />}
+            value={modelId}
             disabled={disabled}
-            maxLength={noteMaxLength}
-            rows={3}
-            onChange={(event) => edit(setDraftNote)(event.target.value)}
-            aria-describedby={`${noteId}-help ${noteId}-count`}
-            placeholder={t('For example: prefer official statistics agencies and reporting from Southeast Asia.')}
-            className="block w-full resize-none bg-transparent text-sm leading-relaxed text-ink outline-none placeholder:text-ink-muted disabled:text-ink-muted"
+            options={[
+              { value: '', label: t('Server default') },
+              ...config.judges.options.map(({ id, name, logo }) => ({ value: id, label: name, logo })),
+            ]}
+            onChange={(value) => {
+              setDraftModel(value);
+              setNotice(undefined);
+            }}
           />
-          <p id={`${noteId}-count`} className={`mt-1 text-right text-[0.7rem] tabular-nums ${note.length >= noteMaxLength ? 'text-orange-700' : 'text-ink-muted'}`}>
-            {note.length}/{noteMaxLength}
-          </p>
+          <PreferenceSelect
+            label={t('Preferred source language')}
+            help={t('This sets the default for new checks. Claims in Vietnamese or about Vietnam prioritize Vietnamese outlets.')}
+            icon={<Languages className="h-4 w-4 shrink-0 text-brand-700" aria-hidden="true" />}
+            value={sourceLanguage ?? ''}
+            disabled={disabled}
+            options={[
+              ...(savedLanguage === null ? [{ value: '', label: t('Server default') }] : []),
+              { value: 'vi', label: 'Tiếng Việt', lang: 'vi' },
+              { value: 'en', label: 'English', lang: 'en' },
+            ]}
+            onChange={(value) => {
+              setDraftLanguage(value === 'vi' || value === 'en' ? value : undefined);
+              setNotice(undefined);
+            }}
+          />
+          <Toggle
+            label={t('Search beyond approved sources')}
+            help={t('When approved sources find nothing usable, look at original reporting from other publishers after an editorial review.')}
+            icon={<Globe className="h-4 w-4 shrink-0 text-brand-700" aria-hidden="true" />}
+            checked={options.searchOutsideList !== false}
+            disabled={disabled}
+            onChange={(on) => setOption('searchOutsideList')(on ? null : false)}
+          />
+        </div>
+        <div className="space-y-4">
+          <div>
+            <label htmlFor={noteId} className="flex items-center gap-2.5 text-sm font-semibold text-ink">
+              <PenLine className="h-4 w-4 shrink-0 text-brand-700" aria-hidden="true" />
+              {t('Search prompt')}
+            </label>
+            <p id={`${noteId}-help`} className="mt-1.5 text-xs leading-relaxed text-ink-muted">
+              {t('Tell the search model where to look. Only it reads this note; the judges never see it, so it can’t change a verdict.')}
+            </p>
+            <div className="mt-2.5 rounded-2xl border border-line bg-zinc-50 px-3 pb-2 pt-2.5 transition-colors focus-within:border-brand-200 focus-within:bg-white focus-within:ring-2 focus-within:ring-brand-500/20">
+              <textarea
+                id={noteId}
+                value={note}
+                disabled={disabled}
+                maxLength={noteMaxLength}
+                rows={3}
+                onChange={(event) => edit(setDraftNote)(event.target.value)}
+                aria-describedby={`${noteId}-help ${noteId}-count`}
+                placeholder={t('For example: prefer official statistics agencies and reporting from Southeast Asia.')}
+                className="block w-full resize-none bg-transparent text-sm leading-relaxed text-ink outline-none placeholder:text-ink-muted disabled:text-ink-muted"
+              />
+              <p id={`${noteId}-count`} className={`mt-1 text-right text-[0.7rem] tabular-nums ${note.length >= noteMaxLength ? 'text-orange-700' : 'text-ink-muted'}`}>
+                {note.length}/{noteMaxLength}
+              </p>
+            </div>
+          </div>
+          <div className="grid gap-2">
+            <Stepper
+              label={t('Sources per claim')}
+              icon={<Library className="h-4 w-4 shrink-0 text-brand-700" aria-hidden="true" />}
+              value={options.sourcesPerClaim}
+              limits={config.search.sourcesPerClaim}
+              disabled={disabled}
+              onChange={setOption('sourcesPerClaim')}
+            />
+            <Stepper
+              label={t('Searches per claim')}
+              icon={<Repeat className="h-4 w-4 shrink-0 text-brand-700" aria-hidden="true" />}
+              value={options.searchesPerClaim}
+              limits={config.search.searchesPerClaim}
+              disabled={disabled}
+              onChange={setOption('searchesPerClaim')}
+            />
+          </div>
         </div>
       </div>
-      <div className="grid gap-2">
-        <Stepper
-          label={t('Sources per claim')}
-          icon={<Library className="h-4 w-4 shrink-0 text-brand-700" aria-hidden="true" />}
-          value={options.sourcesPerClaim}
-          limits={config.search.sourcesPerClaim}
-          disabled={disabled}
-          onChange={setOption('sourcesPerClaim')}
-        />
-        <Stepper
-          label={t('Searches per claim')}
-          icon={<Repeat className="h-4 w-4 shrink-0 text-brand-700" aria-hidden="true" />}
-          value={options.searchesPerClaim}
-          limits={config.search.searchesPerClaim}
-          disabled={disabled}
-          onChange={setOption('searchesPerClaim')}
-        />
-      </div>
-      <Toggle
-        label={t('Search beyond approved sources')}
-        help={t('When approved sources find nothing usable, look at original reporting from other publishers after an editorial review.')}
-        icon={<Globe className="h-4 w-4 shrink-0 text-brand-700" aria-hidden="true" />}
-        checked={options.searchOutsideList !== false}
-        disabled={disabled}
-        onChange={(on) => setOption('searchOutsideList')(on ? null : false)}
-      />
       <div className="flex flex-wrap items-center justify-end gap-x-3 gap-y-2">
         {account === null && <p className="mr-auto text-xs text-ink-muted">{t('Log in to save search preferences.')}</p>}
         {notice && <p role={notice.error ? 'alert' : 'status'} className={`mr-auto text-xs ${notice.error ? 'text-rose-700' : 'text-brand-700'}`}>{notice.text}</p>}

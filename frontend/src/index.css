@@ -215,7 +215,7 @@
     animation: header-panel-reveal 300ms cubic-bezier(0.22, 1, 0.36, 1) both;
     transition: width 300ms cubic-bezier(0.22, 1, 0.36, 1);
   }
-  .site-header[data-panel='settings'] { --header-panel-width: 26rem; }
+  .site-header[data-panel='settings'] { --header-panel-width: 52rem; }
   .site-header[data-panel='history'] { --header-panel-width: 42rem; }
   .site-header-panel-heading {
     display: flex;
