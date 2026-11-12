@@ -329,7 +329,7 @@ function SearchPreferences({ account }: { account: Account | null | undefined })
           </p>
         </div>
       </div>
-      <div className="grid gap-2 sm:grid-cols-2">
+      <div className="grid gap-2">
         <Stepper
           label={t('Sources per claim')}
           icon={<Library className="h-4 w-4 shrink-0 text-brand-700" aria-hidden="true" />}
