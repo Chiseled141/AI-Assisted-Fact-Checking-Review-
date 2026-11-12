@@ -334,6 +334,19 @@ def _finish_research(task, research: Research, settings: Settings) -> None:
         )
 
 
+def _reader_settings(check: Check, settings: Settings) -> Settings:
+    """The server's settings with the owner's search limits, saved on the check, applied. `SearchOptions` bounds them."""
+    options = check.search_options or {}
+    changes: dict = {}
+    if sources := options.get("sources_per_claim"):
+        changes["target_publishers_per_claim"] = sources
+    if searches := options.get("searches_per_claim"):
+        changes["research_max_searches_per_claim"] = searches
+    if options.get("search_outside_list") is False:
+        changes["external_research_max_searches"] = 0
+    return settings.model_copy(update=changes) if changes else settings
+
+
 def _research_brief(item: ExtractedClaim, window: TimeWindow | None) -> str:
     """What the research model should look for. The server applies the period itself, so this only explains it."""
     lines = [_today(), f"Suggested query: {item.search_query or item.text}"]
@@ -1048,6 +1061,7 @@ def _run(
     pool: ThreadPoolExecutor,
     given_claims: list[str] | None = None,
 ) -> None:
+    settings = _reader_settings(check, settings)
     tasks = TaskLog(lambda event: _save_progress(check, session, event))
     rephrased_from = None
     _set_status(check, session, "extracting")
@@ -1117,6 +1131,10 @@ def _run(
     }
     dated_claims = {claim.id for claim, item in zip(claims, extracted, strict=True) if _states_a_period(item)}
     briefs = {claim.id: _research_brief(item, windows.get(claim.id)) for claim, item in zip(claims, extracted, strict=True)}
+    # Only the research model reads the reader's note. Judges never see it, so it can't steer a verdict.
+    if check.search_instructions:
+        guidance = tagged("reader_guidance", check.search_instructions)
+        briefs = {claim_id: f"{brief}\n\n{guidance}" for claim_id, brief in briefs.items()}
     people = {claim.id: item.person_name for claim, item in zip(claims, extracted, strict=True)
               if names_person(item.text, item.person_name)}
     english_queries = {

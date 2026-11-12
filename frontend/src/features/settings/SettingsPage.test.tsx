@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { screen, within } from '@testing-library/react';
+import { screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { renderApp } from '../../test/renderApp';
 import { interceptRequests, jsonResponse } from '../../test/http';
@@ -74,5 +74,58 @@ describe('Search preferences', () => {
     await user.click(reopened.getByRole('button', { name: 'Save' }));
     expect(await reopened.findByRole('status')).toHaveTextContent('Search preferences saved.');
     expect(updates).toEqual([{ preferredSearchModelId: 'deepseek-flash', preferredSourceLanguage: 'vi' }, { preferredSearchModelId: null }]);
+  });
+
+  it('saves a search prompt and search limits, and stepping back to the default clears a limit', async () => {
+    const user = userEvent.setup();
+    const updates: unknown[] = [];
+    let account: Record<string, unknown> = {
+      id: 'usr_test', username: 'lan', preferredSourceLanguage: 'en',
+      searchInstructions: null, searchOptions: { sourcesPerClaim: null, searchesPerClaim: null, searchOutsideList: null },
+    };
+    interceptRequests((url, init) => {
+      if (url.pathname === '/api/auth/me') {
+        if (init?.method === 'PATCH') {
+          const patch = JSON.parse(String(init.body));
+          updates.push(patch);
+          account = { ...account, ...patch };
+        }
+        return jsonResponse(account);
+      }
+      if (url.pathname === '/api/checks') return jsonResponse({ items: [], totalPages: 1 });
+      throw new Error(`Unexpected request: ${url}`);
+    });
+    renderApp('/settings');
+    await waitFor(() => expect(screen.getByRole('textbox', { name: 'Search prompt' })).toBeEnabled());
+    const note = screen.getByRole('textbox', { name: 'Search prompt' });
+    const save = screen.getByRole('button', { name: 'Save' });
+    expect(save).toBeDisabled();
+
+    await user.type(note, '  Prefer official statistics.  ');
+    expect(screen.getByText('31/500')).toBeInTheDocument();
+    const sources = within(screen.getByRole('group', { name: 'Sources per claim' }));
+    expect(sources.getByText('5')).toBeInTheDocument();
+    expect(sources.getByText('default')).toBeVisible();
+    await user.click(sources.getByRole('button', { name: 'Fewer: Sources per claim' }));
+    await user.click(sources.getByRole('button', { name: 'Fewer: Sources per claim' }));
+    expect(sources.getByText('3')).toBeInTheDocument();
+    const outside = screen.getByRole('switch', { name: 'Search beyond approved sources' });
+    expect(outside).toBeChecked();
+    await user.click(outside);
+    expect(outside).not.toBeChecked();
+    await user.click(save);
+    expect(await screen.findByRole('status')).toHaveTextContent('Search preferences saved.');
+
+    await user.click(sources.getByRole('button', { name: 'More: Sources per claim' }));
+    await user.click(sources.getByRole('button', { name: 'More: Sources per claim' }));
+    await user.click(save);
+    await waitFor(() => expect(updates).toHaveLength(2));
+    expect(updates).toEqual([
+      {
+        searchInstructions: 'Prefer official statistics.',
+        searchOptions: { sourcesPerClaim: 3, searchesPerClaim: null, searchOutsideList: false },
+      },
+      { searchOptions: { sourcesPerClaim: null, searchesPerClaim: null, searchOutsideList: false } },
+    ]);
   });
 });

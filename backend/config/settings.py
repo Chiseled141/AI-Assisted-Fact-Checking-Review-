@@ -61,7 +61,7 @@ class Settings(BaseSettings):
     followup_model: str = MODELS["roles"]["followup"]
     judges: dict[str, JudgeOption] = DEFAULT_JUDGES
     default_judge_ids: list[str] = JUDGES["default"]
-    prompt_version: str = "v56"  # Bump when any file in `harness/prompts/` changes. Each verdict records it.
+    prompt_version: str = "v57"  # Bump when any file in `harness/prompts/` changes. Each verdict records it.
     llm_timeout_seconds: float = MODELS["openrouter"]["timeout_seconds"]
 
     # --- 2. Keys and storage ------------------------------------------------------------------------------------------

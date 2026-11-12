@@ -336,11 +336,24 @@ SourceLanguage = Literal["vi", "en"]
 MAX_AVATAR_BYTES = 4 * 1024 * 1024
 
 
+MAX_SEARCH_INSTRUCTIONS = 500
+
+
+class SearchOptions(ApiModel):
+    """A reader's search limits. A missing field keeps the server's setting."""
+
+    sources_per_claim: int | None = Field(default=None, ge=1, le=8)  # target_publishers_per_claim
+    searches_per_claim: int | None = Field(default=None, ge=1, le=5)  # research_max_searches_per_claim
+    search_outside_list: bool | None = None  # False turns off the search outside the approved list.
+
+
 class ProfileIn(ApiModel):
     username: str | None = Field(default=None, max_length=256)
     avatar: str | None = Field(default=None, max_length=4 * ((MAX_AVATAR_BYTES + 2) // 3))
     preferred_source_language: SourceLanguage | None = None
     preferred_search_model_id: str | None = Field(default=None, min_length=1, max_length=64)
+    search_instructions: str | None = Field(default=None, max_length=MAX_SEARCH_INSTRUCTIONS)
+    search_options: SearchOptions | None = None
 
 
 class ChangePasswordIn(ApiModel):
@@ -355,6 +368,8 @@ class AccountOut(ApiModel):
     avatar: str | None = None
     preferred_source_language: SourceLanguage | None = None
     preferred_search_model_id: str | None = None
+    search_instructions: str | None = None
+    search_options: SearchOptions = SearchOptions()
 
 
 class StatsOut(ApiModel):

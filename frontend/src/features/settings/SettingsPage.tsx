@@ -1,12 +1,12 @@
 import { type FormEvent, type KeyboardEvent, type ReactNode, useEffect, useId, useLayoutEffect, useRef, useState } from 'react';
-import { Check, ChevronDown, ChevronRight, Languages, Monitor, Moon, Search, Sun, UserRound } from 'lucide-react';
+import { Check, ChevronDown, ChevronRight, Globe, Languages, Library, Minus, Monitor, Moon, PenLine, Plus, Repeat, Search, Sun, UserRound } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { config } from '../../config';
 import { t } from '../../lib/i18n';
 import { setTheme, type Theme, useTheme } from '../../lib/theme';
 import { updateProfile, useAccount } from '../../services/account';
 import { ValidationError } from '../../services/errors';
-import type { Account } from '../../types/models';
+import type { Account, SearchOptions } from '../../types/models';
 
 type PreferenceOption = { value: string; label: string; lang?: string; logo?: string };
 
@@ -135,31 +135,131 @@ function PreferenceSelect({ label, help, icon, value, disabled, onChange, option
   );
 }
 
+function Stepper({ label, icon, value, limits, disabled, onChange }: {
+  label: string;
+  icon: ReactNode;
+  value: number | null;
+  limits: { min: number; max: number; serverDefault: number };
+  disabled: boolean;
+  onChange: (value: number | null) => void;
+}) {
+  const id = useId();
+  const shown = value ?? limits.serverDefault;
+  // Stepping back onto the server's number clears the setting, so a later change on the server still applies.
+  const step = (by: number) => {
+    const next = Math.max(limits.min, Math.min(limits.max, shown + by));
+    onChange(next === limits.serverDefault ? null : next);
+  };
+  const stepClass = 'grid h-9 w-9 place-items-center rounded-full border border-line bg-white text-ink transition-colors enabled:hover:border-brand-200 enabled:hover:bg-brand-50 enabled:hover:text-brand-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500/40 disabled:text-zinc-300';
+  return (
+    <div role="group" aria-labelledby={`${id}-label`} className="flex min-h-14 items-center gap-3 rounded-2xl border border-line bg-zinc-50 py-2 pl-4 pr-2">
+      <span id={`${id}-label`} className="flex min-w-0 flex-1 items-center gap-2.5 text-sm font-medium text-ink">
+        {icon}
+        {label}
+      </span>
+      <button type="button" className={stepClass} disabled={disabled || shown <= limits.min} onClick={() => step(-1)} aria-label={`${t('Fewer')}: ${label}`}>
+        <Minus className="h-4 w-4" aria-hidden="true" />
+      </button>
+      <span aria-live="polite" className="w-10 text-center leading-tight">
+        <span className="block text-base font-semibold tabular-nums text-ink">{shown}</span>
+        <span className={`block text-[0.65rem] text-ink-muted ${value === null ? '' : 'invisible'}`}>{t('default')}</span>
+      </span>
+      <button type="button" className={stepClass} disabled={disabled || shown >= limits.max} onClick={() => step(1)} aria-label={`${t('More')}: ${label}`}>
+        <Plus className="h-4 w-4" aria-hidden="true" />
+      </button>
+    </div>
+  );
+}
+
+function Toggle({ label, help, icon, checked, disabled, onChange }: {
+  label: string;
+  help: string;
+  icon: ReactNode;
+  checked: boolean;
+  disabled: boolean;
+  onChange: (checked: boolean) => void;
+}) {
+  const id = useId();
+  return (
+    <div className="flex items-start gap-4">
+      <div className="min-w-0 flex-1">
+        <span id={`${id}-label`} className="flex items-center gap-2.5 text-sm font-semibold text-ink">
+          {icon}
+          {label}
+        </span>
+        <p id={`${id}-help`} className="mt-1.5 text-xs leading-relaxed text-ink-muted">{help}</p>
+      </div>
+      <button
+        type="button"
+        role="switch"
+        aria-checked={checked}
+        aria-labelledby={`${id}-label`}
+        aria-describedby={`${id}-help`}
+        disabled={disabled}
+        onClick={() => onChange(!checked)}
+        className={`relative mt-0.5 inline-flex h-6 w-11 shrink-0 items-center rounded-full transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500/40 enabled:cursor-pointer disabled:opacity-50 ${checked ? 'bg-brand-700' : 'bg-zinc-300'}`}
+      >
+        <span className={`h-5 w-5 rounded-full bg-white shadow-sm motion-safe:transition-transform ${checked ? 'translate-x-[1.375rem]' : 'translate-x-0.5'}`} />
+      </button>
+    </div>
+  );
+}
+
+const NO_OPTIONS: SearchOptions = { sourcesPerClaim: null, searchesPerClaim: null, searchOutsideList: null };
+
+function sameOptions(a: SearchOptions, b: SearchOptions) {
+  return a.sourcesPerClaim === b.sourcesPerClaim && a.searchesPerClaim === b.searchesPerClaim
+    && a.searchOutsideList === b.searchOutsideList;
+}
+
 function SearchPreferences({ account }: { account: Account | null | undefined }) {
   const [draftModel, setDraftModel] = useState<string | null>(null);
   const [draftLanguage, setDraftLanguage] = useState<'vi' | 'en'>();
+  const [draftNote, setDraftNote] = useState<string | null>(null);
+  const [draftOptions, setDraftOptions] = useState<SearchOptions | null>(null);
   const [saving, setSaving] = useState(false);
   const [notice, setNotice] = useState<{ text: string; error?: boolean }>();
+  const noteId = useId();
   const savedModel = config.judges.options.find((model) => model.id === account?.preferredSearchModelId)?.id ?? '';
   const savedLanguage = account?.preferredSourceLanguage ?? null;
+  const savedNote = account?.searchInstructions ?? '';
+  const savedOptions = { ...NO_OPTIONS, ...account?.searchOptions };
   const modelId = draftModel ?? savedModel;
   const sourceLanguage = draftLanguage ?? savedLanguage;
+  const note = draftNote ?? savedNote;
+  const options = draftOptions ?? savedOptions;
   const modelChanged = modelId !== savedModel;
   const languageChanged = sourceLanguage !== null && sourceLanguage !== savedLanguage;
+  const noteChanged = note.trim() !== savedNote;
+  const optionsChanged = !sameOptions(options, savedOptions);
+  const changed = modelChanged || languageChanged || noteChanged || optionsChanged;
   const disabled = !account || saving;
+  const { noteMaxLength } = config.search;
+
+  function edit<T>(setter: (value: T) => void) {
+    return (value: T) => {
+      setter(value);
+      setNotice(undefined);
+    };
+  }
+  const setOption = <K extends keyof SearchOptions>(key: K) => edit((value: SearchOptions[K]) => setDraftOptions({ ...options, [key]: value }));
 
   async function save(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (disabled || (!modelChanged && !languageChanged)) return;
+    if (disabled || !changed) return;
     setSaving(true);
     setNotice(undefined);
     try {
       await updateProfile({
         ...(modelChanged ? { preferredSearchModelId: modelId || null } : {}),
         ...(languageChanged ? { preferredSourceLanguage: sourceLanguage } : {}),
+        ...(noteChanged ? { searchInstructions: note.trim() || null } : {}),
+        ...(optionsChanged ? { searchOptions: options } : {}),
       });
       setDraftModel(null);
       setDraftLanguage(undefined);
+      setDraftNote(null);
+      setDraftOptions(null);
       setNotice({ text: t('Search preferences saved.') });
     } catch (error) {
       setNotice({
@@ -204,13 +304,64 @@ function SearchPreferences({ account }: { account: Account | null | undefined })
           setNotice(undefined);
         }}
       />
+      <div>
+        <label htmlFor={noteId} className="flex items-center gap-2.5 text-sm font-semibold text-ink">
+          <PenLine className="h-4 w-4 shrink-0 text-brand-700" aria-hidden="true" />
+          {t('Search prompt')}
+        </label>
+        <p id={`${noteId}-help`} className="mt-1.5 text-xs leading-relaxed text-ink-muted">
+          {t('Tell the search model where to look. Only it reads this note; the judges never see it, so it can’t change a verdict.')}
+        </p>
+        <div className="mt-2.5 rounded-2xl border border-line bg-zinc-50 px-3 pb-2 pt-2.5 transition-colors focus-within:border-brand-200 focus-within:bg-white focus-within:ring-2 focus-within:ring-brand-500/20">
+          <textarea
+            id={noteId}
+            value={note}
+            disabled={disabled}
+            maxLength={noteMaxLength}
+            rows={3}
+            onChange={(event) => edit(setDraftNote)(event.target.value)}
+            aria-describedby={`${noteId}-help ${noteId}-count`}
+            placeholder={t('For example: prefer official statistics agencies and reporting from Southeast Asia.')}
+            className="block w-full resize-none bg-transparent text-sm leading-relaxed text-ink outline-none placeholder:text-ink-muted disabled:text-ink-muted"
+          />
+          <p id={`${noteId}-count`} className={`mt-1 text-right text-[0.7rem] tabular-nums ${note.length >= noteMaxLength ? 'text-orange-700' : 'text-ink-muted'}`}>
+            {note.length}/{noteMaxLength}
+          </p>
+        </div>
+      </div>
+      <div className="grid gap-2 sm:grid-cols-2">
+        <Stepper
+          label={t('Sources per claim')}
+          icon={<Library className="h-4 w-4 shrink-0 text-brand-700" aria-hidden="true" />}
+          value={options.sourcesPerClaim}
+          limits={config.search.sourcesPerClaim}
+          disabled={disabled}
+          onChange={setOption('sourcesPerClaim')}
+        />
+        <Stepper
+          label={t('Searches per claim')}
+          icon={<Repeat className="h-4 w-4 shrink-0 text-brand-700" aria-hidden="true" />}
+          value={options.searchesPerClaim}
+          limits={config.search.searchesPerClaim}
+          disabled={disabled}
+          onChange={setOption('searchesPerClaim')}
+        />
+      </div>
+      <Toggle
+        label={t('Search beyond approved sources')}
+        help={t('When approved sources find nothing usable, look at original reporting from other publishers after an editorial review.')}
+        icon={<Globe className="h-4 w-4 shrink-0 text-brand-700" aria-hidden="true" />}
+        checked={options.searchOutsideList !== false}
+        disabled={disabled}
+        onChange={(on) => setOption('searchOutsideList')(on ? null : false)}
+      />
       <div className="flex flex-wrap items-center justify-end gap-x-3 gap-y-2">
         {account === null && <p className="mr-auto text-xs text-ink-muted">{t('Log in to save search preferences.')}</p>}
         {notice && <p role={notice.error ? 'alert' : 'status'} className={`mr-auto text-xs ${notice.error ? 'text-rose-700' : 'text-brand-700'}`}>{notice.text}</p>}
         <button
           type="submit"
           className="btn-panel-primary"
-          disabled={disabled || (!modelChanged && !languageChanged)}
+          disabled={disabled || !changed}
         >
           {t('Save')}
         </button>

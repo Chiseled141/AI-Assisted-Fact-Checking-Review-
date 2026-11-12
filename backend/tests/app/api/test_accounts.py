@@ -175,6 +175,44 @@ def test_search_model_preference_is_validated_and_used_only_for_tavily_research(
         assert session.get(Check, check["id"]).search_model == model
 
 
+def test_search_note_and_limits_reach_only_the_research_model(client, fakes):
+    from harness.pipeline.prompts import ResearchPicks
+    from harness.search.tavily import SearchHit
+
+    briefs, budgets = [], []
+
+    def research(model, system, user, schema, run_search, max_searches):
+        briefs.append(user)
+        budgets.append(max_searches)
+        return ResearchPicks(urls=["https://reuters.com/a"]), model
+
+    fakes.search.search_hits = lambda query, **options: [SearchHit("https://reuters.com/a")]
+    fakes.llm.research = research
+    endpoint = "/api/auth/me"
+    note = "Prefer official statistics agencies."
+    assert client.patch(endpoint, json={"searchOptions": {"searchesPerClaim": 9}}).status_code == 422
+    assert client.patch(endpoint, json={"searchInstructions": "x" * 501}).status_code == 422
+    saved = client.patch(endpoint, json={
+        "searchInstructions": f"  {note}  ",
+        "searchOptions": {"sourcesPerClaim": 3, "searchesPerClaim": 2, "searchOutsideList": False},
+    }).json()
+    assert saved["searchInstructions"] == note
+    assert saved["searchOptions"] == {"sourcesPerClaim": 3, "searchesPerClaim": 2, "searchOutsideList": False}
+
+    check = run(client)
+    assert all(note in brief and "<reader_guidance>" in brief for brief in briefs)
+    assert budgets and all(budget <= 2 for budget in budgets)
+    assert fakes.llm.prompts and all(note not in user for _, _, user in fakes.llm.prompts)
+    with SessionLocal() as session:
+        saved_check = session.get(Check, check["id"])
+        assert saved_check.search_instructions == note
+        assert saved_check.search_options == {"sources_per_claim": 3, "searches_per_claim": 2, "search_outside_list": False}
+
+    cleared = client.patch(endpoint, json={"searchInstructions": "", "searchOptions": None}).json()
+    assert cleared["searchInstructions"] is None
+    assert cleared["searchOptions"] == {"sourcesPerClaim": None, "searchesPerClaim": None, "searchOutsideList": None}
+
+
 def test_an_expired_session_is_signed_out(client):
     with SessionLocal() as session:
         for saved in session.scalars(select(UserSession).where(UserSession.user_id == client.user_id)):

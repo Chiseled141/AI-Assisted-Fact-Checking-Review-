@@ -13,6 +13,12 @@ export const config = {
     accept: '.txt,.md,.markdown,text/plain,text/markdown',
   },
   history: { pageSize: 20 },
+  /** Search settings a reader can save. Bounds match `SearchOptions` in backend/app/api/schemas.py; defaults match settings.py. */
+  search: {
+    noteMaxLength: 500,
+    sourcesPerClaim: { min: 1, max: 8, serverDefault: 5 },
+    searchesPerClaim: { min: 1, max: 5, serverDefault: 5 },
+  },
   /**
    * LLM judges offered in the new-check picker, read from backend/config/data/judges.json, the one list
    * the backend also uses. `defaultIds` is the picker's starting pair; the

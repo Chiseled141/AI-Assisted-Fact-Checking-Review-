@@ -570,4 +570,13 @@ export interface Account {
   avatar?: string | null;
   preferredSourceLanguage?: 'vi' | 'en' | null;
   preferredSearchModelId?: string | null;
+  searchInstructions?: string | null;
+  searchOptions?: SearchOptions;
+}
+
+/** A reader's search limits. `null` keeps the server's setting. */
+export interface SearchOptions {
+  sourcesPerClaim: number | null;
+  searchesPerClaim: number | null;
+  searchOutsideList: boolean | null;
 }

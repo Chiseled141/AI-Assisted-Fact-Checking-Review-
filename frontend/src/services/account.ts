@@ -2,7 +2,7 @@
 // the page itself can't read. `useAccount` follows who is signed in; `undefined` means not asked yet.
 
 import { useSyncExternalStore } from 'react';
-import type { Account } from '../types/models';
+import type { Account, SearchOptions } from '../types/models';
 import { t } from '../lib/i18n';
 import { RUNNING_CHECK_KEY, writeItem } from '../lib/storage';
 import { apiUrl } from './api';
@@ -64,7 +64,10 @@ export async function logOut(): Promise<void> {
   setAccount(null);
 }
 
-export async function updateProfile(changes: Partial<Pick<Account, 'avatar' | 'preferredSourceLanguage' | 'preferredSearchModelId'>>): Promise<Account> {
+type ProfileChanges = Partial<Pick<Account, 'avatar' | 'preferredSourceLanguage' | 'preferredSearchModelId' | 'searchInstructions'>>
+  & { searchOptions?: SearchOptions | null };
+
+export async function updateProfile(changes: ProfileChanges): Promise<Account> {
   const updated = (await (await send('me', changes, 'PATCH')).json()) as Account;
   setAccount(updated);
   return updated;

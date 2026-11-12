@@ -235,6 +235,8 @@ complete reported distribution. These additional pages are used for the chart.
 - Accounts are a username and a password, nothing else: no email, no outside sign-in. Passwords are Argon2id hashes. A session is an HttpOnly, SameSite=Lax cookie whose token the database keeps only as a SHA-256.
 - Every check belongs to the user who started it. Everything hanging off a check (claims, sources, verdicts, follow-ups, feedback, "Checked before") is reached through it, so `owned_check` and `owned_claim` guard it all. Someone else's check answers 404, like a missing one.
 - A check with no owner, as saved before accounts existed, is hidden from everyone.
+- Settings holds each reader's search preferences: the search model, the source language, a search prompt of up to 500 characters, sources and searches per claim, and whether to search beyond the approved sources. A new check saves a copy of them, so changing them later doesn't change a check already running. Limits left at the server's number stay unset and follow `backend/config/settings.py`.
+- Only the research model reads the search prompt, as a `reader_guidance` block it treats as a preference and never as an instruction. Judges never see it, so it can't steer a verdict.
 
 ### Party identity images
 

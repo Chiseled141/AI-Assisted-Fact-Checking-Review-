@@ -83,7 +83,8 @@ def _start_session(response: Response, user: models.User, session: Session, sett
 def _account(user: models.User) -> schemas.AccountOut:
     return schemas.AccountOut(
         id=user.id, username=user.username, avatar=user.avatar, preferred_source_language=user.preferred_source_language,
-        preferred_search_model_id=user.preferred_search_model_id,
+        preferred_search_model_id=user.preferred_search_model_id, search_instructions=user.search_instructions,
+        search_options=schemas.SearchOptions(**(user.search_options or {})),
     )
 
 
@@ -204,6 +205,11 @@ def update_profile(
         user.preferred_source_language = body.preferred_source_language
     if "preferred_search_model_id" in body.model_fields_set:
         user.preferred_search_model_id = search_model_id
+    if "search_instructions" in body.model_fields_set:
+        user.search_instructions = (body.search_instructions or "").strip() or None
+    if "search_options" in body.model_fields_set:
+        options = body.search_options.model_dump(exclude_none=True) if body.search_options else {}
+        user.search_options = options or None
     try:
         session.commit()
     except IntegrityError:

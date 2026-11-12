@@ -103,6 +103,8 @@ def create_check(
         files=[file.model_dump() for file in body.files] or None,
         judge_ids=judge_ids,
         search_model=search_option.model if search_option else settings.research_model,
+        search_instructions=user.search_instructions,
+        search_options=user.search_options,
     )
     session.add(check)
     session.commit()

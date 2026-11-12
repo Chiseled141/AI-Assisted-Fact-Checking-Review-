@@ -30,6 +30,9 @@ class User(Base):
     avatar: Mapped[str | None] = mapped_column(Text)
     preferred_source_language: Mapped[str | None] = mapped_column(String(2))
     preferred_search_model_id: Mapped[str | None] = mapped_column(String(64))
+    # The reader's own note for the research model, and their search limits. See `SearchOptions` in app/api/schemas.py.
+    search_instructions: Mapped[str | None] = mapped_column(Text)
+    search_options: Mapped[dict | None] = mapped_column(JSON)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
 
 
@@ -62,6 +65,9 @@ class Check(Base):
     error_message: Mapped[str | None] = mapped_column(Text)
     judge_ids: Mapped[list] = mapped_column(JSON)
     search_model: Mapped[str | None] = mapped_column(Text)  # Model resolved when this check was started.
+    # The owner's search note and limits when this check was started, so a resumed check keeps them.
+    search_instructions: Mapped[str | None] = mapped_column(Text)
+    search_options: Mapped[dict | None] = mapped_column(JSON)
     progress: Mapped[list | None] = mapped_column(JSON)
     input_suggestions: Mapped[list[str] | None] = mapped_column(JSON(none_as_null=True))
     review: Mapped[dict | None] = mapped_column(JSON)  # What the reader was asked before the search. See pipeline/review.py.
