@@ -579,4 +579,7 @@ export interface SearchOptions {
   sourcesPerClaim: number | null;
   searchesPerClaim: number | null;
   searchOutsideList: boolean | null;
+  searchDepth: 'basic' | 'advanced' | null;
+  claimsPerCheck: number | null;
+  blockedDomains: string[] | null;
 }

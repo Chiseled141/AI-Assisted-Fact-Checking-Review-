@@ -1,5 +1,5 @@
 import { type FormEvent, type KeyboardEvent, type ReactNode, useEffect, useId, useLayoutEffect, useRef, useState } from 'react';
-import { Check, ChevronDown, ChevronRight, Globe, Languages, Library, Minus, Monitor, Moon, PenLine, Plus, Repeat, Search, Sun, UserRound } from 'lucide-react';
+import { Ban, Check, ChevronDown, ChevronRight, Globe, Languages, Library, ListChecks, Lock, Minus, Monitor, Moon, PenLine, Plus, Repeat, Search, Sun, Telescope, UserRound, X } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { config } from '../../config';
 import { t } from '../../lib/i18n';
@@ -205,14 +205,112 @@ function Toggle({ label, help, icon, checked, disabled, onChange }: {
   );
 }
 
-const NO_OPTIONS: SearchOptions = { sourcesPerClaim: null, searchesPerClaim: null, searchOutsideList: null };
-
-function sameOptions(a: SearchOptions, b: SearchOptions) {
-  return a.sourcesPerClaim === b.sourcesPerClaim && a.searchesPerClaim === b.searchesPerClaim
-    && a.searchOutsideList === b.searchOutsideList;
+/** A bare host, as the backend keeps it: "https://www.Example.com/news" becomes "example.com". */
+function hostOf(entry: string): string | null {
+  const host = entry.trim().toLowerCase().split('://').pop()!.split('/')[0].replace(/^www\./, '').replace(/\.$/, '');
+  return /^(?=.{4,253}$)([a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?\.)+[a-z]{2,24}$/.test(host) ? host : null;
 }
 
-function SearchPreferences({ account }: { account: Account | null | undefined }) {
+function DomainList({ label, help, value, disabled, onChange }: {
+  label: string;
+  help: string;
+  value: readonly string[];
+  disabled: boolean;
+  onChange: (value: string[]) => void;
+}) {
+  const id = useId();
+  const [draft, setDraft] = useState('');
+  const [error, setError] = useState<string>();
+  const full = value.length >= config.search.maxBlockedDomains;
+
+  function add() {
+    const entries = draft.split(/[\s,]+/).filter(Boolean);
+    if (!entries.length) return;
+    const hosts = entries.map(hostOf);
+    const bad = entries.find((_, index) => !hosts[index]);
+    if (bad) return setError(t('“{entry}” is not a website address.', { entry: bad }));
+    const next = [...new Set([...value, ...(hosts as string[])])];
+    if (next.length > config.search.maxBlockedDomains) {
+      return setError(t('You can block at most {count} sites.', { count: config.search.maxBlockedDomains }));
+    }
+    setDraft('');
+    setError(undefined);
+    onChange(next);
+  }
+
+  return (
+    <div>
+      <label htmlFor={id} className="flex items-center gap-2.5 text-sm font-semibold text-ink">
+        <Ban className="h-4 w-4 shrink-0 text-brand-700" aria-hidden="true" />
+        {label}
+      </label>
+      <p id={`${id}-help`} className="mt-1.5 text-xs leading-relaxed text-ink-muted">{help}</p>
+      <div className="mt-2.5 flex min-h-11 flex-wrap items-center gap-1.5 rounded-2xl border border-line bg-zinc-50 px-2 py-1.5 transition-colors focus-within:border-brand-200 focus-within:bg-white focus-within:ring-2 focus-within:ring-brand-500/20">
+        {value.map((host) => (
+          <span key={host} className="inline-flex items-center gap-1 rounded-full border border-line bg-white py-0.5 pl-2.5 pr-1 text-xs font-medium text-ink">
+            {host}
+            <button
+              type="button"
+              disabled={disabled}
+              onClick={() => onChange(value.filter((item) => item !== host))}
+              aria-label={t('Remove {site}', { site: host })}
+              className="grid h-5 w-5 place-items-center rounded-full text-ink-muted enabled:hover:bg-zinc-100 enabled:hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500/40"
+            >
+              <X className="h-3 w-3" aria-hidden="true" />
+            </button>
+          </span>
+        ))}
+        <input
+          id={id}
+          value={draft}
+          disabled={disabled || full}
+          onChange={(event) => {
+            setDraft(event.target.value);
+            setError(undefined);
+          }}
+          onKeyDown={(event) => {
+            if (event.key === 'Enter' || event.key === ',') {
+              event.preventDefault();
+              add();
+            } else if (event.key === 'Backspace' && !draft && value.length) {
+              onChange(value.slice(0, -1));
+            }
+          }}
+          onBlur={add}
+          aria-describedby={`${id}-help${error ? ` ${id}-error` : ''}`}
+          aria-invalid={Boolean(error)}
+          placeholder={value.length ? '' : 'example.com'}
+          autoCapitalize="none"
+          autoCorrect="off"
+          spellCheck={false}
+          className="min-w-[8rem] flex-1 bg-transparent px-1.5 py-1 text-sm text-ink outline-none placeholder:text-ink-muted disabled:text-ink-muted"
+        />
+      </div>
+      {error && <p id={`${id}-error`} role="alert" className="mt-1.5 text-xs text-rose-700">{error}</p>}
+    </div>
+  );
+}
+
+const NO_OPTIONS: SearchOptions = {
+  sourcesPerClaim: null, searchesPerClaim: null, searchOutsideList: null, searchDepth: null, claimsPerCheck: null,
+  blockedDomains: null,
+};
+
+/** One spelling for each setting, so an unset one and one put back to the server's value compare equal. */
+function tidy(options: SearchOptions): SearchOptions {
+  return {
+    ...NO_OPTIONS,
+    ...options,
+    searchDepth: options.searchDepth === 'advanced' ? 'advanced' : null,
+    blockedDomains: options.blockedDomains?.length ? options.blockedDomains : null,
+  };
+}
+
+function sameOptions(a: SearchOptions, b: SearchOptions) {
+  return JSON.stringify(tidy(a)) === JSON.stringify(tidy(b));
+}
+
+function SearchPreferences({ account, logIn }: { account: Account | null | undefined; logIn: ReactNode }) {
   const [draftModel, setDraftModel] = useState<string | null>(null);
   const [draftLanguage, setDraftLanguage] = useState<'vi' | 'en'>();
   const [draftNote, setDraftNote] = useState<string | null>(null);
@@ -223,7 +321,7 @@ function SearchPreferences({ account }: { account: Account | null | undefined })
   const savedModel = config.judges.options.find((model) => model.id === account?.preferredSearchModelId)?.id ?? '';
   const savedLanguage = account?.preferredSourceLanguage ?? null;
   const savedNote = account?.searchInstructions ?? '';
-  const savedOptions = { ...NO_OPTIONS, ...account?.searchOptions };
+  const savedOptions = tidy({ ...NO_OPTIONS, ...account?.searchOptions });
   const modelId = draftModel ?? savedModel;
   const sourceLanguage = draftLanguage ?? savedLanguage;
   const note = draftNote ?? savedNote;
@@ -254,7 +352,7 @@ function SearchPreferences({ account }: { account: Account | null | undefined })
         ...(modelChanged ? { preferredSearchModelId: modelId || null } : {}),
         ...(languageChanged ? { preferredSourceLanguage: sourceLanguage } : {}),
         ...(noteChanged ? { searchInstructions: note.trim() || null } : {}),
-        ...(optionsChanged ? { searchOptions: options } : {}),
+        ...(optionsChanged ? { searchOptions: tidy(options) } : {}),
       });
       setDraftModel(null);
       setDraftLanguage(undefined);
@@ -273,6 +371,15 @@ function SearchPreferences({ account }: { account: Account | null | undefined })
 
   return (
     <form onSubmit={save} className="space-y-4 px-4 py-4 sm:px-5">
+      {account === null && (
+        <div className="flex flex-wrap items-center gap-x-4 gap-y-2 rounded-2xl border border-brand-200 bg-brand-50 py-2 pl-4 pr-2">
+          <p className="flex min-w-0 flex-1 items-center gap-2.5 text-sm font-medium text-ink">
+            <Lock className="h-4 w-4 shrink-0 text-brand-700" aria-hidden="true" />
+            {t('Log in to change your search preferences.')}
+          </p>
+          {logIn}
+        </div>
+      )}
       <div className="grid gap-x-8 gap-y-4 lg:grid-cols-2">
         <div className="space-y-4">
           <PreferenceSelect
@@ -313,6 +420,14 @@ function SearchPreferences({ account }: { account: Account | null | undefined })
             checked={options.searchOutsideList !== false}
             disabled={disabled}
             onChange={(on) => setOption('searchOutsideList')(on ? null : false)}
+          />
+          <Toggle
+            label={t('Advanced search')}
+            help={t('Every search reads deeper into each page. It finds more and uses twice the Tavily credit.')}
+            icon={<Telescope className="h-4 w-4 shrink-0 text-brand-700" aria-hidden="true" />}
+            checked={options.searchDepth === 'advanced'}
+            disabled={disabled}
+            onChange={(on) => setOption('searchDepth')(on ? 'advanced' : null)}
           />
         </div>
         <div className="space-y-4">
@@ -358,11 +473,25 @@ function SearchPreferences({ account }: { account: Account | null | undefined })
               disabled={disabled}
               onChange={setOption('searchesPerClaim')}
             />
+            <Stepper
+              label={t('Claims per check')}
+              icon={<ListChecks className="h-4 w-4 shrink-0 text-brand-700" aria-hidden="true" />}
+              value={options.claimsPerCheck}
+              limits={config.search.claimsPerCheck}
+              disabled={disabled}
+              onChange={setOption('claimsPerCheck')}
+            />
           </div>
+          <DomainList
+            label={t('Blocked sources')}
+            help={t('Sites your checks never use as a source. Type a site and press Enter.')}
+            value={options.blockedDomains ?? []}
+            disabled={disabled}
+            onChange={setOption('blockedDomains')}
+          />
         </div>
       </div>
       <div className="flex flex-wrap items-center justify-end gap-x-3 gap-y-2">
-        {account === null && <p className="mr-auto text-xs text-ink-muted">{t('Log in to save search preferences.')}</p>}
         {notice && <p role={notice.error ? 'alert' : 'status'} className={`mr-auto text-xs ${notice.error ? 'text-rose-700' : 'text-brand-700'}`}>{notice.text}</p>}
         <button
           type="submit"
@@ -426,7 +555,13 @@ export function SettingsPage({ onManageAccount }: { onManageAccount?: () => void
       {!onManageAccount && <h1 className="mb-6 text-2xl font-medium tracking-tight text-ink">{t('Settings')}</h1>}
       <div className="divide-y divide-line rounded-2xl border border-line bg-white">
         <AppearanceSettings />
-        <SearchPreferences key={account?.id} account={account} />
+        <SearchPreferences
+          key={account?.id}
+          account={account}
+          logIn={onManageAccount
+            ? <button type="button" onClick={onManageAccount} className="btn-panel-primary">{t('Log in')}</button>
+            : <Link to="/login?next=%2Fsettings" className="btn-panel-primary">{t('Log in')}</Link>}
+        />
         {onManageAccount
           ? <button type="button" onClick={onManageAccount} className={accountClass}>{accountLabel}</button>
           : <Link to={account ? '/profile' : '/login?next=%2Fprofile'} className={accountClass}>{accountLabel}</Link>}

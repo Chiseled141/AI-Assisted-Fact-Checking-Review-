@@ -18,6 +18,7 @@ import json
 import tomllib
 from functools import lru_cache
 from pathlib import Path
+from typing import Literal
 
 from pydantic import BaseModel, Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
@@ -119,6 +120,8 @@ class Settings(BaseSettings):
     reference_domains: list[str] = [
         "britannica.com", "nasa.gov", "noaa.gov", "usgs.gov", "nih.gov", "who.int", "cdc.gov", "nature.com", "science.org",
     ]
+    search_depth: Literal["basic", "advanced"] = "basic"  # Advanced reads deeper and costs twice the Tavily credit.
+    blocked_domains: list[str] = []  # Never used as a source, on top of what `source_ratings.json` excludes.
     research_max_searches_per_claim: int = 5  # Includes the first query supplied by the server.
     external_research_max_searches: int = Field(default=2, ge=0, le=3)  # Only after the approved search yields no usable page.
     research_max_picks: int = 8  # More than the target, because some pages turn out unreadable.

@@ -34,7 +34,7 @@ describe('Backend check lifecycle', () => {
     const history = await screen.findByRole('dialog', { name: 'History' });
     expect(await within(history).findByText('A saved check')).toBeInTheDocument();
     await user.click(nav.getByRole('link', { name: 'New check' }));
-    expect(await screen.findByRole('heading', { name: /Trace claims/ })).toBeInTheDocument();
+    expect(await screen.findByRole('heading', { name: /What do you want/ })).toBeInTheDocument();
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
     expect(screen.getByRole('textbox', { name: 'Text to check' })).not.toHaveFocus();
     expect(nav.queryByRole('link', { name: 'New check' })).not.toBeInTheDocument();

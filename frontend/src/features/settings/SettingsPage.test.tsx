@@ -120,12 +120,51 @@ describe('Search preferences', () => {
     await user.click(sources.getByRole('button', { name: 'More: Sources per claim' }));
     await user.click(save);
     await waitFor(() => expect(updates).toHaveLength(2));
+    const unset = { searchDepth: null, claimsPerCheck: null, blockedDomains: null };
     expect(updates).toEqual([
       {
         searchInstructions: 'Prefer official statistics.',
-        searchOptions: { sourcesPerClaim: 3, searchesPerClaim: null, searchOutsideList: false },
+        searchOptions: { sourcesPerClaim: 3, searchesPerClaim: null, searchOutsideList: false, ...unset },
       },
-      { searchOptions: { sourcesPerClaim: null, searchesPerClaim: null, searchOutsideList: false } },
+      { searchOptions: { sourcesPerClaim: null, searchesPerClaim: null, searchOutsideList: false, ...unset } },
     ]);
+  });
+
+  it('saves blocked sites, search depth and a claim limit', async () => {
+    const user = userEvent.setup();
+    const updates: { searchOptions: Record<string, unknown> }[] = [];
+    let account: Record<string, unknown> = { id: 'usr_test', username: 'lan', preferredSourceLanguage: 'en' };
+    interceptRequests((url, init) => {
+      if (url.pathname === '/api/auth/me') {
+        if (init?.method === 'PATCH') {
+          const patch = JSON.parse(String(init.body));
+          updates.push(patch);
+          account = { ...account, ...patch };
+        }
+        return jsonResponse(account);
+      }
+      if (url.pathname === '/api/checks') return jsonResponse({ items: [], totalPages: 1 });
+      throw new Error(`Unexpected request: ${url}`);
+    });
+    renderApp('/settings');
+    await waitFor(() => expect(screen.getByRole('textbox', { name: 'Blocked sources' })).toBeEnabled());
+    const blocked = screen.getByRole('textbox', { name: 'Blocked sources' });
+
+    await user.type(blocked, 'not a site{Enter}');
+    expect(screen.getByRole('alert')).toHaveTextContent('“not” is not a website address.');
+    await user.clear(blocked);
+    await user.type(blocked, 'https://www.Example.com/news{Enter}');
+    await user.type(blocked, 'tabloid.co.uk,');
+    expect(screen.getByRole('button', { name: 'Remove example.com' })).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: 'Remove tabloid.co.uk' }));
+
+    await user.click(screen.getByRole('switch', { name: 'Advanced search' }));
+    await user.click(screen.getByRole('button', { name: 'Fewer: Claims per check' }));
+
+    await user.click(screen.getByRole('button', { name: 'Save' }));
+    expect(await screen.findByRole('status')).toHaveTextContent('Search preferences saved.');
+    expect(updates[0].searchOptions).toMatchObject({
+      blockedDomains: ['example.com'], searchDepth: 'advanced', claimsPerCheck: 4,
+    });
   });
 });

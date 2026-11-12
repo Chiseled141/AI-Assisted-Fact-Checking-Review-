@@ -209,7 +209,10 @@ def update_profile(
         user.search_instructions = (body.search_instructions or "").strip() or None
     if "search_options" in body.model_fields_set:
         options = body.search_options.model_dump(exclude_none=True) if body.search_options else {}
-        user.search_options = options or None
+        # An empty list or the server's own depth is the same as unset.
+        user.search_options = {
+            key: value for key, value in options.items() if value != [] and (key, value) != ("search_depth", "basic")
+        } or None
     try:
         session.commit()
     except IntegrityError:

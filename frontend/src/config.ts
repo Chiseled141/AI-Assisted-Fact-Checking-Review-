@@ -18,6 +18,8 @@ export const config = {
     noteMaxLength: 500,
     sourcesPerClaim: { min: 1, max: 8, serverDefault: 5 },
     searchesPerClaim: { min: 1, max: 5, serverDefault: 5 },
+    claimsPerCheck: { min: 1, max: 5, serverDefault: 5 },
+    maxBlockedDomains: 20,
   },
   /**
    * LLM judges offered in the new-check picker, read from backend/config/data/judges.json, the one list

@@ -171,6 +171,14 @@ def is_allowed_source(url: str) -> bool:
     return bool(rated and rated[1] == "green")
 
 
+def is_blocked(url: str, domains: list[str]) -> bool:
+    """Whether a reader or the server ruled this page's site out. A blocked site covers its subdomains."""
+    if not domains:
+        return False
+    host = (urlsplit(url).hostname or "").lower().removeprefix("www.")
+    return any(host == domain or host.endswith(f".{domain}") for domain in domains)
+
+
 def is_discovery_source(url: str) -> bool:
     if not (rated := _rated_host(url)):
         return False

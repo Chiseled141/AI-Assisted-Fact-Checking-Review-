@@ -1,9 +1,10 @@
 """JSON shapes. Field names match `frontend/src/types/models.ts`."""
 
+import re
 from datetime import UTC, datetime
 from typing import Annotated, Literal
 
-from pydantic import BaseModel, ConfigDict, Field, PlainSerializer, StrictInt
+from pydantic import BaseModel, ConfigDict, Field, PlainSerializer, StrictInt, field_validator
 from pydantic.alias_generators import to_camel
 
 from config.labels import Freshness, InputCategory, Relation, StockMarket, Verdict
@@ -337,14 +338,33 @@ MAX_AVATAR_BYTES = 4 * 1024 * 1024
 
 
 MAX_SEARCH_INSTRUCTIONS = 500
+MAX_BLOCKED_DOMAINS = 20
+HOST_PATTERN = re.compile(r"(?=.{4,253}$)([a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?\.)+[a-z]{2,24}")
 
 
 class SearchOptions(ApiModel):
-    """A reader's search limits. A missing field keeps the server's setting."""
+    """A reader's options for new checks. A missing field keeps the server's setting."""
 
     sources_per_claim: int | None = Field(default=None, ge=1, le=8)  # target_publishers_per_claim
     searches_per_claim: int | None = Field(default=None, ge=1, le=5)  # research_max_searches_per_claim
     search_outside_list: bool | None = None  # False turns off the search outside the approved list.
+    search_depth: Literal["basic", "advanced"] | None = None  # Advanced costs twice the Tavily credit per search.
+    claims_per_check: int | None = Field(default=None, ge=1, le=5)  # Never above max_claims_per_check.
+    blocked_domains: list[str] | None = Field(default=None, max_length=MAX_BLOCKED_DOMAINS)  # Never used as a source.
+
+    @field_validator("blocked_domains")
+    @classmethod
+    def _hosts(cls, value: list[str] | None) -> list[str] | None:
+        """Keeps bare hosts, so "https://www.Example.com/news" and "example.com" are the same entry."""
+        if value is None:
+            return None
+        hosts = []
+        for entry in value:
+            host = entry.strip().lower().split("://")[-1].split("/")[0].removeprefix("www.").rstrip(".")
+            if not HOST_PATTERN.fullmatch(host):
+                raise ValueError(f"“{entry.strip()[:60]}” is not a website address.")
+            hosts.append(host)
+        return list(dict.fromkeys(hosts))
 
 
 class ProfileIn(ApiModel):

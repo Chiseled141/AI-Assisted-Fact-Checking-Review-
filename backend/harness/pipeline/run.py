@@ -41,6 +41,7 @@ from ..search.tavily import (
     data_table_domains,
     election_sources,
     is_allowed_source,
+    is_blocked,
     is_discovery_source,
     is_vietnamese_source,
     manufacturer_price_domains,
@@ -347,7 +348,40 @@ def _reader_settings(check: Check, settings: Settings) -> Settings:
         changes["research_max_searches_per_claim"] = searches
     if options.get("search_outside_list") is False:
         changes["external_research_max_searches"] = 0
+    if claim_limit := options.get("claims_per_check"):
+        changes["max_claims_per_check"] = min(claim_limit, settings.max_claims_per_check)
+    if options.get("search_depth") == "advanced":
+        changes["search_depth"] = "advanced"
+    if blocked := options.get("blocked_domains"):
+        changes["blocked_domains"] = list(dict.fromkeys([*settings.blocked_domains, *blocked]))
     return settings.model_copy(update=changes) if changes else settings
+
+
+class _ScopedSearch:
+    """A search provider with the check's blocked sites and search depth applied to every search it makes."""
+
+    METHODS = ("search", "search_hits", "search_more", "discover_hits", "search_x_posts")
+
+    def __init__(self, inner: Search, blocked: list[str], advanced: bool):
+        self._inner, self._blocked, self._advanced = inner, blocked, advanced
+
+    def __getattr__(self, name: str):
+        method = getattr(self._inner, name)  # A provider without a method stays without it.
+        if name not in self.METHODS:
+            return method
+
+        def call(*args, **options):
+            if name == "search":
+                return [url for url in method(*args, **options) if not is_blocked(url, self._blocked)]
+            if name == "search_more" and len(args) > 1:
+                args = (args[0], sorted({*args[1], *self._blocked}), *args[2:])
+            elif self._blocked:
+                options["exclude_domains"] = sorted({*(options.get("exclude_domains") or []), *self._blocked})
+            if self._advanced and name != "search_x_posts":
+                options.setdefault("advanced", True)
+            return [hit for hit in method(*args, **options) if not is_blocked(hit.url, self._blocked)]
+
+        return call
 
 
 def _research_brief(item: ExtractedClaim, window: TimeWindow | None) -> str:
@@ -572,7 +606,7 @@ def _retrieve(
                     is_allowed_source(hit.url) or (hit.reviewed_external and is_discovery_source(hit.url))
                     or (hit.x_handle and hit.x_handle == social_accounts.get(claim_id) and x_post_id(hit.url, hit.x_handle))
                 )
-                and source_url_key(hit.url) != skip_key
+                and source_url_key(hit.url) != skip_key and not is_blocked(hit.url, settings.blocked_domains)
             ]
             language = "vi" if claim_id in vietnamese_queries else preferred_source_language
             if language and (not research or research.hits is None):
@@ -1065,6 +1099,9 @@ def _run(
     given_claims: list[str] | None = None,
 ) -> None:
     settings = _reader_settings(check, settings)
+    if settings.blocked_domains or settings.search_depth == "advanced":
+        scoped = _ScopedSearch(providers.search, settings.blocked_domains, settings.search_depth == "advanced")
+        providers = replace(providers, search=scoped)
     tasks = TaskLog(lambda event: _save_progress(check, session, event))
     rephrased_from = None
     _set_status(check, session, "extracting")

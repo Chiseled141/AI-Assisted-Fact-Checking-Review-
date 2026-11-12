@@ -197,7 +197,9 @@ def test_search_note_and_limits_reach_only_the_research_model(client, fakes):
         "searchOptions": {"sourcesPerClaim": 3, "searchesPerClaim": 2, "searchOutsideList": False},
     }).json()
     assert saved["searchInstructions"] == note
-    assert saved["searchOptions"] == {"sourcesPerClaim": 3, "searchesPerClaim": 2, "searchOutsideList": False}
+    assert {key: value for key, value in saved["searchOptions"].items() if value is not None} == {
+        "sourcesPerClaim": 3, "searchesPerClaim": 2, "searchOutsideList": False,
+    }
 
     check = run(client)
     assert briefs and all(note in brief and "<reader_guidance>" in brief for brief in briefs)
@@ -211,7 +213,40 @@ def test_search_note_and_limits_reach_only_the_research_model(client, fakes):
 
     cleared = client.patch(endpoint, json={"searchInstructions": "", "searchOptions": None}).json()
     assert cleared["searchInstructions"] is None
-    assert cleared["searchOptions"] == {"sourcesPerClaim": None, "searchesPerClaim": None, "searchOutsideList": None}
+    assert set(cleared["searchOptions"].values()) == {None}
+
+
+def test_blocked_sites_search_depth_and_claim_limit_apply_to_new_checks(client, fakes):
+    from harness.search.tavily import SearchHit
+
+    searches = []
+
+    def search_hits(query, **options):
+        searches.append(options)
+        return [SearchHit("https://www.reuters.com/a"), SearchHit("https://bbc.com/b")]
+
+    fakes.search.search_hits = search_hits
+    fakes.llm.claims = ["The line opened on 6 November 2021.", "It carries many passengers every day."]
+    endpoint = "/api/auth/me"
+    for bad in ({"blockedDomains": ["not a site"]}, {"claimsPerCheck": 6}, {"searchDepth": "deepest"}):
+        assert client.patch(endpoint, json={"searchOptions": bad}).status_code == 422, bad
+    saved = client.patch(endpoint, json={"searchOptions": {
+        "blockedDomains": ["https://www.Reuters.com/world", "reuters.com"], "searchDepth": "advanced",
+        "claimsPerCheck": 1,
+    }}).json()["searchOptions"]
+    assert saved["blockedDomains"] == ["reuters.com"]
+    assert saved["searchDepth"] == "advanced"
+
+    check = run(client)
+    assert len(check["claims"]) == 1
+    assert searches and all(options["advanced"] is True for options in searches)
+    assert all("reuters.com" in options["exclude_domains"] for options in searches)
+    evidence = client.get(f"/api/claims/{check['claims'][0]['id']}/evidence").json()
+    assert [item["url"] for item in evidence] == ["https://bbc.com/b"]
+
+    # "basic" and an empty list are the same as unset.
+    basic = client.patch(endpoint, json={"searchOptions": {"searchDepth": "basic", "blockedDomains": []}}).json()
+    assert set(basic["searchOptions"].values()) == {None}
 
 
 def test_an_expired_session_is_signed_out(client):
