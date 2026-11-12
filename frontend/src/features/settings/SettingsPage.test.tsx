@@ -26,6 +26,68 @@ it('changes the app theme from Settings and keeps the language switcher in the h
 });
 
 describe('Search preferences', () => {
+  it('saves a custom endpoint with two judges, clears the key field, and can return to the default provider', async () => {
+    const user = userEvent.setup();
+    const updates: Record<string, unknown>[] = [];
+    let account: Record<string, unknown> = { id: 'usr_test', username: 'lan', apiProvider: null, hasApiKey: false };
+    interceptRequests((url, init) => {
+      if (url.pathname === '/api/auth/me') {
+        if (init?.method === 'PATCH') {
+          const patch = JSON.parse(String(init.body));
+          updates.push(patch);
+          account = { ...account, apiProvider: patch.apiProvider, hasApiKey: Boolean(patch.apiProvider) };
+        }
+        return jsonResponse(account);
+      }
+      throw new Error(`Unexpected request: ${url}`);
+    });
+    renderApp('/settings');
+    await waitFor(() => expect(screen.getByRole('switch', { name: 'Use a third-party API' })).toBeEnabled());
+    const toggle = screen.getByRole('switch', { name: 'Use a third-party API' });
+    expect(screen.queryByLabelText('API key')).not.toBeInTheDocument();
+    await user.click(toggle);
+    expect(screen.getByRole('combobox', { name: 'Tavily search model' })).toBeDisabled();
+    await user.type(screen.getByLabelText('API base URL'), 'https://models.example.com/v1');
+    await user.type(screen.getByLabelText('API key'), 'private-test-key');
+    await user.type(screen.getByLabelText('Extraction, search & follow-up model'), 'shared-model');
+    await user.type(screen.getByLabelText('First judge model'), 'judge-a');
+    await user.type(screen.getByLabelText('Second judge model'), 'judge-a');
+    expect(screen.getByRole('alert')).toHaveTextContent('Enter two different judge model IDs.');
+    await user.click(screen.getByRole('button', { name: 'Save' }));
+    expect(updates).toHaveLength(0);
+    await user.clear(screen.getByLabelText('Second judge model'));
+    await user.type(screen.getByLabelText('Second judge model'), 'judge-b');
+    await user.click(screen.getByRole('switch', { name: 'JSON response format' }));
+    await user.click(screen.getByRole('button', { name: 'Save' }));
+    expect(await screen.findByRole('status')).toHaveTextContent('API settings saved.');
+    expect(updates).toEqual([{
+      apiProvider: { baseUrl: 'https://models.example.com/v1', model: 'shared-model', judgeModels: ['judge-a', 'judge-b'], supportsJsonMode: false },
+      apiKey: 'private-test-key',
+    }]);
+    expect(screen.getByLabelText('API key')).toHaveValue('');
+    expect(screen.getByLabelText('API key')).not.toBeRequired();
+    expect(JSON.stringify(localStorage)).not.toContain('private-test-key');
+    await user.click(toggle);
+    await user.click(screen.getByRole('button', { name: 'Save' }));
+    await waitFor(() => expect(updates).toHaveLength(2));
+    expect(updates[1]).toEqual({ apiProvider: null });
+    expect(screen.getByRole('combobox', { name: 'Tavily search model' })).toBeEnabled();
+  });
+
+  it('keeps saved endpoint choices after a restart and asks for the lost key', async () => {
+    interceptRequests((url) => {
+      if (url.pathname === '/api/auth/me') return jsonResponse({
+        id: 'usr_test', username: 'lan', hasApiKey: false,
+        apiProvider: { baseUrl: 'https://models.example.com/v1', model: 'shared-model', judgeModels: ['judge-a', 'judge-b'], supportsJsonMode: true },
+      });
+      throw new Error(`Unexpected request: ${url}`);
+    });
+    renderApp('/settings');
+    expect(await screen.findByRole('status')).toHaveTextContent('Re-enter your custom API key in Settings to use this endpoint.');
+    expect(screen.getByLabelText('API base URL')).toHaveValue('https://models.example.com/v1');
+    expect(screen.getByLabelText('API key')).toBeRequired();
+  });
+
   it('saves both preferences together and reopens the panel with the saved values', async () => {
     const user = userEvent.setup();
     const updates: unknown[] = [];

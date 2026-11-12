@@ -6,6 +6,7 @@ import { urlInInput, validateTextSubmission, validateUrl } from '../../lib/valid
 import { readTextFiles } from '../../lib/files';
 import { formatBytes } from '../../lib/format';
 import { checkService, ValidationError } from '../../services';
+import { useAccount } from '../../services/account';
 import type { SubmittedFile } from '../../types/models';
 import { JudgePicker } from './JudgePicker';
 import { EarlierChecksNote, useEarlierChecks } from './EarlierChecks';
@@ -26,6 +27,7 @@ export const CheckComposer = forwardRef<ComposerHandle, { variant: 'home' | 'cha
   ref,
 ) {
   const home = variant === 'home';
+  const provider = useAccount()?.apiProvider;
   const navigate = useNavigate();
   const textRef = useRef<HTMLTextAreaElement>(null);
   const ids = {
@@ -250,7 +252,9 @@ export const CheckComposer = forwardRef<ComposerHandle, { variant: 'home' | 'cha
                 </button>
               </>
             <div className="ml-auto flex items-center gap-2.5">
-              <JudgePicker value={judgeIds} onChange={setJudgeIds} />
+              {provider
+                ? <span className="max-w-48 truncate text-xs text-ink-muted" title={provider.judgeModels.join(' + ')}>{t('Judges: {label}', { label: provider.judgeModels.join(' + ') })}</span>
+                : <JudgePicker value={judgeIds} onChange={setJudgeIds} />}
               {!url && text.length > 0 && (
                 <span
                   id={ids.count}

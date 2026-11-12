@@ -17,6 +17,16 @@ function aiTask(fields: Partial<TaskProgress>): TaskProgress {
 }
 
 describe('Real processing progress', () => {
+  it('calls a declined input a reviewed request instead of a completed factual check', () => {
+    render(<ProcessingView check={makeCheck({
+      claims: [], claimCount: 0, inputCategory: 'out_of_scope', progress: [
+        aiTask({ task: 'extracting', status: 'completed', finishedAt: '2026-11-05T01:00:01+00:00' }),
+      ],
+    })} />);
+    expect(screen.getByRole('button', { name: 'Input reviewed in 1 sec' })).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /Checked in/ })).not.toBeInTheDocument();
+  });
+
   it('reports minutes of completed work without adding timeouts or overlapping steps', () => {
     render(<ProcessingView check={makeCheck({
       createdAt: startedAt,

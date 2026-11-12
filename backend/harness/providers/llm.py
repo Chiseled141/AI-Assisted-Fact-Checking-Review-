@@ -1,4 +1,4 @@
-"""One OpenAI-compatible client pointed at OpenRouter. Every answer is validated before it is used."""
+"""OpenAI-compatible Chat Completions, using OpenRouter by default. Every answer is validated before it is used."""
 
 import json
 import re
@@ -94,15 +94,17 @@ SEARCH_TOOL = {
 
 
 class OpenRouterLLM:
-    def __init__(self, settings: Settings):
+    def __init__(self, settings: Settings, *, base_url: str | None = None, api_key: str | None = None):
         # No automatic retries: a timeout may still have been billed.
         self.client = OpenAI(
-            api_key=settings.openrouter_api_key,
-            base_url=settings.openrouter_base_url,
+            api_key=api_key if api_key is not None else settings.openrouter_api_key,
+            base_url=base_url or settings.openrouter_base_url,
             timeout=settings.llm_timeout_seconds,
             max_retries=0,
+            **({"http_client": httpx.Client(follow_redirects=False, trust_env=False)} if base_url else {}),
         )
-        self.base_url = settings.openrouter_base_url.rstrip("/")
+        self.base_url = (base_url or settings.openrouter_base_url).rstrip("/")
+        self.custom_endpoint = base_url is not None
         self.native_endpoints: dict[str, tuple[float, list[str]]] = {}
         self.research_model, self.research_timeout = settings.research_model, settings.research_timeout_seconds
         self.without_json_mode = {option.model for option in settings.judges.values() if not option.supports_json_mode}
@@ -133,7 +135,7 @@ class OpenRouterLLM:
         return providers
 
     def followup(self, model, system, user, schema, run_search):
-        providers = self._native_providers(model)
+        providers = [] if self.custom_endpoint else self._native_providers(model)
         if not providers:
             answer, reported = self.research(model, system, user, schema, run_search, 1)
             return answer, reported, []

@@ -24,6 +24,7 @@ def check_out(check: models.Check, session: Session) -> schemas.CheckOut:
         claim_count=count if check.status == "completed" else None,
         error_message=check.error_message,
         judge_ids=check.judge_ids,
+        api_provider=schemas.ApiProvider(**check.api_provider) if check.api_provider else None,
         input_category=next((event["inputCategory"] for event in reversed(check.progress or [])
                              if event.get("inputCategory")), None) if check.status == "completed" and not count else None,
     )

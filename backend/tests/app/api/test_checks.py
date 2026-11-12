@@ -9,7 +9,9 @@ from harness.search.fetcher import Page
 from tests.helpers import TEXT, run
 
 
-@pytest.mark.parametrize("category", ["subjective", "advice", "prediction", "unclear", "no_factual_claim"])
+@pytest.mark.parametrize("category", [
+    "subjective", "advice", "prediction", "unclear", "no_factual_claim", "prompt_injection", "spam", "out_of_scope",
+])
 def test_nonfactual_inputs_return_a_saved_category_without_searching_or_judging(client, fakes, category):
     from harness.pipeline.prompts import ExtractedClaims
 
@@ -32,9 +34,14 @@ def test_nonfactual_inputs_return_a_saved_category_without_searching_or_judging(
     assert saved["progress"][0]["inputCategory"] == category
     history = client.get("/api/checks").json()["items"]
     assert next(item for item in history if item["id"] == check["id"])["inputCategory"] == category
+    if category in {"prompt_injection", "spam", "out_of_scope"}:
+        # Direct API requests must not trigger a paid suggestion call, even if the UI hides the control.
+        assert client.post(f"/api/check/{check['id']}/input-suggestions").json() == {"suggestions": []}
+        assert calls == [ExtractedClaims]
 
 
-def test_an_input_category_cannot_hide_real_extracted_claims(client, fakes):
+@pytest.mark.parametrize("category", ["subjective", "prompt_injection", "spam", "out_of_scope"])
+def test_an_input_category_cannot_hide_real_extracted_claims(client, fakes, category):
     from harness.pipeline.prompts import ExtractedClaim, ExtractedClaims
 
     complete = fakes.llm.complete
@@ -43,7 +50,7 @@ def test_an_input_category_cannot_hide_real_extracted_claims(client, fakes):
         if schema is ExtractedClaims:
             return ExtractedClaims(
                 claims=[ExtractedClaim(text="The line opened on 6 November 2021.", checkworthiness=0.9)],
-                input_category="subjective",
+                input_category=category,
             ), model
         return complete(model, system, user, schema, check)
 

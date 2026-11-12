@@ -1,6 +1,27 @@
 // Vietnamese interface text, keyed by the English wording passed to t().
 
 const interfaceText: Record<string, string> = {
+  'Use a third-party API': 'Dùng API bên thứ ba',
+  'Use your own OpenAI-compatible endpoint for every AI step, including two judge models.': 'Dùng endpoint tương thích OpenAI của bạn cho mọi bước AI, bao gồm hai mô hình đánh giá.',
+  'Custom API settings': 'Cài đặt API tùy chỉnh',
+  'Your key stays in server memory. Re-enter it after a server restart or after 30 days. Web search still uses Tavily.': 'Khóa chỉ được giữ trong bộ nhớ máy chủ. Nhập lại sau khi máy chủ khởi động lại hoặc sau 30 ngày. Tìm kiếm web vẫn dùng Tavily.',
+  'API base URL': 'URL gốc của API',
+  'API key': 'Khóa API',
+  'Key saved; leave blank to keep it': 'Đã lưu khóa; để trống để giữ nguyên',
+  'Extraction, search & follow-up model': 'Mô hình trích xuất, tìm kiếm và trả lời',
+  'First judge model': 'Mô hình đánh giá thứ nhất',
+  'Second judge model': 'Mô hình đánh giá thứ hai',
+  'Enter two different judge model IDs.': 'Nhập hai mã mô hình đánh giá khác nhau.',
+  'JSON response format': 'Định dạng phản hồi JSON',
+  'Turn off if your provider does not support JSON mode. Answers are still validated.': 'Tắt nếu nhà cung cấp không hỗ trợ chế độ JSON. Câu trả lời vẫn được kiểm tra định dạng.',
+  'Your custom API model handles search while the third-party API is enabled.': 'Mô hình API tùy chỉnh xử lý tìm kiếm khi API bên thứ ba được bật.',
+  'API settings saved.': 'Đã lưu cài đặt API.',
+  'Re-enter your custom API key in Settings to use this endpoint.': 'Nhập lại khóa API tùy chỉnh trong Cài đặt để sử dụng endpoint này.',
+  'Enter a public HTTPS API base URL without a query or fragment.': 'Nhập URL gốc API HTTPS công khai, không kèm tham số truy vấn hoặc phần sau dấu #.',
+  'Enter an API key for this endpoint.': 'Nhập khóa API cho endpoint này.',
+  'Enter a valid API key.': 'Nhập khóa API hợp lệ.',
+  'Choose a custom API endpoint before entering a key.': 'Chọn endpoint API tùy chỉnh trước khi nhập khóa.',
+  'The server is missing its Tavily API key, so it can’t run checks yet.': 'Máy chủ chưa có khóa API Tavily nên chưa thể chạy kiểm chứng.',
   // Evidence at a glance
   'Evidence at a glance': 'Tóm tắt bằng chứng',
   'sources support the claim': 'nguồn ủng hộ nhận định',
@@ -105,6 +126,26 @@ const interfaceText: Record<string, string> = {
   'Published record titles and record-holder profiles': 'Kỷ lục được công bố và hồ sơ người giữ kỷ lục',
   'Celebrity reporting and published interviews': 'Tin tức người nổi tiếng và các cuộc phỏng vấn đã công bố',
   'Input assessment': 'Đánh giá nội dung đầu vào',
+  'Instruction override request': 'Yêu cầu can thiệp chỉ dẫn AI (prompt injection)',
+  'Spam or repetitive content': 'Nội dung spam hoặc lặp vô nghĩa',
+  'Outside fact-checking scope': 'Yêu cầu ngoài phạm vi kiểm chứng',
+  'Request not carried out': 'Yêu cầu không được thực hiện',
+  'No verification performed': 'Không thực hiện kiểm chứng',
+  'What to submit instead': 'Nội dung có thể gửi',
+  'This input asks the AI to override its instructions, reveal private information or force a result. ClaimTrace does not follow these requests. No factual verification was performed.':
+    'Nội dung này yêu cầu AI bỏ qua chỉ dẫn, tiết lộ thông tin riêng tư hoặc ép kết quả. ClaimTrace không làm theo các yêu cầu này và không thực hiện kiểm chứng thông tin.',
+  'This input contains repetitive filler or promotional spam without a distinct factual claim to check. ClaimTrace does not process spam or generate bulk messages. No factual verification was performed.':
+    'Nội dung này chứa phần lặp vô nghĩa hoặc quảng cáo spam, không có nhận định thực tế cụ thể để kiểm chứng. ClaimTrace không xử lý spam hay tạo tin nhắn hàng loạt và không thực hiện kiểm chứng thông tin.',
+  'ClaimTrace verifies factual information. Requests to write advertisements, code or other unrelated content are outside its scope and are not carried out. No factual verification was performed.':
+    'ClaimTrace dùng để kiểm chứng thông tin thực tế. Các yêu cầu viết quảng cáo, lập trình hoặc tạo nội dung không liên quan nằm ngoài phạm vi và không được thực hiện. Không có lượt kiểm chứng thông tin nào được tiến hành.',
+  'Send the factual claim you want to verify without instructions to override the AI or reveal secrets.':
+    'Hãy gửi nhận định thực tế cần kiểm chứng, không kèm yêu cầu thay đổi chỉ dẫn AI hoặc tiết lộ thông tin bí mật.',
+  'Remove repeated filler and send one specific fact you want to verify.':
+    'Hãy bỏ phần lặp vô nghĩa và gửi một thông tin thực tế cụ thể cần kiểm chứng.',
+  'Send a factual statement or a specific factual question, rather than a request to generate unrelated content.':
+    'Hãy gửi một nhận định hoặc câu hỏi thực tế cụ thể cần kiểm chứng, thay vì yêu cầu tạo nội dung không liên quan.',
+  'Input reviewed': 'Đã xem xét yêu cầu',
+  'Input reviewed in {duration}': 'Đã xem xét yêu cầu trong {duration}',
   'Subjective opinion': 'Ý kiến chủ quan',
   'Advice request': 'Xin lời khuyên',
   'Future prediction': 'Dự đoán tương lai',

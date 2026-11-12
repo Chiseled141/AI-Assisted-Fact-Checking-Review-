@@ -3,12 +3,14 @@
 import math
 import time
 from collections import defaultdict, deque
+from functools import partial
 from threading import Lock
 
 from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Query, Request, Response
 from sqlalchemy import delete, func, or_, select, update
 from sqlalchemy.orm import Session
 
+from config.labels import DECLINED_INPUT_CATEGORIES
 from config.settings import Settings, get_settings
 from database import models
 from database.session import get_session
@@ -18,10 +20,12 @@ from harness.pipeline.progress import closed_tasks
 from harness.pipeline.prompts import INPUT_SUGGESTIONS_SYSTEM, InputSuggestions, tagged
 from harness.pipeline.run import FINISHED, STOPPED, stop_requests
 from harness.providers.llm import LLMError
-from harness.search.fetcher import FetchError, check_url_allowed
+from harness.search.fetcher import FetchError, check_url_allowed, fetch_page
+from harness.search.tavily import TavilySearch
 
 from . import schemas
 from .deps import current_user, optional_user, owned_check
+from .provider import custom_llm, custom_starter, provider_settings
 from .serializers import check_out, claim_out, message_out
 
 router = APIRouter()
@@ -88,12 +92,15 @@ def create_check(
     settings: Settings = Depends(get_settings),
     user: models.User = Depends(current_user),
 ):
+    if user.api_provider:
+        settings = provider_settings(user.api_provider, settings)
+        body = body.model_copy(update={"judge_ids": settings.default_judge_ids})
     judge_ids = validate_input(body, settings)
-    start = request.app.state.start_check
+    start = custom_starter(user.id, user.api_provider, settings) if user.api_provider else request.app.state.start_check
     if start is None:
         raise HTTPException(503, "The server is missing its API keys, so it can’t run checks yet.")
     enforce_rate_limit(user.id, settings)
-    search_option = settings.judges.get(user.preferred_search_model_id or "")
+    search_option = settings.judges.get(user.preferred_search_model_id or "") if not user.api_provider else None
     check = models.Check(
         user_id=user.id,
         title=title_for(body),
@@ -105,6 +112,7 @@ def create_check(
         search_model=search_option.model if search_option else settings.research_model,
         search_instructions=user.search_instructions,
         search_options=user.search_options,
+        api_provider=user.api_provider,
     )
     session.add(check)
     session.commit()
@@ -141,11 +149,13 @@ def suggest_check_inputs(
     check = owned_check(session, check_id, user)
     if check.status != "completed" or check.claims:
         raise HTTPException(422, "Suggestions are available for completed inputs without claims.")
+    if check_out(check, session).input_category in DECLINED_INPUT_CATEGORIES:
+        return schemas.InputSuggestionsOut(suggestions=[])
     if check.input_suggestions is not None:
         return schemas.InputSuggestionsOut(suggestions=check.input_suggestions)
 
-    llm = request.app.state.llm
-    if llm is None:
+    llm = None if check.api_provider else request.app.state.llm
+    if llm is None and not check.api_provider:
         raise HTTPException(503, "Suggestions are temporarily unavailable.")
 
     parts = [check.title] if check.input_type == "url" else [
@@ -165,6 +175,9 @@ def suggest_check_inputs(
             return schemas.InputSuggestionsOut(suggestions=saved)
         session.rollback()
         enforce_rate_limit(rate_key, settings)
+        if check.api_provider:
+            settings = provider_settings(check.api_provider, settings)
+            llm = custom_llm(user.id, check.api_provider, settings)
         suggestions: list[str] = []
         if text:
             answer, _ = llm.complete(
@@ -194,6 +207,8 @@ def suggest_check_inputs(
     finally:
         with _suggestions_lock:
             _suggestions_in_flight.discard(check_id)
+        if check.api_provider and llm is not None:
+            llm.client.close()
 
 
 @router.post("/check/{check_id}/stop", status_code=202)
@@ -265,12 +280,10 @@ def answer_review(
     background: BackgroundTasks,
     session: Session = Depends(get_session),
     user: models.User = Depends(current_user),
+    settings: Settings = Depends(get_settings),
 ):
     """The reader's answer to what the check asked before searching. The check goes on from where it stopped."""
     check = owned_check(session, check_id, user)
-    start = request.app.state.start_check
-    if start is None:
-        raise HTTPException(503, "The server is missing its API keys, so it can’t run checks yet.")
     review = check.review or {}
     if check.status != "awaiting_input" or not review:
         raise HTTPException(422, "This check is no longer waiting for an answer.")
@@ -293,6 +306,9 @@ def answer_review(
     replies = {reply.claim: (reply.answer or "").strip() or None for reply in body.answers}
     if len(replies) != len(body.answers) or not replies.keys() <= asked:
         raise HTTPException(422, "That question is no longer available.")
+    start = custom_starter(user.id, check.api_provider, settings) if check.api_provider else request.app.state.start_check
+    if start is None:
+        raise HTTPException(503, "The server is missing its API keys, so it can’t run checks yet.")
     answer = {
         "claim": body.claim,
         "answers": [{"claim": claim, "answer": text} for claim, text in replies.items()],
@@ -357,7 +373,7 @@ def ask_followup(
         raise HTTPException(422, "Questions open once the check has finished.")
     if len(body.files) > settings.max_files or any(len(file.text.encode()) > settings.max_file_bytes for file in body.files):
         raise HTTPException(422, f"Attach at most {settings.max_files} files, each within the size limit.")
-    if body.model_id is not None and body.model_id not in settings.judges:
+    if body.model_id is not None and body.model_id not in settings.judges and not check.api_provider:
         raise HTTPException(422, "Pick a model from the list.")
     cleared_followups = check.cleared_followups
     if cleared_followups + len(check.messages) >= settings.max_followups_per_check:
@@ -374,17 +390,28 @@ def ask_followup(
             raise HTTPException(422, "That result is no longer available.")
         reference = schemas.MessageReference(kind=target.kind, title=selected_result.title, url=selected_result.url)
     llm = request.app.state.llm
+    search, fetch = request.app.state.followup_search, request.app.state.followup_fetch
+    if check.api_provider:
+        settings = provider_settings(check.api_provider, settings)
+        if body.model_id is not None and body.model_id not in {*settings.judges, "custom-model"}:
+            raise HTTPException(422, "Pick a model from the list.")
+        llm = custom_llm(user.id, check.api_provider, settings)
+        search = TavilySearch(settings) if settings.tavily_api_key else None
+        fetch = partial(fetch_page, settings=settings)
     if llm is None:
         raise HTTPException(503, "The server is missing its API keys, so it can’t answer questions yet.")
     try:
-        chosen = settings.judges[body.model_id].model if body.model_id else settings.followup_model
+        chosen = settings.judges[body.model_id].model if body.model_id in settings.judges else settings.followup_model
         answer, model, sources = answer_followup(
             check, question, llm, settings, body.files, chosen,
             reply_to=reply_to, selected_result=selected_result.prompt if selected_result else None,
-            search=request.app.state.followup_search, fetch=request.app.state.followup_fetch,
+            search=search, fetch=fetch,
         )
     except LLMError as error:
         raise HTTPException(503, error.public_message) from error
+    finally:
+        if check.api_provider:
+            llm.client.close()
     # Serialize saving and clearing on the check row without holding a lock during the model call.
     locked = session.execute(
         update(models.Check)

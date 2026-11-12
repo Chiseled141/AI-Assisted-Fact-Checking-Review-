@@ -24,8 +24,8 @@ def read_prompt(name: str) -> str:
 
 
 def system_prompt(*tasks: str) -> str:
-    """The rules shared by every task, then the task itself, or two tasks answered together."""
-    return "\n".join(read_prompt(name) for name in ("harness.md", *tasks))
+    """Shared app rules and guardrails, then the task itself, or two tasks answered together."""
+    return "\n".join(read_prompt(name) for name in ("harness.md", "guardrails.md", *tasks))
 
 
 # Only the tasks that fill a chart or a map need its rules. Judges never see one.
@@ -140,7 +140,8 @@ class ContextNote(BaseModel):
     vi: str = ""
 
 
-CONTEXT_NOTE_SYSTEM = """You write one short note for a fact-checking report. No source found addresses the claim itself.
+CONTEXT_NOTE_SYSTEM = system_prompt() + """
+You write one short note for a fact-checking report. No source found addresses the claim itself.
 The sources you are given are about the person the claim names.
 Describe in one or two sentences what they say about that person, using only the passages given.
 Say that they do not address the claim.

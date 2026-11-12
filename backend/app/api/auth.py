@@ -27,6 +27,7 @@ from database.session import get_session
 
 from . import schemas
 from .deps import current_user, token_hash
+from .provider import forget_key, keep_key, saved_key, validate_endpoint
 
 router = APIRouter(prefix="/auth")
 
@@ -85,6 +86,8 @@ def _account(user: models.User) -> schemas.AccountOut:
         id=user.id, username=user.username, avatar=user.avatar, preferred_source_language=user.preferred_source_language,
         preferred_search_model_id=user.preferred_search_model_id, search_instructions=user.search_instructions,
         search_options=schemas.SearchOptions(**(user.search_options or {})),
+        api_provider=schemas.ApiProvider(**user.api_provider) if user.api_provider else None,
+        has_api_key=bool(user.api_provider and saved_key(user.id, user.api_provider["base_url"])),
     )
 
 
@@ -194,6 +197,16 @@ def update_profile(
     session: Session = Depends(get_session),
     settings: Settings = Depends(get_settings),
 ):
+    provider = body.api_provider
+    key = body.api_key.get_secret_value().strip() if body.api_key is not None else None
+    if "api_provider" in body.model_fields_set and provider is not None:
+        validate_endpoint(provider)
+        if not key and not saved_key(user.id, provider.base_url):
+            raise HTTPException(422, "Enter an API key for this endpoint.")
+        if key and any(ord(char) < 33 or ord(char) > 126 for char in key):
+            raise HTTPException(422, "Enter a valid API key.")
+    elif body.api_key is not None:
+        raise HTTPException(422, "Choose a custom API endpoint before entering a key.")
     search_model_id = body.preferred_search_model_id
     if search_model_id is not None and search_model_id not in settings.judges:
         raise HTTPException(422, "Choose a search model from the list.")
@@ -213,11 +226,18 @@ def update_profile(
         user.search_options = {
             key: value for key, value in options.items() if value != [] and (key, value) != ("search_depth", "basic")
         } or None
+    if "api_provider" in body.model_fields_set:
+        user.api_provider = provider.model_dump() if provider else None
     try:
         session.commit()
     except IntegrityError:
         session.rollback()
         raise HTTPException(409, "That username is taken.") from None
+    if "api_provider" in body.model_fields_set:
+        if provider is None:
+            forget_key(user.id)
+        elif key:
+            keep_key(user.id, provider.base_url, key)
     return _account(user)
 
 

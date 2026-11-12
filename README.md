@@ -41,6 +41,19 @@ npm run dev
 
 Open http://localhost:5173 and create an account. Vite forwards `/api` to the backend, so the session cookie stays on the same site.
 
+To use a third-party model provider, open Settings and enable **Use a third-party API**. Enter its public HTTPS
+OpenAI-compatible API base URL (for example `https://api.example.com/v1`), API key, a shared model ID for extraction,
+research, chart reading and follow-ups, and two different judge model IDs. The endpoint must support Chat Completions
+and function tools for Tavily research. Turn off **JSON response format** if it does not support `response_format`;
+answers still receive the same local validation. Web search still needs the server's `TAVILY_API_KEY`, but a custom
+endpoint does not need `OPENROUTER_API_KEY`. Custom follow-ups use the Tavily function tool instead of OpenRouter native search.
+
+Endpoint and model choices are saved per account and copied onto each new check, including checks waiting for reader
+input. API keys are held only in server memory, never returned in API responses or saved to the database/browser
+storage. Re-enter the key after a backend restart or after 30 days. Changing the endpoint requires its key; disabling
+the option clears the remembered key. Earlier custom checks retain their provider and ask for the corresponding key
+instead of silently switching to OpenRouter. This credential cache, like the app's rate limits, assumes one server process.
+
 The frontend needs no settings locally. Its only one, `VITE_API_URL`, goes in `frontend/.env.local`, because Vite reads that folder and not the top-level `.env`. Leave it out or empty for local development. An override pointing to `localhost:8000` while opening the frontend at `127.0.0.1` makes the API cross-site, so browsers can reject its session cookie even after a successful login.
 
 ## Tests and everyday commands
@@ -129,6 +142,7 @@ The frontend imports `judges.json` and `source_ratings.json` straight from `back
 |---|---|
 | Models | `backend/config/models.toml` for the roles; `backend/config/data/judges.json` for the judges a reader can pick, read by both sides |
 | Prompts | `backend/harness/prompts/`; answer formats in `backend/harness/pipeline/prompts.py` |
+| Prompt injection, spam and task scope | `backend/harness/prompts/guardrails.md`, included in every AI system prompt after `harness.md`, for OpenRouter and custom endpoints alike; input classifications in `backend/config/labels.py`, explanations in `frontend/src/features/results/UncheckableResult.tsx` |
 | Limits and settings | `backend/config/settings.py`, overridable in the top-level `.env`; interface limits in `frontend/src/config.ts` |
 | Source ratings | `backend/config/data/source_ratings.json`, read by both sides (`frontend/src/data/sourceRegistry.ts` only reshapes it) |
 | Tables | `backend/database/models.py` |
@@ -183,6 +197,7 @@ complete reported distribution. These additional pages are used for the chart.
 - A failed search, page read or model call marks a claim `unavailable`, not "insufficient evidence".
 - When the research model keeps none of its results, one more search looks at `reference_domains`, in case the claim is general knowledge that news doesn't cover. A claim about one named person or one election stays strict and gets no such search.
 - Page text is data, never instructions. An article can't be its own evidence.
+- Inputs with no legitimate fact to check distinguish `prompt_injection` (instruction overrides or secret extraction), `spam` (repetitive filler or unsolicited promotion) and `out_of_scope` (other tasks, such as writing ads). Each gets its own explanation and next step, no factual verdict and no model-generated related suggestions. A completed input assessment is labelled as a reviewed request, not a completed factual check. Real factual claims mixed with these instructions still proceed to verification; existing checks keep their saved classification.
 - Fact-check research starts with green-rated domains. If none yields a usable page, a separate Tavily search can consider original reporting from other publishers after an editorial review. Known blocked sources, social platforms and tabloids are excluded from that search. New publishers are reviewed per article. Fetching only reaches public addresses.
 - If both rounds lack evidence for a claim about an attributed public statement, the pipeline can look for a post from the named account in `backend/config/data/social_accounts.json`. X posts require a matching author and post ID from X. The registry records official profile links for Instagram and Facebook as well.
 - The source catalog includes official company newsrooms, league and tournament results, and specialist game, sport and film sources. Research prefers the organization for its own announcements or results and looks for independent evidence for comparisons and outcomes. Broad Tavily searches split the allowlist into groups of at most 300 domains and merge the results by relevance before applying the usual result limit.
@@ -275,6 +290,7 @@ Treat everything under [How it behaves](#how-it-behaves) as design choices to ke
 
 ## Status and open questions
 
+- The shared guardrails are prompt-level defenses. They preserve valid claims mixed with malicious instructions, limit unrelated generation and unnecessary searches, and keep refusals within each task's JSON schema. They do not replace the backend's account ownership checks, input validation or per-process request limits. Automated tests check prompt coverage; resistance to real adversarial model inputs has not been measured.
 - Live OpenRouter and Tavily checks have only been run a few times, and accuracy hasn't been measured. The accuracy score's weights are untested for the same reason.
 - Table quotes are only rebuilt for rows under year headings and for Markdown tables. Other tables still show as one line.
 - The course report differs from the code: it describes a trusted corpus and an NLI layer, where the code uses web search and two LLM judges. The verdict labels and the default judge pair are still undecided.

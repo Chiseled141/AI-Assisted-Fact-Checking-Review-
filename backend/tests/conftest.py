@@ -232,9 +232,11 @@ def client(fakes, monkeypatch):
     monkeypatch.setattr("harness.search.fetcher._is_public", lambda host: True)
     from app.api.auth import _failed
     from app.api.checks import _recent_checks
+    from app.api.provider import _keys
 
     _recent_checks.clear()
     _failed.clear()
+    _keys.clear()
     # Starting the app below applies the real migrations to an empty database.
     Base.metadata.drop_all(engine)
     with engine.begin() as connection:

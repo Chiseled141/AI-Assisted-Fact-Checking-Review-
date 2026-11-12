@@ -6,7 +6,7 @@ import { t } from '../../lib/i18n';
 import { setTheme, type Theme, useTheme } from '../../lib/theme';
 import { updateProfile, useAccount } from '../../services/account';
 import { ValidationError } from '../../services/errors';
-import type { Account, SearchOptions } from '../../types/models';
+import type { Account, ApiProvider, SearchOptions } from '../../types/models';
 
 type PreferenceOption = { value: string; label: string; lang?: string; logo?: string };
 
@@ -315,9 +315,16 @@ function SearchPreferences({ account, logIn }: { account: Account | null | undef
   const [draftLanguage, setDraftLanguage] = useState<'vi' | 'en'>();
   const [draftNote, setDraftNote] = useState<string | null>(null);
   const [draftOptions, setDraftOptions] = useState<SearchOptions | null>(null);
+  const [draftProvider, setDraftProvider] = useState<ApiProvider | null>();
+  const [apiKey, setApiKey] = useState('');
   const [saving, setSaving] = useState(false);
   const [notice, setNotice] = useState<{ text: string; error?: boolean }>();
   const noteId = useId();
+  const providerId = useId();
+  const provider = draftProvider === undefined ? account?.apiProvider ?? null : draftProvider;
+  const providerChanged = JSON.stringify(provider) !== JSON.stringify(account?.apiProvider ?? null) || Boolean(apiKey);
+  const duplicateJudges = provider && provider.judgeModels[0].trim() !== '' && provider.judgeModels[0].trim() === provider.judgeModels[1].trim();
+  const needsKey = !account?.hasApiKey || provider?.baseUrl.trim().replace(/\/+$/, '') !== account?.apiProvider?.baseUrl;
   const savedModel = config.judges.options.find((model) => model.id === account?.preferredSearchModelId)?.id ?? '';
   const savedLanguage = account?.preferredSourceLanguage ?? null;
   const savedNote = account?.searchInstructions ?? '';
@@ -330,7 +337,7 @@ function SearchPreferences({ account, logIn }: { account: Account | null | undef
   const languageChanged = sourceLanguage !== null && sourceLanguage !== savedLanguage;
   const noteChanged = note.trim() !== savedNote;
   const optionsChanged = !sameOptions(options, savedOptions);
-  const changed = modelChanged || languageChanged || noteChanged || optionsChanged;
+  const changed = modelChanged || languageChanged || noteChanged || optionsChanged || providerChanged;
   const disabled = !account || saving;
   const { noteMaxLength } = config.search;
 
@@ -345,6 +352,7 @@ function SearchPreferences({ account, logIn }: { account: Account | null | undef
   async function save(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (disabled || !changed) return;
+    if (duplicateJudges) return;
     setSaving(true);
     setNotice(undefined);
     try {
@@ -353,12 +361,15 @@ function SearchPreferences({ account, logIn }: { account: Account | null | undef
         ...(languageChanged ? { preferredSourceLanguage: sourceLanguage } : {}),
         ...(noteChanged ? { searchInstructions: note.trim() || null } : {}),
         ...(optionsChanged ? { searchOptions: tidy(options) } : {}),
+        ...(providerChanged ? { apiProvider: provider, ...(provider && apiKey.trim() ? { apiKey: apiKey.trim() } : {}) } : {}),
       });
       setDraftModel(null);
       setDraftLanguage(undefined);
       setDraftNote(null);
       setDraftOptions(null);
-      setNotice({ text: t('Search preferences saved.') });
+      setDraftProvider(undefined);
+      setApiKey('');
+      setNotice({ text: t(providerChanged ? 'API settings saved.' : 'Search preferences saved.') });
     } catch (error) {
       setNotice({
         text: error instanceof ValidationError ? error.message : t('Could not reach ClaimTrace. Please try again.'),
@@ -380,14 +391,88 @@ function SearchPreferences({ account, logIn }: { account: Account | null | undef
           {logIn}
         </div>
       )}
+      <div className="space-y-4 border-b border-line pb-5">
+        <Toggle
+          label={t('Use a third-party API')}
+          help={t('Use your own OpenAI-compatible endpoint for every AI step, including two judge models.')}
+          icon={<Globe className="h-4 w-4 shrink-0 text-brand-700" aria-hidden="true" />}
+          checked={Boolean(provider)}
+          disabled={disabled}
+          onChange={(on) => {
+            setDraftProvider(on ? { baseUrl: '', model: '', judgeModels: ['', ''], supportsJsonMode: true } : null);
+            setApiKey('');
+            setNotice(undefined);
+          }}
+        />
+        {provider && (
+          <fieldset disabled={disabled} className="space-y-4">
+            <legend className="sr-only">{t('Custom API settings')}</legend>
+            <p className="text-xs leading-relaxed text-ink-muted">
+              {t('Your key stays in server memory. Re-enter it after a server restart or after 30 days. Web search still uses Tavily.')}
+            </p>
+            {account?.apiProvider && !account.hasApiKey && (
+              <p role="status" className="text-xs text-orange-700">{t('Re-enter your custom API key in Settings to use this endpoint.')}</p>
+            )}
+            <div className="grid gap-4 sm:grid-cols-2">
+              {([
+                { key: 'baseUrl', label: 'API base URL', type: 'url', placeholder: 'https://api.example.com/v1', value: provider.baseUrl, maxLength: 500 },
+                { key: 'apiKey', label: 'API key', type: 'password', placeholder: account?.hasApiKey && !needsKey ? t('Key saved; leave blank to keep it') : '', value: apiKey, maxLength: 4096 },
+                { key: 'model', label: 'Extraction, search & follow-up model', type: 'text', placeholder: 'model-id', value: provider.model, maxLength: 200 },
+                { key: 'judge1', label: 'First judge model', type: 'text', placeholder: 'judge-model-id', value: provider.judgeModels[0], maxLength: 200 },
+                { key: 'judge2', label: 'Second judge model', type: 'text', placeholder: 'another-judge-model-id', value: provider.judgeModels[1], maxLength: 200 },
+              ] as const).map((field) => (
+                <div key={field.key} className={field.key === 'model' ? 'sm:col-span-2' : ''}>
+                  <label htmlFor={`${providerId}-${field.key}`} className="text-sm font-semibold text-ink">{t(field.label)}</label>
+                  <input
+                    id={`${providerId}-${field.key}`}
+                    type={field.type}
+                    value={field.value}
+                    required={field.key !== 'apiKey' || needsKey}
+                    pattern={field.key === 'baseUrl' ? 'https://.*' : undefined}
+                    maxLength={field.maxLength}
+                    placeholder={field.placeholder}
+                    autoComplete="off"
+                    autoCapitalize="none"
+                    spellCheck={false}
+                    aria-invalid={field.key === 'judge2' && Boolean(duplicateJudges)}
+                    aria-describedby={field.key === 'judge2' && duplicateJudges ? `${providerId}-judge-error` : undefined}
+                    onChange={(event) => {
+                      const value = event.target.value;
+                      if (field.key === 'apiKey') setApiKey(value);
+                      else if (field.key === 'judge1' || field.key === 'judge2') {
+                        const judges: [string, string] = [...provider.judgeModels];
+                        judges[field.key === 'judge1' ? 0 : 1] = value;
+                        setDraftProvider({ ...provider, judgeModels: judges });
+                      } else setDraftProvider({ ...provider, [field.key]: value });
+                      setNotice(undefined);
+                    }}
+                    className="mt-2 block min-h-11 w-full rounded-xl border border-line bg-zinc-50 px-3 text-sm text-ink outline-none placeholder:text-ink-muted focus:border-brand-200 focus:bg-white focus:ring-2 focus:ring-brand-500/20 disabled:opacity-60"
+                  />
+                  {field.key === 'judge2' && duplicateJudges && (
+                    <p id={`${providerId}-judge-error`} role="alert" className="mt-1.5 text-xs text-rose-700">{t('Enter two different judge model IDs.')}</p>
+                  )}
+                </div>
+              ))}
+            </div>
+            <Toggle
+              label={t('JSON response format')}
+              help={t('Turn off if your provider does not support JSON mode. Answers are still validated.')}
+              icon={<Check className="h-4 w-4 shrink-0 text-brand-700" aria-hidden="true" />}
+              checked={provider.supportsJsonMode}
+              disabled={disabled}
+              onChange={(on) => { setDraftProvider({ ...provider, supportsJsonMode: on }); setNotice(undefined); }}
+            />
+          </fieldset>
+        )}
+      </div>
       <div className="grid gap-x-8 gap-y-4 lg:grid-cols-2">
         <div className="space-y-4">
           <PreferenceSelect
             label={t('Tavily search model')}
-            help={t('This model writes Tavily queries and selects sources for new checks.')}
+            help={t(provider ? 'Your custom API model handles search while the third-party API is enabled.' : 'This model writes Tavily queries and selects sources for new checks.')}
             icon={<Search className="h-4 w-4 shrink-0 text-brand-700" aria-hidden="true" />}
             value={modelId}
-            disabled={disabled}
+            disabled={disabled || Boolean(provider)}
             options={[
               { value: '', label: t('Server default') },
               ...config.judges.options.map(({ id, name, logo }) => ({ value: id, label: name, logo })),

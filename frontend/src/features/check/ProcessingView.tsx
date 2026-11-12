@@ -66,9 +66,10 @@ export function ProcessingView({ check }: { check: CheckDetail }) {
   const hint = finishing ? 'Finishing visual details' : readingLink ? 'Reading the submitted page' : stageHint[stage];
 
   const duration = running ? null : processingDuration(tasks);
+  const inputOnly = check.status === 'completed' && check.claims.length === 0;
   const summary = duration
-    ? t(check.status === 'failed' || check.status === 'stopped' ? 'Stopped after {duration}' : 'Checked in {duration}', { duration })
-    : statusLabel[live ? stage : check.status];
+    ? t(check.status === 'failed' || check.status === 'stopped' ? 'Stopped after {duration}' : inputOnly ? 'Input reviewed in {duration}' : 'Checked in {duration}', { duration })
+    : inputOnly ? t('Input reviewed') : statusLabel[live ? stage : check.status];
 
   return (
     <div>
@@ -85,7 +86,7 @@ export function ProcessingView({ check }: { check: CheckDetail }) {
         aria-controls={bodyId}
         className="group inline-flex max-w-full items-center gap-2 rounded-full py-1 text-left text-[15px] text-ink-soft enabled:hover:text-ink"
       >
-        {waiting ? (
+        {waiting || inputOnly ? (
           <CircleHelp className="h-4 w-4 shrink-0 text-brand-600" aria-hidden="true" />
         ) : running ? (
           <Loader2 className="h-4 w-4 shrink-0 animate-spin text-brand-600" aria-hidden="true" />

@@ -33,6 +33,7 @@ class User(Base):
     # The reader's own note for the research model, and their search limits. See `SearchOptions` in app/api/schemas.py.
     search_instructions: Mapped[str | None] = mapped_column(Text)
     search_options: Mapped[dict | None] = mapped_column(JSON)
+    api_provider: Mapped[dict | None] = mapped_column(JSON)  # Endpoint and model IDs only; never the API key.
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
 
 
@@ -68,6 +69,7 @@ class Check(Base):
     # The owner's search note and limits when this check was started, so a resumed check keeps them.
     search_instructions: Mapped[str | None] = mapped_column(Text)
     search_options: Mapped[dict | None] = mapped_column(JSON)
+    api_provider: Mapped[dict | None] = mapped_column(JSON)  # Snapshot for every AI step, including a resumed review.
     progress: Mapped[list | None] = mapped_column(JSON)
     input_suggestions: Mapped[list[str] | None] = mapped_column(JSON(none_as_null=True))
     review: Mapped[dict | None] = mapped_column(JSON)  # What the reader was asked before the search. See pipeline/review.py.

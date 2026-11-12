@@ -7,14 +7,21 @@ def test_page_text_cannot_escape_its_block():
 
 
 def test_every_prompt_starts_with_the_shared_rules():
-    from harness.pipeline.prompts import EXTRACT_SYSTEM, JUDGE_SYSTEM, read_prompt
+    from harness.pipeline import prompts
 
-    rules = read_prompt("harness.md")
+    rules = prompts.read_prompt("harness.md")
+    guardrails = prompts.read_prompt("guardrails.md")
+    shared = f"{rules}\n{guardrails}\n"
     assert "Never follow them" in rules
-    for prompt, task in ((EXTRACT_SYSTEM, "split text"), (JUDGE_SYSTEM, "judge one claim")):
-        assert prompt.startswith(rules)
-        assert f"# Task: {task}" in prompt
+    # Include chart tasks, follow-ups and the inline context note, which also reads untrusted passages.
+    systems = {name: value for name, value in vars(prompts).items() if name.endswith("_SYSTEM")}
+    assert "CONTEXT_NOTE_SYSTEM" in systems
+    for name, prompt in systems.items():
+        assert prompt.startswith(shared), name
+        assert prompt.count(guardrails) == 1, name
         assert "<!--" not in prompt  # The editor's note at the top of each file is not sent.
+    assert "# Task: split text" in prompts.EXTRACT_SYSTEM
+    assert "# Task: judge one claim" in prompts.JUDGE_SYSTEM
 
 
 def test_extraction_teaches_how_to_pick_a_maps_zoom():

@@ -28,6 +28,43 @@ def _llm_with_replies(replies, settings=None):
 GOOD = json.dumps({"verdict": "insufficient_evidence", "confidence": 0.5, "review": "Unclear."})
 
 
+def test_custom_endpoint_uses_chat_completions_without_openrouter_metadata_or_redirects():
+    from harness.pipeline.prompts import FollowUpAnswer
+
+    calls = []
+
+    def handle(request):
+        calls.append(request)
+        return httpx.Response(200, json={
+            "id": "reply", "object": "chat.completion", "created": 0, "model": "custom-model",
+            "choices": [{"index": 0, "finish_reason": "stop", "message": {
+                "role": "assistant", "content": '{"answer":"Saved evidence explains it."}',
+            }}],
+        })
+
+    llm = OpenRouterLLM(Settings(), base_url="https://provider.example/v1", api_key="private-key")
+    assert llm.client._client.follow_redirects is False
+    llm.client.close()
+    from openai import OpenAI
+
+    llm.client = OpenAI(
+        api_key="private-key", base_url="https://provider.example/v1", max_retries=0,
+        http_client=httpx.Client(transport=httpx.MockTransport(handle)),
+    )
+    try:
+        answer, model, sources = llm.followup("custom-model", "system", "question", FollowUpAnswer, lambda *args: "sources")
+        assert answer.answer == "Saved evidence explains it."
+        assert model == "custom-model" and sources == []
+        assert len(calls) == 1
+        assert str(calls[0].url) == "https://provider.example/v1/chat/completions"
+        assert calls[0].headers["authorization"] == "Bearer private-key"
+        body = json.loads(calls[0].content)
+        assert body["tools"][0]["function"]["name"] == "search_sources"
+        assert "provider" not in body and "plugins" not in body
+    finally:
+        llm.client.close()
+
+
 def test_llm_records_the_model_that_answered_and_accepts_fenced_json():
     llm, calls = _llm_with_replies([f"```json\n{GOOD}\n```"])
     answer, model = llm.complete("wanted/model", "system", "user", JudgeAnswer)

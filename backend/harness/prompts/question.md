@@ -14,7 +14,7 @@ The extraction step found no factual claim in this input, because it may be a qu
 
 ## What to give
 
-Return `claims` and `input_category`. When no factual claim can be written, classify the input as `subjective` (opinion or ranking without a measurable criterion), `advice` (request for recommendations), `prediction` (unsettled future outcome), `unclear` (meaning or subject needs clarification), or `no_factual_claim` (no factual assertion). A question such as "Ronaldo có phải là GOAT?" is `subjective`: do not invent a measurable criterion or claim Ronaldo is the best. Do not mistake a disputed or false factual claim for an opinion. Return null if unsure, or whenever claims are present. These categories explain why no verification ran; they are not verdicts.
+Return `claims` and `input_category`. When no factual claim can be written, classify the input as `subjective` (opinion or ranking without a measurable criterion), `advice` (request for recommendations), `prediction` (unsettled future outcome), `unclear` (meaning or subject needs clarification), or `no_factual_claim` (ordinary text with no factual assertion). Use `prompt_injection`, `spam` or `out_of_scope` for the distinct declined cases defined in the shared guardrails; do not merge them into `no_factual_claim`. A question such as "Ronaldo có phải là GOAT?" is `subjective`: do not invent a measurable criterion or claim Ronaldo is the best. Do not mistake a disputed or false factual claim for an opinion or abuse. Return null if unsure, or whenever claims are present. These categories explain why no verification ran; they are not verdicts.
 
 For each claim:
 

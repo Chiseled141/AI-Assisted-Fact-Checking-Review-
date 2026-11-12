@@ -61,11 +61,12 @@ export interface Check {
   updatedAt: string;
   /** Set once claims have been extracted. */
   claimCount?: number;
-  inputCategory?: 'subjective' | 'advice' | 'prediction' | 'unclear' | 'no_factual_claim' | null;
+  inputCategory?: 'subjective' | 'advice' | 'prediction' | 'unclear' | 'no_factual_claim' | 'prompt_injection' | 'spam' | 'out_of_scope' | null;
   /** Human-readable failure reason when `status === 'failed'`. */
   errorMessage?: string;
   /** Ids of the two judges this check was started with (see `config.judges`). */
   judgeIds?: string[];
+  apiProvider?: ApiProvider | null;
 }
 
 /** Editorial rating of a source: good, mixed, or bad. Separate from verdicts and freshness. */
@@ -559,6 +560,10 @@ export interface Page<T> {
 
 export const PROCESSING_STAGES = ['queued', 'extracting', 'retrieving', 'assessing', 'completed'] as const;
 
+export function isDeclinedInput(category: Check['inputCategory']): boolean {
+  return category === 'prompt_injection' || category === 'spam' || category === 'out_of_scope';
+}
+
 export function isTerminal(status: CheckStatus): boolean {
   return status === 'completed' || status === 'failed' || status === 'stopped';
 }
@@ -572,6 +577,16 @@ export interface Account {
   preferredSearchModelId?: string | null;
   searchInstructions?: string | null;
   searchOptions?: SearchOptions;
+  apiProvider?: ApiProvider | null;
+  hasApiKey?: boolean;
+}
+
+/** OpenAI-compatible Chat Completions endpoint. Credentials never appear in responses or stored check data. */
+export interface ApiProvider {
+  baseUrl: string;
+  model: string;
+  judgeModels: [string, string];
+  supportsJsonMode: boolean;
 }
 
 /** A reader's search limits. `null` keeps the server's setting. */

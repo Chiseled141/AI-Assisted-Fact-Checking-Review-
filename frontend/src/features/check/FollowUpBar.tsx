@@ -65,7 +65,7 @@ export function FollowUpBar({ check, modelId, onModelChange, questionRef, onAsk,
     setFiles([]);
     setFileErrors([]);
     try {
-      await onAsk(text, files, modelId);
+      await onAsk(text, files, check.apiProvider ? 'custom-model' : modelId);
     } catch (error) {
       setQuestion(question);
       setFiles(files);
@@ -218,14 +218,16 @@ export function FollowUpBar({ check, modelId, onModelChange, questionRef, onAsk,
             <p className="truncate text-xs text-ink-faint">{t('Uses this check’s context and searches the web when needed.')}</p>
           </div>
           <div className="flex shrink-0 items-center gap-1.5">
-            <JudgePicker
+            {check.apiProvider
+              ? <span className="max-w-40 truncate text-xs text-ink-muted" title={check.apiProvider.model}>{t('Answering model: {name}', { name: check.apiProvider.model })}</span>
+              : <JudgePicker
               value={[modelId]}
               onChange={([id]) => onModelChange(id)}
               count={1}
               heading={t('Pick the model that answers')}
               note={t('Each answer is a paid model call.')}
               buttonLabel={(name) => t('Answering model: {name}', { name })}
-            />
+            />}
             {running ? (
               <button
                 type="button"

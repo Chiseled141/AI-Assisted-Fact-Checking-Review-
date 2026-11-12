@@ -4,7 +4,7 @@ import re
 from datetime import UTC, datetime
 from typing import Annotated, Literal
 
-from pydantic import BaseModel, ConfigDict, Field, PlainSerializer, StrictInt, field_validator
+from pydantic import BaseModel, ConfigDict, Field, PlainSerializer, SecretStr, StrictInt, field_validator, model_validator
 from pydantic.alias_generators import to_camel
 
 from config.labels import Freshness, InputCategory, Relation, StockMarket, Verdict
@@ -63,6 +63,7 @@ class CheckOut(ApiModel):
     claim_count: int | None = None
     error_message: str | None = None
     judge_ids: list[str]
+    api_provider: "ApiProvider | None" = None
     input_category: InputCategory | None = None
 
 
@@ -374,6 +375,32 @@ class ProfileIn(ApiModel):
     preferred_search_model_id: str | None = Field(default=None, min_length=1, max_length=64)
     search_instructions: str | None = Field(default=None, max_length=MAX_SEARCH_INSTRUCTIONS)
     search_options: SearchOptions | None = None
+    api_provider: "ApiProvider | None" = None
+    api_key: SecretStr | None = Field(default=None, max_length=4096)
+
+
+class ApiProvider(ApiModel):
+    base_url: str = Field(min_length=1, max_length=500)
+    model: str = Field(min_length=1, max_length=200)
+    judge_models: list[str] = Field(min_length=2, max_length=2)
+    supports_json_mode: bool = True
+
+    @field_validator("base_url", "model")
+    @classmethod
+    def _trim(cls, value: str) -> str:
+        value = value.strip().rstrip("/")
+        if not value or any(ord(char) < 32 for char in value):
+            raise ValueError("Enter an endpoint and model ID.")
+        return value
+
+    @model_validator(mode="after")
+    def _judges(self):
+        self.judge_models = [model.strip() for model in self.judge_models]
+        if len(set(self.judge_models)) != 2 or any(
+            not model or len(model) > 200 or any(ord(char) < 32 for char in model) for model in self.judge_models
+        ):
+            raise ValueError("Enter two different judge model IDs.")
+        return self
 
 
 class ChangePasswordIn(ApiModel):
@@ -390,6 +417,8 @@ class AccountOut(ApiModel):
     preferred_search_model_id: str | None = None
     search_instructions: str | None = None
     search_options: SearchOptions = SearchOptions()
+    api_provider: ApiProvider | None = None
+    has_api_key: bool = False
 
 
 class StatsOut(ApiModel):
