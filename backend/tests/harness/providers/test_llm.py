@@ -192,6 +192,26 @@ def test_research_that_never_answers_stops_and_fails():
     with pytest.raises(LLMError) as raised:
         llm.research("m", "s", "u", ResearchPicks, lambda query, results_only: "results", 2)
     assert raised.value.public_message == NEVER_CHOSE
+    assert len(calls) == 6
+
+
+def test_a_small_search_limit_still_leaves_room_for_the_answer_and_its_repair():
+    from harness.pipeline.prompts import ResearchPicks
+
+    search = SimpleNamespace(content=None, tool_calls=[_tool_call("a")])
+    invalid = SimpleNamespace(content="not json", tool_calls=None)
+    answer = SimpleNamespace(content=json.dumps({"urls": ["https://a"]}), tool_calls=None)
+    # One search, one more the limit refuses, a broken answer, then the repaired one.
+    llm, calls = _llm_replying([search, search, invalid, answer])
+    searched = []
+
+    def run_search(query, results_only):
+        searched.append(query)
+        return "results"
+
+    picks, _ = llm.research("m", "s", "u", ResearchPicks, run_search, 1)
+    assert picks.urls == ["https://a"]
+    assert searched == ["a"]
     assert len(calls) == 4
 
 

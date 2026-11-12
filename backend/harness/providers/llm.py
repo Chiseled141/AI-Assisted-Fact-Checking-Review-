@@ -188,8 +188,11 @@ class OpenRouterLLM:
         messages = [{"role": "system", "content": f"{system}\n\n{format_note}"}, {"role": "user", "content": user}]
         searches = 0
         # Each search is one turn at most, then an answer, and one repair of it. Once the searches are used up, the
-        # model can't ask for another, so it has to answer.
-        for _ in range(max_searches + 2):
+        # model is told so. A model that asks again anyway gets two more turns, so a small limit still leaves room
+        # for the answer and its repair.
+        turns = refused = 0
+        while turns < max_searches + 2 + min(refused, 2):
+            turns += 1
             choice = "auto" if searches < max_searches else "none"
             try:
                 response = self.client.with_options(timeout=self.research_timeout).chat.completions.create(
@@ -218,6 +221,7 @@ class OpenRouterLLM:
                         for call in calls
                     ],
                 })
+                refused += searches >= max_searches
                 for call in calls:
                     if searches >= max_searches:
                         reply = "The search limit has been reached. Choose from what you have."

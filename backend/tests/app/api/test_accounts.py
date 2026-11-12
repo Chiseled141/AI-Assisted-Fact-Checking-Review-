@@ -200,7 +200,8 @@ def test_search_note_and_limits_reach_only_the_research_model(client, fakes):
     assert saved["searchOptions"] == {"sourcesPerClaim": 3, "searchesPerClaim": 2, "searchOutsideList": False}
 
     check = run(client)
-    assert all(note in brief and "<reader_guidance>" in brief for brief in briefs)
+    assert briefs and all(note in brief and "<reader_guidance>" in brief for brief in briefs)
+    assert all("aim for 3 publishers" in brief for brief in briefs)
     assert budgets and all(budget <= 2 for budget in budgets)
     assert fakes.llm.prompts and all(note not in user for _, _, user in fakes.llm.prompts)
     with SessionLocal() as session:

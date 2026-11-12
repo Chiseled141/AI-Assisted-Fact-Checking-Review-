@@ -340,6 +340,9 @@ def _reader_settings(check: Check, settings: Settings) -> Settings:
     changes: dict = {}
     if sources := options.get("sources_per_claim"):
         changes["target_publishers_per_claim"] = sources
+        # Keep the same spare picks as the server's numbers, because some pages turn out unreadable.
+        spare = max(0, settings.research_max_picks - settings.target_publishers_per_claim)
+        changes["research_max_picks"] = sources + spare
     if searches := options.get("searches_per_claim"):
         changes["research_max_searches_per_claim"] = searches
     if options.get("search_outside_list") is False:
@@ -1132,6 +1135,9 @@ def _run(
     dated_claims = {claim.id for claim, item in zip(claims, extracted, strict=True) if _states_a_period(item)}
     briefs = {claim.id: _research_brief(item, windows.get(claim.id)) for claim, item in zip(claims, extracted, strict=True)}
     # Only the research model reads the reader's note. Judges never see it, so it can't steer a verdict.
+    if (check.search_options or {}).get("sources_per_claim"):
+        target = f"For this check, aim for {settings.target_publishers_per_claim} publishers instead of five."
+        briefs = {claim_id: f"{brief}\n{target}" for claim_id, brief in briefs.items()}
     if check.search_instructions:
         guidance = tagged("reader_guidance", check.search_instructions)
         briefs = {claim_id: f"{brief}\n\n{guidance}" for claim_id, brief in briefs.items()}
