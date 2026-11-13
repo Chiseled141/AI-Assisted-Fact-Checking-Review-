@@ -45,7 +45,16 @@ brew services start postgresql@17
 
 ### 2. Start the backend
 
-Copy `.env.example` to `.env` at the top of the repository and fill in `OPENROUTER_API_KEY` and `TAVILY_API_KEY`. Then, from `backend/`:
+Create a file called `.env` at the top of the repository with your API keys:
+
+```bash
+OPENROUTER_API_KEY=your-openrouter-key
+TAVILY_API_KEY=your-tavily-key
+```
+
+The database defaults to `postgresql+psycopg://claimtrace@localhost:5432/claimtrace`, which matches step 1. To use a different one, add a `DATABASE_URL` line. When the site is served over HTTPS, also add `SESSION_COOKIE_SECURE=true`. Any setting in `backend/src/claimtrace/config/settings.py` can be overridden the same way, using its name in capital letters. Never commit `.env`.
+
+Then, from `backend/`:
 
 ```bash
 uv sync
@@ -145,7 +154,7 @@ frontend/
     lib/                Helpers, formatting and the Vietnamese translations
     data/               Source, party and team lookups
     types/              Shared TypeScript types
-.env.example            Template for the backend's settings and API keys
+.env                    Your API keys and settings (not committed, see Getting started)
 ```
 
 The backend code is layered: `api` uses `core`, `core` uses `db`, and all of them read `config`.
