@@ -1,21 +1,40 @@
 # ClaimTrace
 
-An AI-assisted fact-checking web app. It splits text, a link or a file into claims, finds evidence with web search, and returns cited verdicts from two AI models. It is a first-pass screening tool, not a replacement for fact-checkers.
+ClaimTrace is an AI-assisted fact-checking web app. You give it some text, a link or a file. It pulls out the factual claims, searches the web for evidence, and has two AI models give each claim a verdict with citations.
 
-Course project: Advanced Topics in IT, Hanoi University, Fall 2026, Group 12. Non-commercial. Ends 20 December 2026.
+It is meant as a first-pass screening tool to help fact-checkers, not to replace them.
 
-| Folder | What it is | How to run it |
-|---|---|---|
-| `frontend/` | React, TypeScript, Vite | `npm install && npm run dev` |
-| `backend/` | FastAPI pipeline and API | `uv sync && uv run uvicorn claimtrace.main:app --app-dir src --port 8000` |
+Course project for Advanced Topics in IT, Hanoi University, Fall 2026, Group 12. Non-commercial. The project ends on 20 December 2026.
 
-The frontend always uses the backend, and there is no demo mode. Checks, history and follow-ups need an account (a username and password); each person only sees their own.
+## Features
 
-> **AI agents:** this file is the only project guide. Read [For AI agents](#for-ai-agents) before changing anything, then use [Where to look](#where-to-look) to find the code. It is a map, not a rulebook: use your judgment, match the code around you, and read the code and tests when something here is too brief.
+- **Claim extraction:** splits text, a web page or an uploaded file into up to 5 checkable claims.
+- **Evidence search:** searches the web with Tavily, starting from a list of rated, trusted sources.
+- **Two independent judges:** two different AI models read the same evidence and each give a cited verdict. If they disagree, both reviews are shown side by side.
+- **Clarifying questions:** if a claim is too vague to search for, the app asks you what you meant before it searches.
+- **Charts and maps:** price charts, country and election maps, parliament seat charts, pie and bar charts, route and incident maps, and match result cards, built from real data and never from model guesses.
+- **Follow-up chat:** you can ask questions about a finished check or send corrections.
+- **Accounts and settings:** each person sees only their own checks. Settings let you pick the search model, the source language, blocked sites and other search limits, or use your own OpenAI-compatible API provider.
+- **English and Vietnamese:** the interface is in both languages, and claims written in the other language show a translation.
 
-## Running it locally
+## Tech stack
 
-The backend stores everything in PostgreSQL. On macOS with Homebrew:
+| Part | Built with |
+|---|---|
+| Frontend | React, TypeScript, Vite, Tailwind CSS, Highcharts |
+| Backend | Python 3.11–3.12, FastAPI, SQLAlchemy, Alembic, uv |
+| Database | PostgreSQL (SQLite in memory for tests) |
+| AI models | OpenRouter, or any OpenAI-compatible API |
+| Web search | Tavily |
+| Chart data | Yahoo Finance, World Bank, Data USA, OpenStreetMap (no API keys needed) |
+
+## Getting started
+
+You need [uv](https://docs.astral.sh/uv/), Node.js and PostgreSQL, plus an OpenRouter API key and a Tavily API key.
+
+### 1. Set up the database
+
+On macOS with Homebrew:
 
 ```bash
 brew install postgresql@17
@@ -24,275 +43,197 @@ brew services start postgresql@17
 /opt/homebrew/opt/postgresql@17/bin/createdb -O claimtrace claimtrace
 ```
 
-Then, from `backend/`:
+### 2. Start the backend
+
+Copy `.env.example` to `.env` at the top of the repository and fill in `OPENROUTER_API_KEY` and `TAVILY_API_KEY`. Then, from `backend/`:
 
 ```bash
-cp ../.env.example ../.env  # the backend's settings live in one .env at the top of the repository; add OPENROUTER_API_KEY and TAVILY_API_KEY
 uv sync
-uv run uvicorn claimtrace.main:app --app-dir src --port 8000   # applies the migrations on start
+uv run uvicorn claimtrace.main:app --app-dir src --port 8000
 ```
 
-And from `frontend/`:
+The database tables are created or updated automatically when the server starts. The API docs are at http://localhost:8000/docs.
+
+### 3. Start the frontend
+
+From `frontend/`:
 
 ```bash
 npm install
 npm run dev
 ```
 
-Open http://localhost:5173 and create an account. Vite forwards `/api` to the backend, so the session cookie stays on the same site.
+Open http://localhost:5173 and create an account.
 
-To use a third-party model provider, open Settings and enable **Use a third-party API**. Enter its public HTTPS
-OpenAI-compatible API base URL (for example `https://api.example.com/v1`), API key, a shared model ID for extraction,
-research, chart reading and follow-ups, and two different judge model IDs. The endpoint must support Chat Completions
-and function tools for Tavily research. Turn off **JSON response format** if it does not support `response_format`;
-answers still receive the same local validation. Web search still needs the server's `TAVILY_API_KEY`, but a custom
-endpoint does not need `OPENROUTER_API_KEY`. Custom follow-ups use the Tavily function tool instead of OpenRouter native search.
+The frontend needs no settings when you run it locally, because Vite forwards `/api` requests to the backend. If you ever need to point it at a different backend, set `VITE_API_URL` in `frontend/.env.local`. Use the same host name for both, for example `localhost` for both rather than `localhost` and `127.0.0.1`, or the browser may reject the login cookie.
 
-Endpoint and model choices are saved per account and copied onto each new check, including checks waiting for reader
-input. API keys are held only in server memory, never returned in API responses or saved to the database/browser
-storage. Re-enter the key after a backend restart or after 30 days. Changing the endpoint requires its key; disabling
-the option clears the remembered key. Earlier custom checks retain their provider and ask for the corresponding key
-instead of silently switching to OpenRouter. This credential cache, like the app's rate limits, assumes one server process.
+Without API keys, the backend still shows saved checks but refuses new ones. There is no demo mode or fake data.
 
-The frontend needs no settings locally. Its only one, `VITE_API_URL`, goes in `frontend/.env.local`, because Vite reads that folder and not the top-level `.env`. Leave it out or empty for local development. An override pointing to `localhost:8000` while opening the frontend at `127.0.0.1` makes the API cross-site, so browsers can reject its session cookie even after a successful login.
+### Using your own model provider
 
-## Tests and everyday commands
+In Settings, turn on **Use a third-party API** and enter:
 
-From `backend/`:
+- the provider's HTTPS base URL (for example `https://api.example.com/v1`)
+- your API key
+- one model ID for extraction, research, charts and follow-ups
+- two different model IDs for the judges
+
+The provider must support Chat Completions and function calling. If it doesn't support JSON response format, turn that option off. Web search still uses the server's Tavily key, but OpenRouter isn't needed.
+
+Your API key is kept only in the server's memory, and is never saved to the database or sent back to the browser. You need to enter it again after the server restarts, or after 30 days. Older checks keep the provider they were run with.
+
+## Running the tests
+
+Backend, from `backend/`:
 
 ```bash
-uv run pytest && uv run ruff check
-uv run alembic -c src/claimtrace/db/alembic.ini revision --autogenerate -m "what changed"
+uv run pytest
+uv run ruff check
 ```
 
-To run the same tests on PostgreSQL (this wipes that database):
+Frontend, from `frontend/`:
+
+```bash
+npm test
+npx tsc --noEmit
+```
+
+The tests don't need a network connection or API keys. The backend tests use an in-memory SQLite database. To run them against PostgreSQL instead, set `TEST_DATABASE_URL` to a separate test database (it gets wiped):
 
 ```bash
 TEST_DATABASE_URL=postgresql+psycopg://claimtrace@localhost:5432/claimtrace_test uv run pytest
 ```
 
-From `frontend/`:
+Charts are stubbed in the frontend tests, so check those in a browser.
 
-```bash
-npm test && npx tsc --noEmit
-```
+## How a check works
 
-Tests need no network or keys, and use SQLite in memory unless `TEST_DATABASE_URL` is set. Charts are stubbed in frontend tests, so check them in a browser.
+1. **Read the input:** typed text, uploaded files, or the text of a web page.
+2. **Extract claims:** a model splits the input into at most 5 claims and suggests any useful charts.
+3. **Review:** a model looks over the claims. If one is too vague to search for, or the input contains many claims, the check pauses and asks you.
+4. **Research:** the model searches Tavily and picks sources for each claim.
+5. **Judge:** two judge models read the same passages and each give a verdict with quotes.
+6. **Charts:** charts and maps are built from data services or from figures quoted in the sources, and everything is saved.
 
-## How a check runs
+A check moves through these statuses: `queued → extracting → (awaiting_input) → retrieving → assessing → completed`, or ends as `failed` or `stopped`. The frontend checks its progress by polling `GET /api/check/{id}`.
 
-```text
-React app (frontend/)  →  FastAPI (backend/src/claimtrace/api/)  →  backend/src/claimtrace/core/pipeline/run.py
-  1. Read the input: text, files, or a fetched URL
-  2. Extraction model splits it into at most 5 claims, and asks for any charts
-  3. Research model reviews the claims, and the check may stop to ask the reader (see "Questions before the search")
-  4. Research model searches Tavily and picks each claim's sources
-  5. Two judge models read the same passages and give cited verdicts
-  6. Charts and maps are built beside the verdicts, and everything is saved
-```
-
-Status goes `queued → extracting → (awaiting_input) → retrieving → assessing → completed | failed | stopped`, and the frontend polls `GET /api/check/{id}`, except while a check waits for its reader. Models go through OpenRouter. Chart numbers come from Yahoo Finance, the World Bank and Data USA, none of which need a key.
-
-## File structure
+## Project structure
 
 ```text
 backend/
-  src/claimtrace/   The backend, installed as one Python package by `uv sync`
-    main.py         Starts the server and the providers
-    api/            The FastAPI routes, JSON shapes (schemas.py), rows to JSON; auth.py for accounts, deps.py for the signed-in user
-    core/           The check itself: everything the AI models do and read
-      pipeline/     One check from input to verdicts. Start at run.py
-      charts/       Every chart and map; data_sources.py fetches their numbers
-      search/       tavily.py for search and source lists, fetcher.py for reading pages
-      providers/    llm.py (OpenRouter), errors.py (shared retries)
-      prompts/      What the models are told; charts/ holds the chart prompts
-      evaluate.py   Runs saved claims through chosen judges
-    db/             Tables (models.py), connection (session.py), alembic.ini, migrations/
-    config/         Settings and things you tune without code; each file says what it is for
-      settings.py   Limits and settings, overridable in the top-level .env
-      labels.py
-      models.toml   Extraction, research and follow-up models on OpenRouter
-      data/         Judge models, source ratings, chart sources, map place names. The frontend reads the first two
-  tests/            Mirrors src/claimtrace: api/, core/, db/
-  pyproject.toml    The package, its libraries and the pytest and ruff settings; uv.lock pins the exact versions
+  src/claimtrace/       The backend, one Python package
+    main.py             Starts the server
+    api/                REST API routes, request and response shapes, login
+    core/               The fact-checking logic
+      pipeline/         One check from input to verdicts (starts in run.py)
+      charts/           Chart and map builders
+      search/           Tavily search and page reading
+      providers/        Calls to the AI models
+      prompts/          Instructions given to the models
+      evaluate.py       Script for comparing judge models on saved claims
+    db/                 Database tables and migrations
+    config/             Settings, model choices and data files
+  tests/                Backend tests, in the same layout as src/claimtrace
+  pyproject.toml        Dependencies and tool settings
 frontend/
-  vite.config.ts  Dev server, the /api proxy, PostCSS (Tailwind and Autoprefixer) and the test setup
-  tailwind.config.js, tsconfig.json, package.json, index.html
-  public/         Logos, map shapes and other static files
-  scripts/        sync-party-logos.py and its list of party sites
+  public/               Logos, map shapes and other static files
+  scripts/              Script that updates the party logos
   src/
-    features/     new-check (home and composer), check (the chat for one check), results, history, account, settings
-      results/    The verdict, evidence and sources for a claim; charts/ holds every chart and map
-    components/   Shared pieces
-    services/     Calls to the backend
-    lib/          Formatting, interface language (vi.ts), validation and small helpers
-    data/         Source, party and team lookups. sourceRegistry.ts reads the backend's source list
-    types/  test/
-.env.example      Copy to .env for the backend's keys and database
-.gitignore        The only one, for the whole repository
+    features/           The app's pages: new check, check chat, results, history, account, settings
+    components/         Shared UI components
+    services/           Calls to the backend API
+    lib/                Helpers, formatting and the Vietnamese translations
+    data/               Source, party and team lookups
+    types/              Shared TypeScript types
+.env.example            Template for the backend's settings and API keys
 ```
 
-Imports flow `api → core → db`, and all three read `config`. Nothing imports back into `api/` or `main.py`, apart from `core/evaluate.py`, which borrows `make_providers` from `main.py`. Inside `core`, `pipeline` uses `charts`, `search` and `providers`. Prefer adding to an existing file over creating many small ones.
+The backend code is layered: `api` uses `core`, `core` uses `db`, and all of them read `config`.
 
-The frontend imports `judges.json` and `source_ratings.json` straight from `backend/src/claimtrace/config/data/`, so there is one copy of each. Building the frontend therefore needs the `backend/` folder beside it.
+The frontend reads two files directly from the backend's `config/data/` folder: the list of judge models (`judges.json`) and the source ratings (`source_ratings.json`). That way both sides use the same list, but it also means the frontend needs the `backend/` folder next to it to build.
 
-## Where to look
+### Where things are
 
-| For | Start with |
+| Topic | Files |
 |---|---|
-| Models | `backend/src/claimtrace/config/models.toml` for the roles; `backend/src/claimtrace/config/data/judges.json` for the judges a reader can pick, read by both sides |
-| Prompts | `backend/src/claimtrace/core/prompts/`; answer formats in `backend/src/claimtrace/core/pipeline/prompts.py` |
-| Prompt injection, spam and task scope | `backend/src/claimtrace/core/prompts/guardrails.md`, included in every AI system prompt after `harness.md`, for OpenRouter and custom endpoints alike; input classifications in `backend/src/claimtrace/config/labels.py`, explanations in `frontend/src/features/results/UncheckableResult.tsx` |
-| Limits and settings | `backend/src/claimtrace/config/settings.py`, overridable in the top-level `.env`; interface limits in `frontend/src/config.ts` |
-| Source ratings | `backend/src/claimtrace/config/data/source_ratings.json`, read by both sides (`frontend/src/data/sourceRegistry.ts` only reshapes it) |
-| Tables | `backend/src/claimtrace/db/models.py` |
-| A reader's settings for new checks | `frontend/src/features/settings/SettingsPage.tsx`; `SearchOptions` in `backend/src/claimtrace/api/schemas.py`; applied by `_reader_settings` and `_ScopedSearch` in `backend/src/claimtrace/core/pipeline/run.py` |
-| Accounts and who sees what | `backend/src/claimtrace/api/auth.py`, `owned_check` in `backend/src/claimtrace/api/deps.py`; `frontend/src/services/account.ts`, `frontend/src/features/account/AccountPage.tsx` |
-| Chat for a check | `frontend/src/features/check/CheckPage.tsx`; steps from `backend/src/claimtrace/core/pipeline/progress.py` |
-| Questions before the search | `backend/src/claimtrace/core/pipeline/review.py`, `backend/src/claimtrace/core/prompts/review.md`; `frontend/src/features/check/ReviewCard.tsx` |
-| Results in the chat | `frontend/src/features/results/ResultsView.tsx` |
-| Evidence at a glance and the accuracy score | `frontend/src/features/results/EvidenceGlance.tsx` (`accuracyScore` holds the weights); the check-wide tally in `CheckSummary.tsx` |
-| Quotes copied from tables | `with_table_headings` and `quoted_table` in `backend/src/claimtrace/core/pipeline/passages.py`; parsed by `frontend/src/features/results/figures.ts` and drawn in `SourceDeck.tsx`, with `charts/BarPlot.tsx` |
-| Claim translations | `text_en` and `text_vi` in `backend/src/claimtrace/core/prompts/extract.md` and `question.md`, saved on `Claim.translations`; shown in `frontend/src/features/results/EvidencePanel.tsx` |
-| Earlier checks of the same claim ("Checked before") | `backend/src/claimtrace/core/pipeline/memory.py`; `frontend/src/features/new-check/EarlierChecks.tsx` |
-| Source links and reply buttons | `frontend/src/features/results/EvidenceSourceLinks.tsx` |
-| Follow-up questions and corrections | `frontend/src/features/check/FollowUpBar.tsx`; answers from `backend/src/claimtrace/core/pipeline/followup.py` and `backend/src/claimtrace/core/prompts/followup.md` |
-| Shared types | `frontend/src/types/models.ts`, matching `backend/src/claimtrace/api/schemas.py` |
+| Which models are used | `backend/src/claimtrace/config/models.toml`, `config/data/judges.json` |
+| Limits and settings | `backend/src/claimtrace/config/settings.py` (each can be overridden in `.env`) |
+| Prompts | `backend/src/claimtrace/core/prompts/` |
+| Source ratings | `backend/src/claimtrace/config/data/source_ratings.json` |
+| Database tables | `backend/src/claimtrace/db/models.py` |
+| Main pipeline | `backend/src/claimtrace/core/pipeline/run.py` |
+| Follow-up answers | `backend/src/claimtrace/core/pipeline/followup.py` |
+| Login and accounts | `backend/src/claimtrace/api/auth.py` |
+| Results page | `frontend/src/features/results/` |
+| Check chat | `frontend/src/features/check/CheckPage.tsx` |
+| Settings page | `frontend/src/features/settings/SettingsPage.tsx` |
 | Vietnamese text | `frontend/src/lib/vi.ts` |
 
-### Charts and maps
-
-| Visual | Builder in `backend/src/claimtrace/core/charts/` | Conditions and data | Frontend in `frontend/src/features/results/charts/` | Settings prefix |
-|---|---|---|---|---|
-| Price chart, USD/VND rate | `price_chart.py` | A price claim for a supported asset and at least two observations from Yahoo Finance or verified dated SJC reports | `PriceChart.tsx`, `PricePlot.tsx` | `price_chart_`, `sjc_chart_` |
-| Location map | `location_map.py` | A relevant place named in the claim with supported geometry. Any figures are sourced separately | `LocationMap.tsx`, `LocationPlot.tsx` | `location_map_` |
-| Country / US state map | `country_map.py` | Population, GDP, GDP per capita or life expectancy with adequate World Bank coverage. US state population uses Data USA. Selecting two countries also enables the yearly heatmap | `CountryMap.tsx`, `CountryPlot.tsx` | `country_map_`, `state_map_` |
-| Population pyramid | `country_map.py` | An age or sex distribution claim about one named country, with a World Bank age breakdown | `PopulationPyramid.tsx`, `PyramidPlot.tsx` | `population_pyramid_` |
-| US election map | `election_map.py` | Final winners for the named states, or sufficient national coverage for a nationwide presidential claim | `ElectionMap.tsx`, `ElectionPlot.tsx` | `election_map_` |
-| Parliament chart | `seat_chart.py` | Final seat counts by party and a verified chamber size. By default, the parties must account for all seats | `SeatChart.tsx`, `SeatPlot.tsx`; party identities in `frontend/src/data/partyRegistry.ts` and `frontend/public/party-logos/manifest.json` | `seat_chart_` |
-| Pie chart | `pie_chart.py` | One source with a complete breakdown or an explicit share of a whole with a labelled remainder | `PieChart.tsx`, `PiePlot.tsx` | |
-| Bar chart | `bar_chart.py` | One source with comparable figures in the same unit and period | `BarChart.tsx`, `BarPlot.tsx` | |
-| Route map | `route_map.py` | Ordered stops from one source and coordinates from Photon / OpenStreetMap | `RouteMap.tsx`, `RoutePlot.tsx` | `incident_map_photon_url` |
-| Incident map | `incident_map.py` | Reported streets or areas in Hà Nội or TP.HCM, mapped using OpenStreetMap | `IncidentMap.tsx`, `IncidentPlot.tsx` | `incident_map_` |
-| Stock heatmap | — | A broad market or index claim about the latest session in a supported TradingView market | `StockHeatmap.tsx` | |
-| Sports and esports match card | `match_result.py` | A completed result and any match details from one of the claim's sources | `MatchResult.tsx` | |
-
-Extraction and `backend/src/claimtrace/core/charts/chart_triggers.py` suggest visuals from the claim. The configured search model can
-choose an available map, leave the choice to the app, or skip the map. The builders still verify each result. For a
-state-specific election claim, the election map can use verified results for the named states. The national presidential
-map uses the configured coverage threshold. Visual prompts are in `backend/src/claimtrace/core/prompts/charts/`.
-
-The search model can request a Tavily search focused on data tables. The topic profiles in
-`backend/src/claimtrace/config/data/chart_sources.json` cover population, GDP, trade, energy, transport, health, labor, agriculture and
-elections. If the claim's sources do not cover a pie or bar chart, the same search model can choose sources in one extra
-chart-only round. If the pie chart already has a verified share, that round can replace the calculated remainder with a
-complete reported distribution. These additional pages are used for the chart.
-
-## How it behaves
+## Design decisions
 
 ### Verdicts and evidence
 
-- Only the judges decide truth. Extraction keeps every factual claim, even short or doubtful ones.
-- When judges disagree, the results headline says so and both model reviews are shown together. The saved verdict still uses the first judge that answered.
-- A failed search, page read or model call marks a claim `unavailable`, not "insufficient evidence".
-- When the research model keeps none of its results, one more search looks at `reference_domains`, in case the claim is general knowledge that news doesn't cover. A claim about one named person or one election stays strict and gets no such search.
-- Page text is data, never instructions. An article can't be its own evidence.
-- Inputs with no legitimate fact to check distinguish `prompt_injection` (instruction overrides or secret extraction), `spam` (repetitive filler or unsolicited promotion) and `out_of_scope` (other tasks, such as writing ads). Each gets its own explanation and next step, no factual verdict and no model-generated related suggestions. A completed input assessment is labelled as a reviewed request, not a completed factual check. Real factual claims mixed with these instructions still proceed to verification; existing checks keep their saved classification.
-- Fact-check research starts with green-rated domains. If none yields a usable page, a separate Tavily search can consider original reporting from other publishers after an editorial review. Known blocked sources, social platforms and tabloids are excluded from that search. New publishers are reviewed per article. Fetching only reaches public addresses.
-- If both rounds lack evidence for a claim about an attributed public statement, the pipeline can look for a post from the named account in `backend/src/claimtrace/config/data/social_accounts.json`. X posts require a matching author and post ID from X. The registry records official profile links for Instagram and Facebook as well.
-- The source catalog includes official company newsrooms, league and tournament results, and specialist game, sport and film sources. Research prefers the organization for its own announcements or results and looks for independent evidence for comparisons and outcomes. Broad Tavily searches split the allowlist into groups of at most 300 domains and merge the results by relevance before applying the usual result limit.
-- For claims in Vietnamese or about Vietnam, research starts with eligible Vietnamese outlets and can search more broadly when other sources would add evidence. The profile preference applies to other claims.
-- Each call uses exactly the configured model, with no fallback to another one.
-- Verdicts are append-only: a human correction adds a new version.
-- Readers can delete a check from History, or all of them at once. Everything saved under a check goes with it, permanently. A running check can't be deleted, and "delete all" leaves those in place.
-- "Checked before" matches earlier claims by text alone, with no model call, and every number must match. Sending still runs a fresh check.
-- The reader can stop a running check from the chat bar. It shows as stopped at once; the pipeline ends at its next step, a call already in flight still finishes, and nothing later is made.
-- There is no demo mode or fake data. Without keys, the backend refuses new checks and still serves saved ones.
+- Only the two judge models decide whether a claim is true. The extraction step keeps every factual claim, even short or doubtful ones.
+- If the judges disagree, the result says so and shows both reviews.
+- If a search, page or model call fails, the claim is marked **unavailable** rather than "not enough evidence".
+- Research starts with sources rated as reliable. If those find nothing usable, a wider search can include other original reporting, but never known unreliable sources, tabloids or social media.
+- For claims about a public figure's statement, the app can look for the post on that person's official account.
+- Text on a web page is always treated as data, never as instructions to the model, and an article can't be used as evidence for itself.
+- Inputs that try to trick the model, spam, and requests that aren't fact-checking (such as "write me an ad") are recognised and answered with an explanation instead of a verdict. Real claims mixed into such input are still checked.
+- Each step uses exactly the model it is configured for, with no silent fallback to another model.
+- Verdicts are never overwritten. A human correction is saved as a new version.
+- You can stop a running check, and delete checks from your history.
 
-### Results at a glance
+### Results
 
-- Under every verdict sits a strip built only from what the check saved, with no model call: an accuracy score, how many sources point each way with their ratings, and each model's verdict with its stated confidence. The model column is left out when the judges disagree, since their reviews are then side by side.
-- The accuracy score runs from 0 to 100, with 50 as undecided. Three fifths come from the verdicts: each starts at 50 and moves up by as much as 50 for supported, down by as much as 50 for contradicted and down by as much as 25 for outdated, scaled by that model's confidence, then averaged. A human correction counts as fully confident. Two fifths come from the sources: supporting minus contradicting over all sources, weighted 1 for reliable, 0.6 for mixed, 0.4 for unrated and 0.1 for unreliable. The weights are a first guess and have not been tested against real outcomes.
-- A check with more than one claim opens with a tally of its verdicts.
-- A quote that is a row of a table is shown as a table, never as a run of numbers. For a row under year headings, the headings are put back from the saved page, and a year marked `e` or `f` is labelled as an estimate or a forecast. For a row of a Markdown table, the heading row is put back, and the table's first rows are drawn as a bar chart with the quoted row in colour. Every figure is read from the saved page by code.
-- A claim written in the reader's other language has its translation under it. The extraction model writes it in the same call that extracts the claim, and a translation that loses a figure of the original is dropped. The claim itself is never replaced.
-
-### Questions before the search
-
-- After extraction and before any search, the research model reviews the claims. It only asks when a search would have to guess what a claim is about. Whether a claim is true is never a reason to ask: that stays with the judges.
-- A link, a file or a long paste with several claims asks the reader to select which claims to check, select all, or type what to check instead. Short typed text checks every claim it holds.
-- An unclear claim offers the model's likely answers, checking it as written, or a typed answer. Every question ends with an "Other" row to type in. At most `max_review_questions` are asked, one per claim, and only about the claims the reader picked.
-- A claim the reader clarified is rewritten by the extraction model, so its search query and charts fit. If that fails the check fails, rather than giving a verdict that ignores the answer. If the review itself fails, the claims go ahead as written and the failure stays on screen.
-- A waiting check is `awaiting_input`, with what it needs saved on `Check.review`. Nothing runs while it waits, and it survives a server restart.
+- Each verdict has a summary strip: an accuracy score from 0 to 100, how many sources support or contradict the claim, and each judge's verdict and confidence.
+- The accuracy score is 60% from the judges' verdicts and confidence, and 40% from the sources, weighted by how reliable each source is. These weights are a first guess and haven't been tested against real outcomes.
+- **Checked before** shows earlier checks of the same claim. It matches by text only, and every number must match.
+- Quotes taken from a table are shown as a table, with the headings restored from the original page.
 
 ### Charts and maps
 
-- Chart numbers come from data services or are checked word for word against a source quote, never taken from a model as is.
-- Pie charts use one cited source. They can show a complete distribution or a verified share of a whole with a clearly labelled calculated remainder.
-- Judges never see charts. A chart that fails or is incomplete costs only the chart.
-- The match card shows a completed result from the claim's evidence. Shootout scores, match events and esports map scores appear when the same source supports them.
-- Match cards resolve club and esports crests and national-team flags from a local identity catalog. The image sources are recorded in `frontend/public/team-logos/manifest.json`.
-- Country comparisons open on a rotatable globe, with a flat map available through the view toggle. The radial chart compares selected countries with figures for the same year. For GDP and population, slice angles represent shares within that group. For GDP per person and life expectancy, slices have equal angles and their lengths represent the values.
-- Selecting places on the map updates the history chart. One place has a filled area, and multiple places have separate lines. Hovering over a year shows the available figures.
-- A claim about how one country divides by age or sex gets a population pyramid in place of the country map. A rule that only applies to some ages, or a comparison of countries, gets none.
-- The USD/VND chart is the market rate, so a claim about a bank's, the State Bank's or a free-market rate gets none. Yahoo's history has wrong days, such as 189 dong to the dollar, so a day far from the week around it is dropped.
-- Keep the map and data credits (Highcharts, World Bank). Vietnam maps always show Hoàng Sa and Trường Sa.
+- Chart numbers always come from a data service, or are matched word for word against a quote from a source. They are never taken from a model's answer.
+- The judges never see the charts, so a broken chart can't affect a verdict.
+- Maps of Vietnam always show the Hoàng Sa and Trường Sa islands.
+- Map and data credits (Highcharts, World Bank) are kept on every chart.
+
+### Accounts and privacy
+
+- An account is just a username and password, with no email and no outside sign-in.
+- Passwords are hashed with Argon2id. Sessions use an HttpOnly cookie, and the database stores only a hash of the session token.
+- Every check belongs to the person who started it. Anyone else gets a "not found" error, the same as for a check that doesn't exist.
+- Your Settings are copied onto each new check, so changing them later doesn't affect checks that have already started. Blocked sites can only narrow the trusted source list, never widen it.
 
 ### Follow-up chat
 
-- Follow-up questions use the saved check, the selected reply context and earlier exchanges. Answers stay conversational and brief, come from the model the reader selected, and each one is a paid model call, capped per check.
-- When the context is enough, the model answers directly. Otherwise it issues at most one search query, with no source quota. No separate research model is used for follow-ups, and search errors do not switch models.
-- Search uses provider-native web search on endpoints advertising that capability, otherwise a Tavily tool called by the same model. Native requests are pinned to capable endpoints so OpenRouter cannot silently substitute Exa.
-- Tavily returns at most two results and rereads at most one page, reusing returned page text instead of fetching every page again.
-- New search citations are saved on the chat message, separately from the original evidence, and never change a verdict.
+- Follow-up answers use the saved check and the earlier conversation, and stay short.
+- When the saved check isn't enough, the model can run one extra web search. New sources found this way are saved with the answer and never change a verdict.
 
-### Accounts
+### Party logos
 
-- Accounts are a username and a password, nothing else: no email, no outside sign-in. Passwords are Argon2id hashes. A session is an HttpOnly, SameSite=Lax cookie whose token the database keeps only as a SHA-256.
-- Every check belongs to the user who started it. Everything hanging off a check (claims, sources, verdicts, follow-ups, feedback, "Checked before") is reached through it, so `owned_check` and `owned_claim` guard it all. Someone else's check answers 404, like a missing one.
-- A check with no owner, as saved before accounts existed, is hidden from everyone.
-- Settings holds each reader's preferences for new checks: the search model, the source language, a search prompt of up to 500 characters, sources and searches per claim, claims per check, basic or advanced search depth, up to 20 blocked sites, and whether to search beyond the approved sources. A new check saves a copy of them, so changing them later doesn't change a check already running. Options left at the server's value stay unset and follow `backend/src/claimtrace/config/settings.py`. Signed out, the options are locked behind a Log in button.
-- Blocked sites and search depth apply to every search a check makes, charts included, through `_ScopedSearch` in `backend/src/claimtrace/core/pipeline/run.py`. A reader can only narrow the approved sources, never widen them. Follow-up questions don't use these options.
-- Only the research model reads the search prompt, as a `reader_guidance` block it treats as a preference and never as an instruction. Judges never see it, so it can't steer a verdict.
+The parliament seat chart shows party logos for 20 countries. `frontend/scripts/sync-party-logos.py` downloads them from the list in `frontend/scripts/party-sites.tsv`, and `frontend/public/party-logos/manifest.json` records where each one came from. The app never contacts image services while it runs. The logos belong to their parties.
 
-### Party identity images
+## Contributing
 
-The seat-count table uses a country-scoped registry covering 20 countries. It matches names and abbreviations locally, preserves the chart's colour keys, and falls back to the colour marker for unknown parties or missing images. This is a curated identity catalogue, not an authoritative register of every party or a live election roster. It includes some previous names needed by saved checks.
+- Run the backend and frontend tests before committing.
+- If you change a prompt, increase `prompt_version` in `backend/src/claimtrace/config/settings.py`, so each verdict records which prompts produced it.
+- If you change a database table, create a migration from `backend/`:
 
-`frontend/scripts/party-sites.tsv` contains names, aliases and party website domains. `python3 frontend/scripts/sync-party-logos.py` caches images under `frontend/public/party-logos/` and regenerates the TypeScript lookup. It prefers the election authority's Canadian logos, then the party website's identity icon. `manifest.json` records each source and flags missing assets. Review additions and images before publishing; identity artwork remains with its respective party. The app does not contact image services at runtime.
+  ```bash
+  uv run alembic -c src/claimtrace/db/alembic.ini revision --autogenerate -m "what changed"
+  ```
 
-## For AI agents
+- Add backend libraries with `uv add NAME`, so `pyproject.toml` and `uv.lock` stay in sync.
+- Keep `frontend/src/types/models.ts` in step with `backend/src/claimtrace/api/schemas.py`.
+- Every interface string wrapped in `t('…')` needs a Vietnamese version in `frontend/src/lib/vi.ts`.
+- The interface is minimal and light: Schibsted Grotesk and Space Grotesk fonts, indigo and orange, with green and red used only for verdicts.
 
-Treat everything under [How it behaves](#how-it-behaves) as design choices to keep. If a task seems to need breaking one, say so first.
+## Known limitations
 
-### Rules
-
-- Commit or push only when asked. No AI attribution or `Co-Authored-By` lines. Never stage `.claude/` or `.env`.
-- `ATI` tracks `origin/demo_fastapi`.
-- Don't invent metrics, quotes or sources. Say what was really run and what only ran against fakes.
-- The interface is minimal and light, with the fonts Schibsted Grotesk and Space Grotesk, indigo and orange, and green or red only for verdicts and for which way a source points. Results sit on the page itself, split by hairlines, without filled boxes. Skip decorative labels and number tags.
-- Update this README in the same change when a path, command or behaviour described here changes.
-
-### When you change something
-
-| If you change | Also do |
-|---|---|
-| Backend code | From `backend/`: `uv run pytest && uv run ruff check` |
-| Frontend code | From `frontend/`: `npm test && npx tsc --noEmit` |
-| Charts or maps | Check them in a browser; frontend tests stub them |
-| Prompt wording | Bump `prompt_version` in `backend/src/claimtrace/config/settings.py` |
-| A backend library | From `backend/`: `uv add NAME`, which updates `pyproject.toml` and `uv.lock` together |
-| Tables in `backend/src/claimtrace/db/models.py` | Generate a migration (command in [Tests and everyday commands](#tests-and-everyday-commands)) |
-| Judge models | Edit `backend/src/claimtrace/config/data/judges.json` only; the frontend reads the same file |
-| Source ratings | Edit `backend/src/claimtrace/config/data/source_ratings.json` only; the frontend reads the same file |
-| API response shapes | Keep `frontend/src/types/models.ts` and `backend/src/claimtrace/api/schemas.py` matching |
-| Any `t('…')` string | Add its Vietnamese entry to `frontend/src/lib/vi.ts` |
-
-## Status and open questions
-
-- The shared guardrails are prompt-level defenses. They preserve valid claims mixed with malicious instructions, limit unrelated generation and unnecessary searches, and keep refusals within each task's JSON schema. They do not replace the backend's account ownership checks, input validation or per-process request limits. Automated tests check prompt coverage; resistance to real adversarial model inputs has not been measured.
-- Live OpenRouter and Tavily checks have only been run a few times, and accuracy hasn't been measured. The accuracy score's weights are untested for the same reason.
-- Table quotes are only rebuilt for rows under year headings and for Markdown tables. Other tables still show as one line.
-- The course report differs from the code: it describes a trusted corpus and an NLI layer, where the code uses web search and two LLM judges. The verdict labels and the default judge pair are still undecided.
-- Not built: OCR, screens for stats and feedback, password reset and account deletion. A signed-in user can publish corrections to their own checks only.
-- The check and login limits are per server process, kept in memory.
+- Accuracy hasn't been measured yet. The app has only been run a few times against the live models and search.
+- The protections against prompt injection are tested for coverage, but not against real attacks.
+- Table quotes are only rebuilt for tables with year headings and Markdown tables.
+- The course report describes a trusted document collection and an NLI model. The code uses web search and two LLM judges instead. The final verdict labels and the default pair of judges are still being decided.
+- Not built yet: OCR, statistics and feedback screens, password reset and account deletion.
+- Rate limits and saved custom API keys are kept in memory, so they assume a single server process.
