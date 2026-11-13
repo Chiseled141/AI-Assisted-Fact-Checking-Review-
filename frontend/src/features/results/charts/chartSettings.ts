@@ -1,4 +1,4 @@
-// Sizes and colors for each chart and map. Data rules are in backend/config/settings.py.
+// Sizes and colors for each chart and map. Data rules are in backend/src/claimtrace/config/settings.py.
 
 export const priceChart = { height: 400 };
 

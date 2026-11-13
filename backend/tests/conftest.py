@@ -9,12 +9,10 @@ from fastapi.testclient import TestClient
 from sqlalchemy import text
 from sqlalchemy.engine import make_url
 
-from app.main import app
-from config.settings import get_settings
-from database.session import Base, SessionLocal, engine
-from harness.charts.data_sources import MarketError
-from harness.charts.location_map import PLACES
-from harness.pipeline.prompts import (
+from claimtrace.config.settings import get_settings
+from claimtrace.core.charts.data_sources import MarketError
+from claimtrace.core.charts.location_map import PLACES
+from claimtrace.core.pipeline.prompts import (
     Citation,
     ClaimReview,
     ExtractedClaim,
@@ -30,9 +28,11 @@ from harness.pipeline.prompts import (
     ReportedSeats,
     ReportedStates,
 )
-from harness.pipeline.run import Providers, run_check
-from harness.search.fetcher import FetchError, Page
-from harness.search.tavily import SearchError
+from claimtrace.core.pipeline.run import Providers, run_check
+from claimtrace.core.search.fetcher import FetchError, Page
+from claimtrace.core.search.tavily import SearchError
+from claimtrace.db.session import Base, SessionLocal, engine
+from claimtrace.main import app
 
 ARTICLE = "The line opened to passengers on 6 November 2021 after a handover that morning. " * 8
 
@@ -66,7 +66,7 @@ class FakeLLM:
         return answer, reported, []
 
     def complete(self, model, system, user, schema, check=None):
-        from harness.providers.llm import LLMError
+        from claimtrace.core.providers.llm import LLMError
 
         self.calls.append((model, schema))
         self.prompts.append((schema, system, user))
@@ -229,10 +229,10 @@ def client(fakes, monkeypatch):
         pytest.fail("Refusing to reset tables: the app engine was initialized before the test database was configured.")
 
     # Tests never touch the network, so every host counts as public unless a test says otherwise.
-    monkeypatch.setattr("harness.search.fetcher._is_public", lambda host: True)
-    from app.api.auth import _failed
-    from app.api.checks import _recent_checks
-    from app.api.provider import _keys
+    monkeypatch.setattr("claimtrace.core.search.fetcher._is_public", lambda host: True)
+    from claimtrace.api.auth import _failed
+    from claimtrace.api.checks import _recent_checks
+    from claimtrace.api.provider import _keys
 
     _recent_checks.clear()
     _failed.clear()

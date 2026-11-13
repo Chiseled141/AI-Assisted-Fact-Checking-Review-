@@ -408,7 +408,7 @@ export type ModelTranslations = Partial<Record<'en' | 'vi', string>>;
 
 /**
  * One call the check has really made, with its status and finished public explanation.
- * Never contains a model's private thinking stream. Written in backend/harness/pipeline/progress.py.
+ * Never contains a model's private thinking stream. Written in backend/src/claimtrace/core/pipeline/progress.py.
  */
 export interface TaskProgress {
   id: string;
@@ -568,7 +568,7 @@ export function isTerminal(status: CheckStatus): boolean {
   return status === 'completed' || status === 'failed' || status === 'stopped';
 }
 
-/** The signed-in user. Matches `AccountOut` in backend/app/api/schemas.py. */
+/** The signed-in user. Matches `AccountOut` in backend/src/claimtrace/api/schemas.py. */
 export interface Account {
   id: string;
   username: string;

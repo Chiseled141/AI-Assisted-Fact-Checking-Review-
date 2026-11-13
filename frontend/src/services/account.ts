@@ -1,4 +1,4 @@
-// Accounts over backend/app/api/auth.py: a username and password, kept signed in by an HttpOnly cookie
+// Accounts over backend/src/claimtrace/api/auth.py: a username and password, kept signed in by an HttpOnly cookie
 // the page itself can't read. `useAccount` follows who is signed in; `undefined` means not asked yet.
 
 import { useSyncExternalStore } from 'react';

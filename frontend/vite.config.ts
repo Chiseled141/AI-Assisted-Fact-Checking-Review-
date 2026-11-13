@@ -10,7 +10,7 @@ export default defineConfig({
   css: { postcss: { plugins: [tailwindcss(), autoprefixer()] } },
   server: {
     proxy: { '/api': 'http://127.0.0.1:8000' },
-    // The source list and the judge list are read from backend/config/data, so both sides share one copy.
+    // The source list and the judge list are read from backend/src/claimtrace/config/data, so both sides share one copy.
     fs: { allow: ['..'] },
   },
   test: {

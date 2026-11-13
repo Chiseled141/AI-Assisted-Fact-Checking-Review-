@@ -7,7 +7,7 @@ Course project: Advanced Topics in IT, Hanoi University, Fall 2026, Group 12. No
 | Folder | What it is | How to run it |
 |---|---|---|
 | `frontend/` | React, TypeScript, Vite | `npm install && npm run dev` |
-| `backend/` | FastAPI pipeline and API | `uv sync && uv run uvicorn app.main:app --port 8000` |
+| `backend/` | FastAPI pipeline and API | `uv sync && uv run uvicorn claimtrace.main:app --app-dir src --port 8000` |
 
 The frontend always uses the backend, and there is no demo mode. Checks, history and follow-ups need an account (a username and password); each person only sees their own.
 
@@ -29,7 +29,7 @@ Then, from `backend/`:
 ```bash
 cp ../.env.example ../.env  # the backend's settings live in one .env at the top of the repository; add OPENROUTER_API_KEY and TAVILY_API_KEY
 uv sync
-uv run uvicorn app.main:app --port 8000   # applies the migrations on start
+uv run uvicorn claimtrace.main:app --app-dir src --port 8000   # applies the migrations on start
 ```
 
 And from `frontend/`:
@@ -62,7 +62,7 @@ From `backend/`:
 
 ```bash
 uv run pytest && uv run ruff check
-uv run alembic -c database/alembic.ini revision --autogenerate -m "what changed"
+uv run alembic -c src/claimtrace/db/alembic.ini revision --autogenerate -m "what changed"
 ```
 
 To run the same tests on PostgreSQL (this wipes that database):
@@ -82,7 +82,7 @@ Tests need no network or keys, and use SQLite in memory unless `TEST_DATABASE_UR
 ## How a check runs
 
 ```text
-React app (frontend/)  →  FastAPI (backend/app/api/)  →  backend/harness/pipeline/run.py
+React app (frontend/)  →  FastAPI (backend/src/claimtrace/api/)  →  backend/src/claimtrace/core/pipeline/run.py
   1. Read the input: text, files, or a fetched URL
   2. Extraction model splits it into at most 5 claims, and asks for any charts
   3. Research model reviews the claims, and the check may stop to ask the reader (see "Questions before the search")
@@ -97,24 +97,24 @@ Status goes `queued → extracting → (awaiting_input) → retrieving → asses
 
 ```text
 backend/
-  harness/        The check itself: everything the AI models do and read
-    pipeline/     One check from input to verdicts. Start at run.py
-    charts/       Every chart and map; data_sources.py fetches their numbers
-    search/       tavily.py for search and source lists, fetcher.py for reading pages
-    providers/    llm.py (OpenRouter), errors.py (shared retries)
-    prompts/      What the models are told; charts/ holds the chart prompts
-    evaluate.py   Runs saved claims through chosen judges
-  config/         Settings and things you tune without code; each file says what it is for
-    settings.py   Limits and settings, overridable in the top-level .env
-    labels.py
-    models.toml   Extraction, research and follow-up models on OpenRouter
-    data/         Judge models, source ratings, chart sources, map place names. The frontend reads the first two
-  app/            The FastAPI server
-    main.py       Starts the server and the providers
-    api/          Routes, JSON shapes (schemas.py), rows to JSON; auth.py for accounts, deps.py for the signed-in user
-  database/       Tables (models.py), connection (session.py), alembic.ini, migrations/
-  tests/          Mirrors the four folders above
-  pyproject.toml  The backend's libraries and the pytest and ruff settings; uv.lock pins the exact versions
+  src/claimtrace/   The backend, installed as one Python package by `uv sync`
+    main.py         Starts the server and the providers
+    api/            The FastAPI routes, JSON shapes (schemas.py), rows to JSON; auth.py for accounts, deps.py for the signed-in user
+    core/           The check itself: everything the AI models do and read
+      pipeline/     One check from input to verdicts. Start at run.py
+      charts/       Every chart and map; data_sources.py fetches their numbers
+      search/       tavily.py for search and source lists, fetcher.py for reading pages
+      providers/    llm.py (OpenRouter), errors.py (shared retries)
+      prompts/      What the models are told; charts/ holds the chart prompts
+      evaluate.py   Runs saved claims through chosen judges
+    db/             Tables (models.py), connection (session.py), alembic.ini, migrations/
+    config/         Settings and things you tune without code; each file says what it is for
+      settings.py   Limits and settings, overridable in the top-level .env
+      labels.py
+      models.toml   Extraction, research and follow-up models on OpenRouter
+      data/         Judge models, source ratings, chart sources, map place names. The frontend reads the first two
+  tests/            Mirrors src/claimtrace: api/, core/, db/
+  pyproject.toml    The package, its libraries and the pytest and ruff settings; uv.lock pins the exact versions
 frontend/
   vite.config.ts  Dev server, the /api proxy, PostCSS (Tailwind and Autoprefixer) and the test setup
   tailwind.config.js, tsconfig.json, package.json, index.html
@@ -132,37 +132,37 @@ frontend/
 .gitignore        The only one, for the whole repository
 ```
 
-Imports flow `app → harness → database`, and all three read `config`. Nothing imports back into `app/`, apart from `harness/evaluate.py`, which borrows `make_providers` from `app/main.py`. Inside the harness, `pipeline` uses `charts`, `search` and `providers`. Prefer adding to an existing file over creating many small ones.
+Imports flow `api → core → db`, and all three read `config`. Nothing imports back into `api/` or `main.py`, apart from `core/evaluate.py`, which borrows `make_providers` from `main.py`. Inside `core`, `pipeline` uses `charts`, `search` and `providers`. Prefer adding to an existing file over creating many small ones.
 
-The frontend imports `judges.json` and `source_ratings.json` straight from `backend/config/data/`, so there is one copy of each. Building the frontend therefore needs the `backend/` folder beside it.
+The frontend imports `judges.json` and `source_ratings.json` straight from `backend/src/claimtrace/config/data/`, so there is one copy of each. Building the frontend therefore needs the `backend/` folder beside it.
 
 ## Where to look
 
 | For | Start with |
 |---|---|
-| Models | `backend/config/models.toml` for the roles; `backend/config/data/judges.json` for the judges a reader can pick, read by both sides |
-| Prompts | `backend/harness/prompts/`; answer formats in `backend/harness/pipeline/prompts.py` |
-| Prompt injection, spam and task scope | `backend/harness/prompts/guardrails.md`, included in every AI system prompt after `harness.md`, for OpenRouter and custom endpoints alike; input classifications in `backend/config/labels.py`, explanations in `frontend/src/features/results/UncheckableResult.tsx` |
-| Limits and settings | `backend/config/settings.py`, overridable in the top-level `.env`; interface limits in `frontend/src/config.ts` |
-| Source ratings | `backend/config/data/source_ratings.json`, read by both sides (`frontend/src/data/sourceRegistry.ts` only reshapes it) |
-| Tables | `backend/database/models.py` |
-| A reader's settings for new checks | `frontend/src/features/settings/SettingsPage.tsx`; `SearchOptions` in `backend/app/api/schemas.py`; applied by `_reader_settings` and `_ScopedSearch` in `backend/harness/pipeline/run.py` |
-| Accounts and who sees what | `backend/app/api/auth.py`, `owned_check` in `backend/app/api/deps.py`; `frontend/src/services/account.ts`, `frontend/src/features/account/AccountPage.tsx` |
-| Chat for a check | `frontend/src/features/check/CheckPage.tsx`; steps from `backend/harness/pipeline/progress.py` |
-| Questions before the search | `backend/harness/pipeline/review.py`, `backend/harness/prompts/review.md`; `frontend/src/features/check/ReviewCard.tsx` |
+| Models | `backend/src/claimtrace/config/models.toml` for the roles; `backend/src/claimtrace/config/data/judges.json` for the judges a reader can pick, read by both sides |
+| Prompts | `backend/src/claimtrace/core/prompts/`; answer formats in `backend/src/claimtrace/core/pipeline/prompts.py` |
+| Prompt injection, spam and task scope | `backend/src/claimtrace/core/prompts/guardrails.md`, included in every AI system prompt after `harness.md`, for OpenRouter and custom endpoints alike; input classifications in `backend/src/claimtrace/config/labels.py`, explanations in `frontend/src/features/results/UncheckableResult.tsx` |
+| Limits and settings | `backend/src/claimtrace/config/settings.py`, overridable in the top-level `.env`; interface limits in `frontend/src/config.ts` |
+| Source ratings | `backend/src/claimtrace/config/data/source_ratings.json`, read by both sides (`frontend/src/data/sourceRegistry.ts` only reshapes it) |
+| Tables | `backend/src/claimtrace/db/models.py` |
+| A reader's settings for new checks | `frontend/src/features/settings/SettingsPage.tsx`; `SearchOptions` in `backend/src/claimtrace/api/schemas.py`; applied by `_reader_settings` and `_ScopedSearch` in `backend/src/claimtrace/core/pipeline/run.py` |
+| Accounts and who sees what | `backend/src/claimtrace/api/auth.py`, `owned_check` in `backend/src/claimtrace/api/deps.py`; `frontend/src/services/account.ts`, `frontend/src/features/account/AccountPage.tsx` |
+| Chat for a check | `frontend/src/features/check/CheckPage.tsx`; steps from `backend/src/claimtrace/core/pipeline/progress.py` |
+| Questions before the search | `backend/src/claimtrace/core/pipeline/review.py`, `backend/src/claimtrace/core/prompts/review.md`; `frontend/src/features/check/ReviewCard.tsx` |
 | Results in the chat | `frontend/src/features/results/ResultsView.tsx` |
 | Evidence at a glance and the accuracy score | `frontend/src/features/results/EvidenceGlance.tsx` (`accuracyScore` holds the weights); the check-wide tally in `CheckSummary.tsx` |
-| Quotes copied from tables | `with_table_headings` and `quoted_table` in `backend/harness/pipeline/passages.py`; parsed by `frontend/src/features/results/figures.ts` and drawn in `SourceDeck.tsx`, with `charts/BarPlot.tsx` |
-| Claim translations | `text_en` and `text_vi` in `backend/harness/prompts/extract.md` and `question.md`, saved on `Claim.translations`; shown in `frontend/src/features/results/EvidencePanel.tsx` |
-| Earlier checks of the same claim ("Checked before") | `backend/harness/pipeline/memory.py`; `frontend/src/features/new-check/EarlierChecks.tsx` |
+| Quotes copied from tables | `with_table_headings` and `quoted_table` in `backend/src/claimtrace/core/pipeline/passages.py`; parsed by `frontend/src/features/results/figures.ts` and drawn in `SourceDeck.tsx`, with `charts/BarPlot.tsx` |
+| Claim translations | `text_en` and `text_vi` in `backend/src/claimtrace/core/prompts/extract.md` and `question.md`, saved on `Claim.translations`; shown in `frontend/src/features/results/EvidencePanel.tsx` |
+| Earlier checks of the same claim ("Checked before") | `backend/src/claimtrace/core/pipeline/memory.py`; `frontend/src/features/new-check/EarlierChecks.tsx` |
 | Source links and reply buttons | `frontend/src/features/results/EvidenceSourceLinks.tsx` |
-| Follow-up questions and corrections | `frontend/src/features/check/FollowUpBar.tsx`; answers from `backend/harness/pipeline/followup.py` and `backend/harness/prompts/followup.md` |
-| Shared types | `frontend/src/types/models.ts`, matching `backend/app/api/schemas.py` |
+| Follow-up questions and corrections | `frontend/src/features/check/FollowUpBar.tsx`; answers from `backend/src/claimtrace/core/pipeline/followup.py` and `backend/src/claimtrace/core/prompts/followup.md` |
+| Shared types | `frontend/src/types/models.ts`, matching `backend/src/claimtrace/api/schemas.py` |
 | Vietnamese text | `frontend/src/lib/vi.ts` |
 
 ### Charts and maps
 
-| Visual | Builder in `backend/harness/charts/` | Conditions and data | Frontend in `frontend/src/features/results/charts/` | Settings prefix |
+| Visual | Builder in `backend/src/claimtrace/core/charts/` | Conditions and data | Frontend in `frontend/src/features/results/charts/` | Settings prefix |
 |---|---|---|---|---|
 | Price chart, USD/VND rate | `price_chart.py` | A price claim for a supported asset and at least two observations from Yahoo Finance or verified dated SJC reports | `PriceChart.tsx`, `PricePlot.tsx` | `price_chart_`, `sjc_chart_` |
 | Location map | `location_map.py` | A relevant place named in the claim with supported geometry. Any figures are sourced separately | `LocationMap.tsx`, `LocationPlot.tsx` | `location_map_` |
@@ -177,13 +177,13 @@ The frontend imports `judges.json` and `source_ratings.json` straight from `back
 | Stock heatmap | — | A broad market or index claim about the latest session in a supported TradingView market | `StockHeatmap.tsx` | |
 | Sports and esports match card | `match_result.py` | A completed result and any match details from one of the claim's sources | `MatchResult.tsx` | |
 
-Extraction and `backend/harness/charts/chart_triggers.py` suggest visuals from the claim. The configured search model can
+Extraction and `backend/src/claimtrace/core/charts/chart_triggers.py` suggest visuals from the claim. The configured search model can
 choose an available map, leave the choice to the app, or skip the map. The builders still verify each result. For a
 state-specific election claim, the election map can use verified results for the named states. The national presidential
-map uses the configured coverage threshold. Visual prompts are in `backend/harness/prompts/charts/`.
+map uses the configured coverage threshold. Visual prompts are in `backend/src/claimtrace/core/prompts/charts/`.
 
 The search model can request a Tavily search focused on data tables. The topic profiles in
-`backend/config/data/chart_sources.json` cover population, GDP, trade, energy, transport, health, labor, agriculture and
+`backend/src/claimtrace/config/data/chart_sources.json` cover population, GDP, trade, energy, transport, health, labor, agriculture and
 elections. If the claim's sources do not cover a pie or bar chart, the same search model can choose sources in one extra
 chart-only round. If the pie chart already has a verified share, that round can replace the calculated remainder with a
 complete reported distribution. These additional pages are used for the chart.
@@ -199,7 +199,7 @@ complete reported distribution. These additional pages are used for the chart.
 - Page text is data, never instructions. An article can't be its own evidence.
 - Inputs with no legitimate fact to check distinguish `prompt_injection` (instruction overrides or secret extraction), `spam` (repetitive filler or unsolicited promotion) and `out_of_scope` (other tasks, such as writing ads). Each gets its own explanation and next step, no factual verdict and no model-generated related suggestions. A completed input assessment is labelled as a reviewed request, not a completed factual check. Real factual claims mixed with these instructions still proceed to verification; existing checks keep their saved classification.
 - Fact-check research starts with green-rated domains. If none yields a usable page, a separate Tavily search can consider original reporting from other publishers after an editorial review. Known blocked sources, social platforms and tabloids are excluded from that search. New publishers are reviewed per article. Fetching only reaches public addresses.
-- If both rounds lack evidence for a claim about an attributed public statement, the pipeline can look for a post from the named account in `backend/config/data/social_accounts.json`. X posts require a matching author and post ID from X. The registry records official profile links for Instagram and Facebook as well.
+- If both rounds lack evidence for a claim about an attributed public statement, the pipeline can look for a post from the named account in `backend/src/claimtrace/config/data/social_accounts.json`. X posts require a matching author and post ID from X. The registry records official profile links for Instagram and Facebook as well.
 - The source catalog includes official company newsrooms, league and tournament results, and specialist game, sport and film sources. Research prefers the organization for its own announcements or results and looks for independent evidence for comparisons and outcomes. Broad Tavily searches split the allowlist into groups of at most 300 domains and merge the results by relevance before applying the usual result limit.
 - For claims in Vietnamese or about Vietnam, research starts with eligible Vietnamese outlets and can search more broadly when other sources would add evidence. The profile preference applies to other claims.
 - Each call uses exactly the configured model, with no fallback to another one.
@@ -251,8 +251,8 @@ complete reported distribution. These additional pages are used for the chart.
 - Accounts are a username and a password, nothing else: no email, no outside sign-in. Passwords are Argon2id hashes. A session is an HttpOnly, SameSite=Lax cookie whose token the database keeps only as a SHA-256.
 - Every check belongs to the user who started it. Everything hanging off a check (claims, sources, verdicts, follow-ups, feedback, "Checked before") is reached through it, so `owned_check` and `owned_claim` guard it all. Someone else's check answers 404, like a missing one.
 - A check with no owner, as saved before accounts existed, is hidden from everyone.
-- Settings holds each reader's preferences for new checks: the search model, the source language, a search prompt of up to 500 characters, sources and searches per claim, claims per check, basic or advanced search depth, up to 20 blocked sites, and whether to search beyond the approved sources. A new check saves a copy of them, so changing them later doesn't change a check already running. Options left at the server's value stay unset and follow `backend/config/settings.py`. Signed out, the options are locked behind a Log in button.
-- Blocked sites and search depth apply to every search a check makes, charts included, through `_ScopedSearch` in `backend/harness/pipeline/run.py`. A reader can only narrow the approved sources, never widen them. Follow-up questions don't use these options.
+- Settings holds each reader's preferences for new checks: the search model, the source language, a search prompt of up to 500 characters, sources and searches per claim, claims per check, basic or advanced search depth, up to 20 blocked sites, and whether to search beyond the approved sources. A new check saves a copy of them, so changing them later doesn't change a check already running. Options left at the server's value stay unset and follow `backend/src/claimtrace/config/settings.py`. Signed out, the options are locked behind a Log in button.
+- Blocked sites and search depth apply to every search a check makes, charts included, through `_ScopedSearch` in `backend/src/claimtrace/core/pipeline/run.py`. A reader can only narrow the approved sources, never widen them. Follow-up questions don't use these options.
 - Only the research model reads the search prompt, as a `reader_guidance` block it treats as a preference and never as an instruction. Judges never see it, so it can't steer a verdict.
 
 ### Party identity images
@@ -280,12 +280,12 @@ Treat everything under [How it behaves](#how-it-behaves) as design choices to ke
 | Backend code | From `backend/`: `uv run pytest && uv run ruff check` |
 | Frontend code | From `frontend/`: `npm test && npx tsc --noEmit` |
 | Charts or maps | Check them in a browser; frontend tests stub them |
-| Prompt wording | Bump `prompt_version` in `backend/config/settings.py` |
+| Prompt wording | Bump `prompt_version` in `backend/src/claimtrace/config/settings.py` |
 | A backend library | From `backend/`: `uv add NAME`, which updates `pyproject.toml` and `uv.lock` together |
-| Tables in `backend/database/models.py` | Generate a migration (command in [Tests and everyday commands](#tests-and-everyday-commands)) |
-| Judge models | Edit `backend/config/data/judges.json` only; the frontend reads the same file |
-| Source ratings | Edit `backend/config/data/source_ratings.json` only; the frontend reads the same file |
-| API response shapes | Keep `frontend/src/types/models.ts` and `backend/app/api/schemas.py` matching |
+| Tables in `backend/src/claimtrace/db/models.py` | Generate a migration (command in [Tests and everyday commands](#tests-and-everyday-commands)) |
+| Judge models | Edit `backend/src/claimtrace/config/data/judges.json` only; the frontend reads the same file |
+| Source ratings | Edit `backend/src/claimtrace/config/data/source_ratings.json` only; the frontend reads the same file |
+| API response shapes | Keep `frontend/src/types/models.ts` and `backend/src/claimtrace/api/schemas.py` matching |
 | Any `t('…')` string | Add its Vietnamese entry to `frontend/src/lib/vi.ts` |
 
 ## Status and open questions

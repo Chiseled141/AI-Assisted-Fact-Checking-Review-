@@ -1,4 +1,4 @@
-// CheckService over the FastAPI backend in ../backend. Routes are in backend/app/api/, and at /docs when it runs.
+// CheckService over the FastAPI backend in ../backend. Routes are in backend/src/claimtrace/api/, and at /docs when it runs.
 
 import type { Check, CheckDetail, CreateCheckInput, ListChecksParams } from '../types/models';
 import { inLanguage, t } from '../lib/i18n';

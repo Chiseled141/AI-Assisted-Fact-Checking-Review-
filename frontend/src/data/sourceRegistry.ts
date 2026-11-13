@@ -2,7 +2,7 @@
 // `logo` is left out where there is no usable image for that source, so the UI shows a monogram.
 // Red sources were never fetched, so they have no logo.
 
-import ratings from '../../../backend/config/data/source_ratings.json';
+import ratings from '../../../backend/src/claimtrace/config/data/source_ratings.json';
 import type { SourceEntry } from '../types/models';
 
 export const sourceRegistry: SourceEntry[] = Object.entries(
